@@ -1,1 +1,0 @@
-import{j as x}from"./index-DmOTPPeF.js";import"./vendor-react-Ccv3iBxU.js";const r=({children:s,className:t="",...o})=>x.jsx("div",{className:`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${t}`,...o,children:s}),e=({children:s,className:t="",...o})=>x.jsx("section",{className:`py-12 md:py-16 ${t}`,...o,children:s});export{r as C,e as S};
