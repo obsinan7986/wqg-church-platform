@@ -1,0 +1,92 @@
+/* Print Stylesheet for Official Documents, Receipts & ID Cards */
+@media print {
+  /* Hide entire page by default */
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: 'Inter', 'Noto Sans Ethiopic', sans-serif !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  /* Expose strictly the print-area container and its descendants */
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+
+  /* Make sure print-area fills the printed sheet cleanly */
+  .print-area {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 1.5rem !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border: none !important;
+    overflow: visible !important;
+  }
+
+  /* Ensure text is high contrast and print-color-adjust is preserved */
+  .print-area {
+    color: #000000 !important;
+  }
+
+  .print-area img {
+    visibility: visible !important;
+    display: block !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Borders inside print-area remain crisp and dark */
+  .print-area .border-gold-500,
+  .print-area .border-gold-400,
+  .print-area .border-slate-700,
+  .print-area .border-slate-800,
+  .print-area .border-royal,
+  .print-area .border-royal-dark {
+    border-color: #1e293b !important;
+  }
+
+  /* Force elements marked as no-print to disappear entirely */
+  .no-print,
+  .no-print * {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Specific modal container resets for print */
+  .modal-overlay,
+  .fixed.inset-0 {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Stamp print styling */
+  .church-stamp {
+    display: inline-block !important;
+    visibility: visible !important;
+    color: #000000 !important;
+  }
+
+  @page {
+    size: auto;
+    margin: 12mm;
+  }
+}

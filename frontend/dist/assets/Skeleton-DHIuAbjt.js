@@ -1,0 +1,1 @@
+import{j as a}from"./index-DmOTPPeF.js";import"./vendor-react-Ccv3iBxU.js";const o=({variant:e="text",className:r="",...l})=>{const t={text:"h-4 w-full rounded-md",circular:"rounded-full",rectangular:"w-full rounded-xl"};return a.jsx("div",{className:`animate-pulse bg-slate-200 ${t[e]||t.text} ${r}`,...l})};export{o as S};
