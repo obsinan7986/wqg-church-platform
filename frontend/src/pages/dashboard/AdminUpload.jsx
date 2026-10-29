@@ -32,6 +32,7 @@ import {
   DateTimePicker
 } from '../../components/ui';
 import { formatDate } from '../../utils/dateFormat';
+import { resolveMediaUrl } from '../../utils/mediaUrl';
 
 const CATEGORIES = [
   {
@@ -269,18 +270,7 @@ const AdminUpload = ({ onUploadSuccess }) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const getMediaUrl = (relativeOrFull) => {
-    if (!relativeOrFull) return '';
-    if (relativeOrFull.startsWith('http://') || relativeOrFull.startsWith('https://')) {
-      return relativeOrFull;
-    }
-    const backendUrl =
-      import.meta.env.VITE_BACKEND_URL ||
-      (import.meta.env.VITE_API_URL
-        ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '')
-        : 'http://localhost:5000');
-    return `${backendUrl}${relativeOrFull}`;
-  };
+  const getMediaUrl = (relativeOrFull) => resolveMediaUrl(relativeOrFull);
 
   return (
     <div className="space-y-8 text-slate-900">

@@ -25,6 +25,7 @@ import {
   EmptyState
 } from '../../components/ui';
 import { formatDate } from '../../utils/dateFormat';
+import { resolveMediaUrl } from '../../utils/mediaUrl';
 
 const CATEGORIES = [
   { id: 'ALL', label: 'Hundumaa (All)' },
@@ -74,16 +75,7 @@ const MediaLibrary = () => {
     fetchMedia();
   };
 
-  const getMediaUrl = (relativeOrFull) => {
-    if (!relativeOrFull) return '';
-    if (relativeOrFull.startsWith('http://') || relativeOrFull.startsWith('https://')) {
-      return relativeOrFull;
-    }
-    const backendBase = import.meta.env.VITE_API_URL
-      ? import.meta.env.VITE_API_URL.replace('/api', '')
-      : 'http://localhost:5000';
-    return `${backendBase}${relativeOrFull.startsWith('/') ? '' : '/'}${relativeOrFull}`;
-  };
+  const getMediaUrl = (relativeOrFull) => resolveMediaUrl(relativeOrFull);
 
   const formatFileSize = (bytes) => {
     if (!bytes || bytes === 0) return '0 B';

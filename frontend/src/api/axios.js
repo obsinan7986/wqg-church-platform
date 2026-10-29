@@ -1,7 +1,22 @@
 import axios from 'axios';
 
+// Resolves and normalizes the API base URL to ensure '/api' suffix is always present
+const resolveApiBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && envUrl.trim()) {
+    let clean = envUrl.trim().replace(/\/+$/, '');
+    if (!clean.endsWith('/api')) {
+      clean += '/api';
+    }
+    return clean;
+  }
+  return import.meta.env.DEV
+    ? 'http://localhost:5000/api'
+    : 'https://wqg-church-platform.onrender.com/api';
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://wqg-church-platform.onrender.com',
+  baseURL: resolveApiBaseUrl(),
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json'

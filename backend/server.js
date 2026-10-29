@@ -33,9 +33,15 @@ connectDB().then(() => {
 const app = express();
 const server = http.createServer(app);
 
-// CORS configuration supporting static origins and dynamic local development ports
-const rawClientUrls = process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map((u) => u.trim()) : [];
-const allowedOrigins = [
+// Trust reverse proxy (Render, Vercel, Heroku) for correct client IP detection & rate-limiting
+app.set('trust proxy', 1);
+
+// CORS configuration supporting production domains, Vercel preview URLs, and dynamic local development
+const rawClientUrls = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(',').map((u) => u.trim().replace(/\/+$/, ''))
+  : [];
+
+const defaultAllowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:5175',
@@ -43,48 +49,80 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
   'http://127.0.0.1:5174',
   'http://127.0.0.1:5175',
-  ...rawClientUrls
-].filter(Boolean);
+  'https://wqg-church-platform-obsa1.vercel.app',
+  'https://wqg-church-platform.vercel.app',
+  'https://wqg-church-platform.onrender.com'
+];
+
+const allowedOrigins = Array.from(new Set([...defaultAllowedOrigins, ...rawClientUrls]))
+  .filter(Boolean)
+  .map((origin) => origin.toLowerCase());
 
 const corsOriginHandler = (origin, callback) => {
-  // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+  // Allow requests with no origin (e.g. mobile apps, curl, Postman, server-to-server)
   if (!origin) return callback(null, true);
 
-  // In development, allow ANY localhost/127.0.0.1 origin regardless of port
-  if (process.env.NODE_ENV !== 'production') {
-    const isLocalhost = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
-    if (isLocalhost) return callback(null, true);
-  }
+  const cleanOrigin = origin.trim().replace(/\/+$/, '').toLowerCase();
 
-  if (allowedOrigins.includes(origin)) {
+  // If wildcard is configured in CLIENT_URL
+  if (process.env.CLIENT_URL === '*') {
     return callback(null, true);
   }
 
+  // Allow localhost or 127.0.0.1 on any port in all environments for local testing
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(cleanOrigin)) {
+    return callback(null, true);
+  }
+
+  // Allow all Vercel deployments (*.vercel.app, preview URLs, branch URLs)
+  if (cleanOrigin.endsWith('.vercel.app')) {
+    return callback(null, true);
+  }
+
+  // Allow Render domains (*.onrender.com)
+  if (cleanOrigin.endsWith('.onrender.com')) {
+    return callback(null, true);
+  }
+
+  // Check explicitly configured allowed origins
+  if (allowedOrigins.includes(cleanOrigin)) {
+    return callback(null, true);
+  }
+
+  console.warn(`[CORS Blocked] Origin not allowed: ${origin}`);
   return callback(null, false);
+};
+
+const corsOptions = {
+  origin: corsOriginHandler,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Origin'
+  ],
+  optionsSuccessStatus: 200
 };
 
 // Socket.io initialization with CORS
 const io = new Server(server, {
-  cors: {
-    origin: corsOriginHandler,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    credentials: true
-  }
+  cors: corsOptions
 });
 
 // Initialize Socket.io custom handlers & authentication
 initSocketHandler(io);
 
-// Middleware
+// Enable CORS middleware first to immediately handle preflight OPTIONS requests
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
+// Security middleware
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' }
-  })
-);
-app.use(
-  cors({
-    origin: corsOriginHandler,
-    credentials: true
   })
 );
 app.use(express.json());
