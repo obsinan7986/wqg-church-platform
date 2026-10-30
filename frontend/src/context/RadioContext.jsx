@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState, useCallb
 import { useSocket } from './SocketContext';
 import { useAuth } from './AuthContext';
 import api from '../api/axios';
+import { resolveMediaUrl } from '../utils/mediaUrl';
 
 const RadioContext = createContext(null);
 
@@ -121,11 +122,17 @@ export const RadioProvider = ({ children }) => {
         return;
       }
 
+      const fullUrl = resolveMediaUrl(state.url);
+      if (!fullUrl) {
+        if (audio) audio.pause();
+        return;
+      }
+
       setLoadError(null);
 
       // Change source if different
-      if (audio.src !== state.url) {
-        audio.src = state.url;
+      if (audio.src !== fullUrl) {
+        audio.src = fullUrl;
         audio.load();
       }
 
@@ -143,11 +150,14 @@ export const RadioProvider = ({ children }) => {
             if (playPromise !== undefined) {
               await playPromise;
               setAutoplayBlocked(false);
+              setLoadError(null);
             }
           } catch (err) {
             console.warn('[Gospel Radio] Autoplay blocked or play error:', err.name, err.message);
-            if (err.name === 'NotAllowedError' || err.name === 'AbortError') {
+            if (err.name === 'NotAllowedError') {
               setAutoplayBlocked(true);
+            } else if (err.name === 'AbortError') {
+              // Interrupted by another load/seek - ignore
             } else {
               setLoadError('Faarfannaa fe\'uu hin dandeenye (Audio playback failed)');
             }
@@ -172,7 +182,13 @@ export const RadioProvider = ({ children }) => {
     if (!audio) return;
     try {
       setAutoplayBlocked(false);
+      setLoadError(null);
       if (radioStateRef.current.isPlaying && radioStateRef.current.url) {
+        const fullUrl = resolveMediaUrl(radioStateRef.current.url);
+        if (audio.src !== fullUrl) {
+          audio.src = fullUrl;
+          audio.load();
+        }
         const targetPos = calculateTargetPosition(radioStateRef.current);
         audio.currentTime = targetPos;
         audio.volume = userVolume;
@@ -308,8 +324,22 @@ export const RadioProvider = ({ children }) => {
   };
 
   const handleAudioError = (e) => {
-    console.error('[Gospel Radio] Audio error:', e);
-    setLoadError("Faarfannaa taphachiisuun hin danda'amne (Audio failed to load)");
+    const audio = audioRef.current;
+    console.error('[Gospel Radio] Audio error:', e, audio?.error);
+    if (!radioStateRef.current?.url) return;
+
+    // Retry once without crossOrigin attribute if CORS or element restriction occurs
+    if (audio && audio.crossOrigin) {
+      console.warn('[Gospel Radio] Retrying audio playback without crossOrigin...');
+      audio.removeAttribute('crossorigin');
+      audio.load();
+      audio.play().catch((err) => {
+        console.warn('[Gospel Radio] Non-CORS retry play error:', err);
+      });
+      return;
+    }
+
+    setLoadError("Faarfannaa fe'uu hin dandeenye (Audio playback failed)");
   };
 
   // Staff Controls

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRadio } from '../../context/RadioContext';
 import { useAuth } from '../../context/AuthContext';
+import { resolveMediaUrl } from '../../utils/mediaUrl';
 import api from '../../api/axios';
 import {
   Radio,
@@ -108,10 +109,11 @@ export default function GospelRadioStudio() {
     setActionLoading(true);
     setStatusMsg(null);
     try {
+      const fullUrl = resolveMediaUrl(song.fileUrl);
       await playSong({
         mediaId: song._id,
         title: song.title,
-        url: song.fileUrl,
+        url: fullUrl,
         artist: 'Waldaa Angafa Wareegamtoota Qulqulluu Giyoorgisii',
         category: song.category,
         duration: song.duration || 0
@@ -128,12 +130,13 @@ export default function GospelRadioStudio() {
   const handleAddToQueue = async (song) => {
     setActionLoading(true);
     try {
+      const fullUrl = resolveMediaUrl(song.fileUrl);
       const newQueue = [
         ...(radioState.queue || []),
         {
           mediaId: song._id,
           title: song.title,
-          url: song.fileUrl,
+          url: fullUrl,
           artist: 'Waldaa Angafa Wareegamtoota Qulqulluu Giyoorgisii',
           category: song.category,
           duration: song.duration || 0
@@ -516,7 +519,11 @@ export default function GospelRadioStudio() {
             ) : (
               <div className="space-y-2.5 max-h-[520px] overflow-y-auto pr-1">
                 {songs.map((song) => {
-                  const isCurrent = radioState.mediaId === song._id || radioState.url === song.fileUrl;
+                  const songUrl = resolveMediaUrl(song.fileUrl);
+                  const currentUrl = resolveMediaUrl(radioState.url);
+                  const isCurrent =
+                    (song._id && radioState.mediaId === song._id) ||
+                    (songUrl && currentUrl === songUrl);
                   return (
                     <div
                       key={song._id}

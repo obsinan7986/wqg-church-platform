@@ -6,6 +6,22 @@ const { logAudit } = require('../utils/auditLogger');
 const isValidObjectId = (id) =>
   id && mongoose.Types.ObjectId.isValid(id) && /^[0-9a-fA-F]{24}$/.test(String(id));
 
+// Helper to ensure full absolute HTTP(S) URL for client playback
+const getBaseServerUrl = () =>
+  process.env.RENDER_EXTERNAL_URL ||
+  (process.env.NODE_ENV === 'production'
+    ? 'https://wqg-church-platform.onrender.com'
+    : `http://localhost:${process.env.PORT || 5000}`);
+
+const resolveServerMediaUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  const base = getBaseServerUrl();
+  return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
 // Staff roles authorized to control the Gospel Radio
 const RADIO_STAFF_ROLES = ['SUPER_ADMIN', 'ADMIN', 'SECRETARY'];
 
@@ -45,7 +61,7 @@ class RadioService {
           mediaId: state.mediaId ? state.mediaId.toString() : null,
           title: state.title || '',
           artist: state.artist || 'Waldaa Angafa Wareegamtoota Qulqulluu Giyoorgisii',
-          url: state.url || '',
+          url: resolveServerMediaUrl(state.url || ''),
           category: state.category || 'GOSPEL',
           duration: state.duration || 0,
           startedAt: state.startedAt || 0,
@@ -55,7 +71,9 @@ class RadioService {
           loop: !!state.loop,
           startedBy: state.startedBy ? state.startedBy.toString() : null,
           startedByName: state.startedByName || '',
-          queue: Array.isArray(state.queue) ? state.queue : []
+          queue: Array.isArray(state.queue)
+            ? state.queue.map((q) => ({ ...q, url: resolveServerMediaUrl(q.url) }))
+            : []
         };
       }
       this.initialized = true;
@@ -134,7 +152,7 @@ class RadioService {
       mediaId: mediaId || null,
       title: title.trim(),
       artist: (artist && artist.trim()) || 'Waldaa Angafa Wareegamtoota Qulqulluu Giyoorgisii',
-      url: url.trim(),
+      url: resolveServerMediaUrl(url.trim()),
       category: category || 'GOSPEL',
       duration: Number(duration) || 0,
       startedAt: now - offsetMs,
@@ -144,7 +162,9 @@ class RadioService {
       loop: typeof loop === 'boolean' ? loop : this.nowPlaying.loop,
       startedBy: user._id,
       startedByName: user.fullName || 'Church Staff',
-      queue: Array.isArray(queue) ? queue : this.nowPlaying.queue
+      queue: Array.isArray(queue)
+        ? queue.map((q) => ({ ...q, url: resolveServerMediaUrl(q.url) }))
+        : this.nowPlaying.queue
     };
 
     await this.persist();

@@ -94,10 +94,23 @@ const getRadioSongs = async (req, res) => {
       }
     }
 
+    const baseServerUrl =
+      process.env.RENDER_EXTERNAL_URL ||
+      (process.env.NODE_ENV === 'production'
+        ? 'https://wqg-church-platform.onrender.com'
+        : `http://localhost:${process.env.PORT || 5000}`);
+
+    const mappedSongs = songs.map((s) => ({
+      ...s,
+      fileUrl: s.fileUrl && !s.fileUrl.startsWith('http') && !s.fileUrl.startsWith('data:')
+        ? `${baseServerUrl}${s.fileUrl.startsWith('/') ? '' : '/'}${s.fileUrl}`
+        : s.fileUrl
+    }));
+
     return res.status(200).json({
       success: true,
-      count: songs.length,
-      songs
+      count: mappedSongs.length,
+      songs: mappedSongs
     });
   } catch (err) {
     console.error('[getRadioSongs Error]:', err.message);
