@@ -3,10 +3,12 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { AuthProvider } from './context/AuthContext';
 import { DateSettingsProvider } from './context/DateSettingsContext';
 import { SocketProvider } from './context/SocketContext';
+import { RadioProvider } from './context/RadioContext';
 import { TourProvider } from './context/TourContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import GospelRadioMiniPlayer from './components/GospelRadioMiniPlayer';
 import { Spinner } from './components/ui';
 
 // Lazy-load Pages for Optimal Performance
@@ -68,6 +70,7 @@ const AppContent = () => {
         </Suspense>
       </div>
       {!isDashboard && <Footer />}
+      <GospelRadioMiniPlayer />
     </div>
   );
 };
@@ -79,9 +82,11 @@ function App() {
         <DateSettingsProvider>
           <SocketProvider>
             <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <TourProvider>
-                <AppContent />
-              </TourProvider>
+              <RadioProvider>
+                <TourProvider>
+                  <AppContent />
+                </TourProvider>
+              </RadioProvider>
             </Router>
           </SocketProvider>
         </DateSettingsProvider>

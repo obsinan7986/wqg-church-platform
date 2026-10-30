@@ -50,6 +50,7 @@ const AdminUpload = React.lazy(() => import('./AdminUpload'));
 const MediaLibrary = React.lazy(() => import('../public/MediaLibrary'));
 const ProfileAndSecurity = React.lazy(() => import('./ProfileAndSecurity'));
 const ProgramsManager = React.lazy(() => import('./ProgramsManager'));
+const GospelRadioStudio = React.lazy(() => import('./GospelRadioStudio'));
 
 import LoadingScreen from '../../components/LoadingScreen';
 import NotificationBell from '../../components/NotificationBell';
@@ -367,6 +368,13 @@ const DashboardLayout = () => {
       subtitle: t('dashboard.menuLiveSub') || 'WebRTC Live Studio',
       icon: Video,
       roles: ['SUPER_ADMIN', 'ADMIN', 'COLLECTOR', 'HR', 'SECRETARY', 'MEMBER']
+    },
+    {
+      id: 'radio',
+      title: 'Gospel Radio',
+      subtitle: 'Radio Broadcast Studio',
+      icon: Radio,
+      roles: ['SUPER_ADMIN', 'ADMIN', 'SECRETARY']
     },
     {
       id: 'media',
@@ -1024,6 +1032,9 @@ const DashboardLayout = () => {
 
             {/* TAB 5: LIVE VIDEO & AUDIO */}
             {activeTab === 'live' && <LiveMeetingStudio />}
+
+            {/* TAB: GOSPEL RADIO BROADCAST STUDIO (STAFF) */}
+            {activeTab === 'radio' && <GospelRadioStudio />}
 
             {/* TAB 6: YOUTUBE MEDIA */}
             {activeTab === 'media' && <GospelMediaViewer />}

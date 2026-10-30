@@ -22,12 +22,15 @@ const announcementRoutes = require('./routes/announcementRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const scheduleRoutes = require('./routes/scheduleRoutes');
 const auditRoutes = require('./routes/auditRoutes');
+const radioRoutes = require('./routes/radioRoutes');
+const radioService = require('./services/radioService');
 const initSocketHandler = require('./socket/socketHandler');
 const { seedIfEmpty } = require('./controllers/scheduleController');
 
 // Initialize database connection
 connectDB().then(() => {
   seedIfEmpty();
+  radioService.init();
 });
 
 const app = express();
@@ -165,6 +168,7 @@ app.use('/api/announcements', announcementRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/schedule', scheduleRoutes);
 app.use('/api/audit-logs', auditRoutes);
+app.use('/api/radio', radioRoutes);
 
 // 404 Route Handler
 app.use((req, res) => {

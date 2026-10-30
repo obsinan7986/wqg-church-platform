@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Message = require('../models/Message');
+const radioService = require('../services/radioService');
 
 const EXEC_ROLES = ['SUPER_ADMIN', 'ADMIN', 'COLLECTOR', 'HR', 'SECRETARY'];
 
@@ -41,6 +42,9 @@ const initSocketHandler = (io) => {
 
     // Default room for all connected clients
     socket.join('all_users_room');
+
+    // Send current Gospel Radio state immediately upon connection
+    socket.emit('radio_state', radioService.getState());
 
     if (user) {
       // Join personal room
@@ -220,6 +224,9 @@ const initSocketHandler = (io) => {
 
     // Disconnect event
     socket.on('disconnect', async () => {
+      // Remove from active radio listeners
+      radioService.removeListener(socket.id, io);
+
       if (socket.currentMeetingId) {
         socket.to(`meeting_${socket.currentMeetingId}`).emit('user_left_studio', {
           userId: socket.user?._id,
@@ -234,6 +241,117 @@ const initSocketHandler = (io) => {
           userId: socket.user._id,
           isOnline: false
         });
+      }
+    });
+
+    // ==========================================
+    // Gospel Radio Events
+    // ==========================================
+    socket.on('radio_listen_start', () => {
+      radioService.addListener(socket.id, io);
+    });
+
+    socket.on('radio_listen_stop', () => {
+      radioService.removeListener(socket.id, io);
+    });
+
+    socket.on('radio_play', async (data, callback) => {
+      try {
+        if (!radioService.isAuthorized(socket.user)) {
+          if (callback) callback({ success: false, message: 'Unauthorized: Only Super Admin, Admin, or Secretary can control Gospel Radio.' });
+          return;
+        }
+        const state = await radioService.play(data, socket.user, io);
+        if (callback) callback({ success: true, state });
+      } catch (err) {
+        console.error('[radio_play socket error]:', err.message);
+        if (callback) callback({ success: false, error: err.message });
+      }
+    });
+
+    socket.on('radio_pause', async (data, callback) => {
+      try {
+        if (!radioService.isAuthorized(socket.user)) {
+          if (callback) callback({ success: false, message: 'Unauthorized' });
+          return;
+        }
+        const state = await radioService.pause(socket.user, io);
+        if (callback) callback({ success: true, state });
+      } catch (err) {
+        console.error('[radio_pause socket error]:', err.message);
+        if (callback) callback({ success: false, error: err.message });
+      }
+    });
+
+    socket.on('radio_resume', async (data, callback) => {
+      try {
+        if (!radioService.isAuthorized(socket.user)) {
+          if (callback) callback({ success: false, message: 'Unauthorized' });
+          return;
+        }
+        const state = await radioService.resume(socket.user, io);
+        if (callback) callback({ success: true, state });
+      } catch (err) {
+        console.error('[radio_resume socket error]:', err.message);
+        if (callback) callback({ success: false, error: err.message });
+      }
+    });
+
+    socket.on('radio_stop', async (data, callback) => {
+      try {
+        if (!radioService.isAuthorized(socket.user)) {
+          if (callback) callback({ success: false, message: 'Unauthorized' });
+          return;
+        }
+        const state = await radioService.stop(socket.user, io);
+        if (callback) callback({ success: true, state });
+      } catch (err) {
+        console.error('[radio_stop socket error]:', err.message);
+        if (callback) callback({ success: false, error: err.message });
+      }
+    });
+
+    socket.on('radio_seek', async (data, callback) => {
+      try {
+        if (!radioService.isAuthorized(socket.user)) {
+          if (callback) callback({ success: false, message: 'Unauthorized' });
+          return;
+        }
+        const positionSeconds = typeof data === 'object' ? data.positionSeconds : data;
+        const state = await radioService.seek(positionSeconds, socket.user, io);
+        if (callback) callback({ success: true, state });
+      } catch (err) {
+        console.error('[radio_seek socket error]:', err.message);
+        if (callback) callback({ success: false, error: err.message });
+      }
+    });
+
+    socket.on('radio_next', async (data, callback) => {
+      try {
+        if (!radioService.isAuthorized(socket.user)) {
+          if (callback) callback({ success: false, message: 'Unauthorized' });
+          return;
+        }
+        const state = await radioService.next(socket.user, io);
+        if (callback) callback({ success: true, state });
+      } catch (err) {
+        console.error('[radio_next socket error]:', err.message);
+        if (callback) callback({ success: false, error: err.message });
+      }
+    });
+
+    socket.on('radio_queue_update', async (data, callback) => {
+      try {
+        if (!radioService.isAuthorized(socket.user)) {
+          if (callback) callback({ success: false, message: 'Unauthorized' });
+          return;
+        }
+        const { queue, loop } = data || {};
+        const state = await radioService.updateQueue(queue, loop, socket.user, io);
+        if (callback) callback({ success: true, state });
+      } catch (err) {
+        console.error('[radio_queue_update socket error]:', err.message);
+        if (callback) callback({ success: false, error: err.message });
       }
     });
   });

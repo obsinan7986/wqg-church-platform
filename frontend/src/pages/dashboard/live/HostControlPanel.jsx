@@ -11,7 +11,8 @@ import {
   UserX,
   Users,
   AlertTriangle,
-  Clock
+  Clock,
+  Radio
 } from 'lucide-react';
 import { Card, Badge, Button, Avatar } from '../../../components/ui';
 
@@ -31,7 +32,11 @@ const HostControlPanel = ({
   onAllowMic,
   onMuteUser,
   onMuteAll,
-  isProcessing = false
+  isProcessing = false,
+  mixRadioToStream = false,
+  onToggleMixRadio,
+  radioPlaying = false,
+  radioTitle = ''
 }) => {
   const hostId = (meeting?.host?._id || meeting?.host)?.toString();
   const waitingRoom = meeting?.waitingRoom || [];
@@ -91,6 +96,34 @@ const HostControlPanel = ({
             Hirmaattota hanga 8 qofatu kaameeraan isaanii tamsaasa irratti mul'achuu danda'a.
           </p>
         )}
+      </div>
+
+      {/* GOSPEL RADIO AUDIO MIXING (Web Audio API) */}
+      <div className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-2">
+        <div className="flex items-center justify-between text-xs font-bold text-slate-800">
+          <span className="flex items-center gap-1.5 text-amber-900">
+            <Radio className="w-3.5 h-3.5 text-amber-600" />
+            <span>Gospel Radio to Live Meeting:</span>
+          </span>
+          <button
+            onClick={onToggleMixRadio}
+            className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              mixRadioToStream ? 'bg-amber-600' : 'bg-slate-300'
+            }`}
+            title="Mix Gospel Radio into Live Meeting stream"
+          >
+            <span
+              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                mixRadioToStream ? 'translate-x-4' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+        <p className="text-[11px] text-amber-800/80">
+          {radioPlaying
+            ? `Now Playing: "${radioTitle || 'Gospel Track'}" (Mixed via Web Audio API)`
+            : 'Radio is currently idle. Playing a song in Radio Studio will stream it into the meeting.'}
+        </p>
       </div>
 
       {/* WAITING ROOM QUEUE */}

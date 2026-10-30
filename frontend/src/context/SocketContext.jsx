@@ -38,21 +38,13 @@ export const SocketProvider = ({ children }) => {
 
   // Manage Socket.io connection lifecycle
   useEffect(() => {
-    if (!isAuthenticated || !token) {
-      if (socket) {
-        socket.disconnect();
-        setSocket(null);
-      }
-      return;
-    }
-
     const socketUrl =
       import.meta.env.VITE_SOCKET_URL ||
       (import.meta.env.VITE_API_URL
         ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '')
         : (import.meta.env.DEV ? 'http://localhost:5000' : 'https://wqg-church-platform.onrender.com'));
     const newSocket = io(socketUrl, {
-      auth: { token },
+      auth: token ? { token } : {},
       transports: ['polling', 'websocket'],
       upgrade: true,
       reconnectionAttempts: 10,
@@ -61,7 +53,9 @@ export const SocketProvider = ({ children }) => {
 
     newSocket.on('connect', () => {
       console.log(`[Socket.io Client] Connected with ID: ${newSocket.id}`);
-      newSocket.emit('authenticate', token);
+      if (token) {
+        newSocket.emit('authenticate', token);
+      }
     });
 
     // Real-time Notification Listener

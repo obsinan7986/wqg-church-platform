@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import { useRadio } from '../../context/RadioContext';
 import api from '../../api/axios';
 import {
   Video,
@@ -78,8 +79,32 @@ const LiveMeetingStudio = () => {
   const { socket } = useSocket();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { radioState, audioRef } = useRadio();
 
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+
+  // Gospel Radio Mixing State
+  const [mixRadioToStream, setMixRadioToStream] = useState(() => {
+    try {
+      return localStorage.getItem('gospel_radio_send_to_live') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleMixRadioToStream = useCallback(() => {
+    setMixRadioToStream((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('gospel_radio_send_to_live', String(next));
+      } catch {}
+      return next;
+    });
+  }, []);
+
+  const audioContextRef = useRef(null);
+  const mediaStreamDestRef = useRef(null);
+  const mixedAudioTrackRef = useRef(null);
 
   // Dynamic ICE servers (from /api/live/ice-servers)
   const [iceServers, setIceServers] = useState(DEFAULT_STUN_SERVERS);
@@ -300,7 +325,11 @@ const LiveMeetingStudio = () => {
       const outgoingStream = screenStreamRef.current || localStreamRef.current;
       if (outgoingStream) {
         outgoingStream.getTracks().forEach((track) => {
-          pc.addTrack(track, outgoingStream);
+          if (track.kind === 'audio' && mixedAudioTrackRef.current) {
+            pc.addTrack(mixedAudioTrackRef.current, outgoingStream);
+          } else {
+            pc.addTrack(track, outgoingStream);
+          }
         });
         applyBitrateLimits(pc, true);
       }
@@ -613,6 +642,99 @@ const LiveMeetingStudio = () => {
       console.warn('[LiveStudio] getDisplayMedia canceled/failed:', err);
     }
   }, [isHost, isScreenSharing]);
+
+  // Web Audio API: Mix Gospel Radio into Host's outgoing stream
+  useEffect(() => {
+    if (!isHost) return;
+
+    const shouldMix = mixRadioToStream && radioState.isPlaying && audioRef?.current;
+
+    const cleanupAudioMixing = () => {
+      if (mixedAudioTrackRef.current) {
+        mixedAudioTrackRef.current.stop();
+        mixedAudioTrackRef.current = null;
+      }
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        try {
+          audioContextRef.current.close();
+        } catch {}
+        audioContextRef.current = null;
+      }
+      mediaStreamDestRef.current = null;
+
+      // Revert peer connections back to original mic track
+      const cleanMicTrack = localStreamRef.current?.getAudioTracks()[0];
+      peerConnectionsRef.current.forEach((pc) => {
+        const sender = pc.getSenders().find((s) => s.track && s.track.kind === 'audio');
+        if (sender && cleanMicTrack) {
+          sender.replaceTrack(cleanMicTrack).catch(() => {});
+        }
+      });
+    };
+
+    if (!shouldMix) {
+      cleanupAudioMixing();
+      return;
+    }
+
+    try {
+      const audioEl = audioRef.current;
+      const micTrack = localStreamRef.current?.getAudioTracks()[0];
+
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+
+      const ctx = new AudioCtx();
+      audioContextRef.current = ctx;
+      const dest = ctx.createMediaStreamDestination();
+      mediaStreamDestRef.current = dest;
+
+      // Connect mic if available
+      if (micTrack) {
+        const micStream = new MediaStream([micTrack]);
+        const micSource = ctx.createMediaStreamSource(micStream);
+        micSource.connect(dest);
+      }
+
+      // Connect radio audio element
+      if (!audioEl._webaudio_source || audioEl._webaudio_ctx !== ctx) {
+        try {
+          audioEl._webaudio_source = ctx.createMediaElementSource(audioEl);
+          audioEl._webaudio_ctx = ctx;
+        } catch (e) {
+          console.warn('[WebAudio] createMediaElementSource warning:', e.message);
+        }
+      }
+
+      if (audioEl._webaudio_source) {
+        try {
+          audioEl._webaudio_source.connect(dest);
+          audioEl._webaudio_source.connect(ctx.destination);
+        } catch (e) {
+          console.warn('[WebAudio] connect warning:', e.message);
+        }
+      }
+
+      const mixedTrack = dest.stream.getAudioTracks()[0];
+      if (mixedTrack) {
+        mixedAudioTrackRef.current = mixedTrack;
+
+        // Replace track on all active host peer connections
+        peerConnectionsRef.current.forEach((pc) => {
+          const sender = pc.getSenders().find((s) => s.track && s.track.kind === 'audio');
+          if (sender) {
+            sender.replaceTrack(mixedTrack).catch(() => {});
+          }
+        });
+      }
+    } catch (err) {
+      console.error('[WebAudio] Audio mixing error:', err);
+    }
+
+    return () => {
+      cleanupAudioMixing();
+    };
+  }, [isHost, mixRadioToStream, radioState.isPlaying, radioState.url, audioRef]);
 
   // 9) Socket Listeners & Real-Time Sync
   useEffect(() => {
@@ -1375,6 +1497,10 @@ const LiveMeetingStudio = () => {
               onMuteUser={handleMuteUser}
               onMuteAll={handleMuteAll}
               isProcessing={isProcessingAction}
+              mixRadioToStream={mixRadioToStream}
+              onToggleMixRadio={toggleMixRadioToStream}
+              radioPlaying={radioState.isPlaying}
+              radioTitle={radioState.title}
             />
           )}
 
@@ -1433,6 +1559,10 @@ const LiveMeetingStudio = () => {
                 onMuteUser={handleMuteUser}
                 onMuteAll={handleMuteAll}
                 isProcessing={isProcessingAction}
+                mixRadioToStream={mixRadioToStream}
+                onToggleMixRadio={toggleMixRadioToStream}
+                radioPlaying={radioState.isPlaying}
+                radioTitle={radioState.title}
               />
             ) : (
               <div className="space-y-3">
