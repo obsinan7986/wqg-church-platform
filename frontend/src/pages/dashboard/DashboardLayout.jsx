@@ -131,7 +131,9 @@ const DashboardLayout = () => {
   // Tab alias mapping for backward compatibility
   const tabAliases = {
     branches: 'finance',
-    announcements: 'records'
+    announcements: 'records',
+    'live-studio': 'live',
+    meetings: 'live'
   };
 
   const rawTab = paramTab || searchParams.get('tab') || 'overview';

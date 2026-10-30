@@ -185,17 +185,26 @@ const getActiveMeeting = async (req, res) => {
 };
 
 /**
- * @desc    Get live meeting by unique meeting link or ID
+ * @desc    Get live meeting by unique meeting link or ID (with fallback to active session)
  * @route   GET /api/live/:meetingLink
  * @access  Private
  */
 const getMeetingByLink = async (req, res) => {
   try {
     const { meetingLink } = req.params;
+
+    // Route alias / collision protection
+    if (meetingLink === 'ice-servers') {
+      return getIceServers(req, res);
+    }
+    if (meetingLink === 'active' || meetingLink === 'undefined' || meetingLink === 'null') {
+      return getActiveMeeting(req, res);
+    }
+
     const isId = mongoose.Types.ObjectId.isValid(meetingLink);
     const query = isId ? { $or: [{ meetingLink }, { _id: meetingLink }] } : { meetingLink };
 
-    const meeting = await LiveMeeting.findOne(query)
+    let meeting = await LiveMeeting.findOne(query)
       .populate('host', 'fullName role originChurch avatarUrl')
       .populate('waitingRoom', 'fullName role originChurch avatarUrl address.city')
       .populate('allowedParticipants', 'fullName role originChurch avatarUrl address.city')
@@ -204,11 +213,22 @@ const getMeetingByLink = async (req, res) => {
       .populate('mutedUsers', '_id')
       .populate('videoOffUsers', '_id');
 
+    // If meeting was not found by that link/ID, fallback to active/scheduled meeting
     if (!meeting) {
-      return res.status(404).json({
-        success: false,
-        message: 'Live meeting not found with this link or ID'
-      });
+      meeting = await LiveMeeting.findOne({ status: { $in: ['LIVE', 'SCHEDULED'] } })
+        .sort({ createdAt: -1 })
+        .populate('host', 'fullName role originChurch avatarUrl')
+        .populate('waitingRoom', 'fullName role originChurch avatarUrl address.city')
+        .populate('allowedParticipants', 'fullName role originChurch avatarUrl address.city')
+        .populate('allowedMicUsers', 'fullName role originChurch avatarUrl')
+        .populate('allowedVideoUsers', 'fullName role originChurch avatarUrl')
+        .populate('mutedUsers', '_id')
+        .populate('videoOffUsers', '_id');
+    }
+
+    // If still no meeting, create default active meeting
+    if (!meeting) {
+      return getActiveMeeting(req, res);
     }
 
     return res.status(200).json({

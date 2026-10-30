@@ -149,17 +149,23 @@ const LiveMeetingStudio = () => {
 
   // 1) Fetch ICE Servers from backend (STUN + TURN)
   useEffect(() => {
+    let isMounted = true;
     const fetchIceServers = async () => {
       try {
         const res = await api.get('/live/ice-servers');
-        if (res.data?.success && Array.isArray(res.data?.iceServers)) {
+        if (isMounted && res.data?.success && Array.isArray(res.data?.iceServers)) {
           setIceServers(res.data.iceServers);
         }
       } catch (err) {
-        console.warn('[LiveStudio] Failed to load ICE servers, fallback to STUN:', err?.message);
+        // Graceful fallback to Google STUN if endpoint returns 404 or fails
+        console.warn('[LiveStudio] ICE servers endpoint unavailable, using public STUN:', err?.message);
+        if (isMounted) {
+          setIceServers(DEFAULT_STUN_SERVERS);
+        }
       }
     };
     fetchIceServers();
+    return () => { isMounted = false; };
   }, []);
 
   const rtcConfig = useMemo(() => ({
@@ -171,10 +177,30 @@ const LiveMeetingStudio = () => {
     try {
       setLoading(true);
       const meetingParam = searchParams.get('meeting');
-      const endpoint = meetingParam ? `/live/${meetingParam}` : '/live/active';
-      const res = await api.get(endpoint);
+      const validMeetingParam =
+        meetingParam &&
+        meetingParam !== 'undefined' &&
+        meetingParam !== 'null' &&
+        meetingParam.trim();
 
-      if (res.data?.success && res.data?.meeting) {
+      const endpoint = validMeetingParam
+        ? `/live/${encodeURIComponent(validMeetingParam)}`
+        : '/live/active';
+
+      let res;
+      try {
+        res = await api.get(endpoint);
+      } catch (fetchErr) {
+        // If specific meeting param returned 404, fallback to active session
+        if (validMeetingParam && fetchErr.response?.status === 404) {
+          console.warn(`[LiveStudio] Meeting '${validMeetingParam}' not found, falling back to active meeting.`);
+          res = await api.get('/live/active');
+        } else {
+          throw fetchErr;
+        }
+      }
+
+      if (res?.data?.success && res.data?.meeting) {
         const m = res.data.meeting;
         setMeeting(m);
         setComments(m.comments || []);

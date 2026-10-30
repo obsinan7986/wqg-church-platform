@@ -310,7 +310,7 @@ export const Navbar = () => {
                     {/* LIVE Alert Line (Shown only when a live meeting is running) */}
                     {liveMeeting && (
                       <Link
-                        to={user.role === 'SUPER_ADMIN' ? '/dashboard/live-studio' : '/dashboard/meetings'}
+                        to="/dashboard?tab=live"
                         onClick={() => setUserDropdownOpen(false)}
                         className="flex items-center space-x-2.5 p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-bold hover:bg-red-100 transition-colors group"
                       >
@@ -491,7 +491,7 @@ export const Navbar = () => {
               {/* LIVE Alert Banner in Mobile Drawer if active */}
               {liveMeeting && (
                 <Link
-                  to={isAuthenticated && user?.role === 'SUPER_ADMIN' ? '/dashboard/live-studio' : '/dashboard/meetings'}
+                  to="/dashboard?tab=live"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center space-x-2 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-bold"
                 >
