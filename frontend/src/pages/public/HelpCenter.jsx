@@ -177,9 +177,9 @@ const HelpCenter = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/60 pb-20 text-slate-900 print:bg-white print:p-0">
+    <div className="min-h-[100dvh] bg-slate-50/60 pb-20 text-slate-900 print:bg-white print:p-0">
       {/* ══════ HERO HEADER ══════ */}
-      <div className="bg-royal text-white py-12 px-4 sm:px-6 relative overflow-hidden print:hidden">
+      <div className="bg-royal text-white py-8 sm:py-12 px-4 sm:px-6 relative overflow-hidden print:hidden">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:16px_16px]" />
         <Container className="relative z-10 max-w-5xl space-y-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -249,7 +249,7 @@ const HelpCenter = () => {
                     ? 'Search guides, features, or troubleshooting...'
                     : 'Mata-duree ykn qajeelfama barbaadi...'
                 }
-                className="w-full pl-11 pr-4 py-3 bg-white text-slate-900 rounded-2xl text-xs sm:text-sm font-medium shadow-md focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all placeholder:text-slate-400"
+                className="w-full pl-11 pr-4 py-3 bg-white text-slate-900 rounded-2xl text-[16px] sm:text-sm font-medium shadow-md focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all placeholder:text-slate-400 min-h-[44px]"
               />
               {searchQuery && (
                 <button
@@ -305,14 +305,14 @@ const HelpCenter = () => {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-1.5 pt-1">
+          <div className="flex items-center gap-1.5 pt-1 overflow-x-auto no-scrollbar sm:flex-wrap pb-1 -mx-1 px-1">
             {CATEGORIES.map((cat) => {
               const isSelected = selectedCategory === cat.id;
               return (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`shrink-0 px-3 py-2 min-h-[38px] sm:min-h-0 rounded-xl text-xs font-bold transition-all ${
                     isSelected
                       ? 'bg-royal text-white shadow-sm'
                       : 'bg-slate-100 text-slate-700 hover:bg-slate-200/80'

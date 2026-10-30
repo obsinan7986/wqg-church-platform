@@ -12,7 +12,7 @@ export const Card = ({
     <div
       onClick={onClick}
       className={`bg-white border border-slate-200 rounded-2xl ${
-        noPadding ? 'p-0' : 'p-5 sm:p-6'
+        noPadding ? 'p-0' : 'p-4 sm:p-6'
       } shadow-sm ${
         hoverEffect ? 'hover:border-gold-500/70 hover:shadow-md transition-all duration-200' : ''
       } ${className}`}

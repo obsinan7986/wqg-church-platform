@@ -3,10 +3,19 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --sat: env(safe-area-inset-top, 0px);
+    --sar: env(safe-area-inset-right, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left, 0px);
+  }
+
   html {
     scroll-behavior: smooth;
     background-color: #FFFFFF;
     color: #0F172A;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
   
   html[lang="am"],
@@ -21,7 +30,23 @@
     color: #0F172A;
     font-family: 'Inter', 'Noto Sans Ethiopic', system-ui, sans-serif;
     min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    max-width: 100vw;
     -webkit-font-smoothing: antialiased;
+    padding-top: var(--sat);
+    padding-bottom: var(--sab);
+  }
+
+  button, a, input, select, textarea {
+    touch-action: manipulation;
+  }
+
+  /* Prevent automatic iOS zoom by ensuring minimum 16px font-size on mobile inputs */
+  @media (max-width: 640px) {
+    input, select, textarea {
+      font-size: 16px !important;
+    }
   }
 
   ::selection {
@@ -114,5 +139,25 @@
   .animate-kenburns {
     animation: none !important;
     transform: none !important;
+  }
+}
+
+/* Ensure no horizontal page scroll & safe word wrapping */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
+
+* {
+  overflow-wrap: break-word;
+}
+
+/* Mobile Table Horizontal Scroll Smoothing */
+@media (max-width: 640px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(212, 175, 55, 0.4) transparent;
   }
 }

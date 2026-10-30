@@ -564,9 +564,9 @@ const Home = () => {
             </div>
 
             {loadingEvents ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="p-5 rounded-2xl border border-slate-200 bg-white space-y-3">
+                  <div key={i} className="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-white space-y-3">
                     <div className="flex items-center space-x-3">
                       <Skeleton className="w-12 h-12 rounded-xl" />
                       <div className="flex-1 space-y-2">
@@ -579,7 +579,7 @@ const Home = () => {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                 {upcomingEvents.slice(0, 3).map((ev) => {
                   const dateBadge = getEventDateBadge(ev.startAt, currentLang, calendarPref);
                   const formattedDate = formatDual(ev.startAt);
@@ -763,9 +763,9 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 items-stretch">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch">
             {/* Card 1: Kadhannaa fi Sagalee Waaqayyoo / Sunday Service */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm hover:border-gold-500/70 hover:shadow-md transition-all h-full flex flex-col justify-between space-y-5">
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm hover:border-gold-500/70 hover:shadow-md transition-all h-full flex flex-col justify-between space-y-5">
               <div className="space-y-4">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                   <Badge variant="outline">Sunday Service</Badge>
@@ -1067,22 +1067,22 @@ const Home = () => {
 
           {/* Feature Cards */}
           <div className="space-y-8 pt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {featureCards.map((c, i) => {
                 const Icon = c.icon;
                 return (
                   <div
                     key={i}
-                    className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:border-gold-500/70 hover:shadow-md transition-all h-full flex flex-col justify-between space-y-6 group"
+                    className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm hover:border-gold-500/70 hover:shadow-md transition-all h-full flex flex-col justify-between space-y-6 group"
                   >
                     <div className="space-y-4">
                       <div className="w-12 h-12 rounded-2xl bg-royal-tint border border-gold-500/40 flex items-center justify-center text-gold-600 shadow-xs group-hover:bg-gold-500/10 transition-colors">
                         <Icon className="w-6 h-6" />
                       </div>
-                      <h3 className="font-extrabold text-base text-royal tracking-tight group-hover:text-royal-dark transition-colors">
+                      <h3 className="font-extrabold text-base text-royal tracking-tight group-hover:text-royal-dark transition-colors break-words">
                         {c.title}
                       </h3>
-                      <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                      <p className="text-xs text-slate-600 leading-relaxed font-medium break-words">
                         {c.desc}
                       </p>
                     </div>

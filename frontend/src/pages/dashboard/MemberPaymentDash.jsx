@@ -395,7 +395,7 @@ const MemberPaymentDash = () => {
         title="Kaffaltiiwwan Koo & Buusii Raawwadhu"
         subtitle="Kaffaltii haaraa dhiyeessuu, haala kaffaltii hordofuu, fi nagahee seera-qabeessa buufachuu."
         actions={
-          <div data-tour="payment-tabs" className="flex items-center space-x-2">
+          <div data-tour="payment-tabs" className="flex flex-wrap sm:flex-nowrap items-center gap-2">
             <Button
               variant={activeTab === 'list' ? 'primary' : 'outline'}
               size="sm"
@@ -502,7 +502,7 @@ const MemberPaymentDash = () => {
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-royal/20 focus:border-royal"
+                  className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-[16px] sm:text-xs text-slate-900 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-royal/20 focus:border-royal"
                 >
                   {CONTRIBUTION_TYPES.map((t) => (
                     <option key={t.value} value={t.value}>
@@ -529,7 +529,7 @@ const MemberPaymentDash = () => {
                   }}
                   className={`w-full bg-white border ${
                     formErrors.amount ? 'border-red-500' : 'border-slate-300'
-                  } rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-royal/20 focus:border-royal`}
+                  } rounded-xl px-3.5 py-2.5 text-[16px] sm:text-sm text-slate-900 font-mono min-h-[44px] focus:outline-none focus:ring-2 focus:ring-royal/20 focus:border-royal`}
                 />
                 {formErrors.amount && (
                   <p className="text-[11px] text-red-600 mt-1 font-medium">{formErrors.amount}</p>
@@ -555,7 +555,7 @@ const MemberPaymentDash = () => {
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                 Mala Kaffaltii Filadhaa (Select Payment Method) <span className="text-gold-600 font-bold">*</span>
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
                 {PAYMENT_METHODS.map((method) => {
                   const Icon = method.icon;
                   const isSelected = formData.paymentMethod === method.id;
@@ -787,93 +787,171 @@ const MemberPaymentDash = () => {
               </Button>
             </div>
           ) : (
-            <div data-tour="payment-table" className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-700">
-                <thead className="bg-royal-tint text-[11px] font-bold uppercase text-royal border-b border-slate-200">
-                  <tr>
-                    <th className="py-3 px-3">Lakk. Nagahee</th>
-                    <th className="py-3 px-3">Gosa Kaffaltii</th>
-                    <th className="py-3 px-3">Hanga (ETB)</th>
-                    <th className="py-3 px-3">Mala & Ragaa</th>
-                    <th className="py-3 px-3">Guyyaa</th>
-                    <th className="py-3 px-3">Haala (Status)</th>
-                    <th className="py-3 px-3 text-right">Gocha</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {payments.map((payment) => (
-                    <tr key={payment._id} className="hover:bg-royal-tint/30 transition-colors">
-                      {/* Receipt number */}
-                      <td className="py-3 px-3 font-mono font-bold text-royal">
-                        {payment.receiptNumber || '—'}
-                      </td>
+            <>
+              {/* Mobile Stacked Cards (< 640px) */}
+              <div className="sm:hidden space-y-3">
+                {payments.map((payment) => (
+                  <div
+                    key={payment._id}
+                    className="p-4 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3"
+                  >
+                    <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                      <div className="font-mono text-xs font-bold text-royal">
+                        {payment.receiptNumber || 'Lakk. Eeggachaa jira'}
+                      </div>
+                      <div>
+                        {renderStatusBadge(payment.status, payment.rejectionReason)}
+                      </div>
+                    </div>
 
-                      {/* Contribution Type */}
-                      <td className="py-3 px-3">
-                        <span className="font-semibold text-slate-900">{payment.type}</span>
-                        {payment.notes && (
-                          <p className="text-[10px] text-slate-500 truncate max-w-xs">{payment.notes}</p>
-                        )}
-                      </td>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xl font-black text-royal">
+                        {payment.amount?.toLocaleString()} <span className="text-xs font-bold text-slate-500">ETB</span>
+                      </span>
+                      <span className="text-xs font-bold text-slate-800 bg-royal-tint/60 px-2.5 py-1 rounded-lg">
+                        {payment.type}
+                      </span>
+                    </div>
 
-                      {/* Amount */}
-                      <td className="py-3 px-3 font-black text-sm text-royal">
-                        {payment.amount?.toLocaleString()} ETB
-                      </td>
+                    {payment.notes && (
+                      <p className="text-xs text-slate-600 italic bg-slate-50 p-2 rounded-xl">
+                        "{payment.notes}"
+                      </p>
+                    )}
 
-                      {/* Method & Ref / Screenshot */}
-                      <td className="py-3 px-3">
-                        <div className="font-semibold text-slate-900">{payment.paymentMethod}</div>
+                    <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-100 text-slate-600">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Mala Kaffaltii</span>
+                        <span className="font-semibold text-slate-800">{payment.paymentMethod}</span>
                         {payment.transactionRef && (
-                          <div className="text-[10px] font-mono text-slate-500">
+                          <div className="text-[10px] font-mono text-slate-500 truncate">
                             Ref: {payment.transactionRef}
                           </div>
                         )}
-                        {payment.proofUrl && (
-                          <button
-                            type="button"
-                            onClick={() => setLightboxUrl(payment.proofUrl)}
-                            className="mt-1 text-[10px] text-royal hover:underline flex items-center gap-1 font-semibold"
-                          >
-                            <Eye className="w-3 h-3 text-gold-600" />
-                            <span>Suuraa Ilaali</span>
-                          </button>
-                        )}
-                      </td>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Guyyaa</span>
+                        <span className="font-medium text-slate-700">
+                          {formatDual(payment.paymentDate || payment.createdAt)}
+                        </span>
+                      </div>
+                    </div>
 
-                      {/* Payment Date */}
-                      <td className="py-3 px-3 text-slate-700 text-[11px] font-medium">
-                        {formatDual(payment.paymentDate || payment.createdAt)}
-                      </td>
+                    {payment.proofUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setLightboxUrl(payment.proofUrl)}
+                        className="w-full py-2 px-3 rounded-xl bg-royal-tint text-royal text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-royal-tint/80 transition-colors"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-gold-600" />
+                        <span>Suuraa Ragaa Kaffaltii Ilaali</span>
+                      </button>
+                    )}
 
-                      {/* Status */}
-                      <td className="py-3 px-3">
-                        {renderStatusBadge(payment.status, payment.rejectionReason)}
-                      </td>
+                    {payment.status === 'PAID' && (
+                      <Button
+                        variant="outline"
+                        size="md"
+                        icon={Printer}
+                        className="w-full min-h-[44px]"
+                        onClick={() => setActiveReceipt(payment)}
+                      >
+                        Nagahee Maxxansi (Print Receipt)
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
 
-                      {/* Action */}
-                      <td className="py-3 px-3 text-right">
-                        {payment.status === 'PAID' ? (
-                          <Button
-                            data-tour="payment-receipt-btn"
-                            variant="outline"
-                            size="sm"
-                            icon={Printer}
-                            onClick={() => setActiveReceipt(payment)}
-                          >
-                            Nagahee Maxxansi
-                          </Button>
-                        ) : (
-                          <span className="text-[11px] text-slate-400 italic">
-                            {payment.status === 'PENDING' ? 'Eeggachaa jira' : 'Hin eeyyamamne'}
-                          </span>
-                        )}
-                      </td>
+              {/* Desktop/Tablet Table (>= 640px) */}
+              <div data-tour="payment-table" className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-left text-xs text-slate-700">
+                  <thead className="bg-royal-tint text-[11px] font-bold uppercase text-royal border-b border-slate-200">
+                    <tr>
+                      <th className="py-3 px-3">Lakk. Nagahee</th>
+                      <th className="py-3 px-3">Gosa Kaffaltii</th>
+                      <th className="py-3 px-3">Hanga (ETB)</th>
+                      <th className="py-3 px-3">Mala & Ragaa</th>
+                      <th className="py-3 px-3">Guyyaa</th>
+                      <th className="py-3 px-3">Haala (Status)</th>
+                      <th className="py-3 px-3 text-right">Gocha</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {payments.map((payment) => (
+                      <tr key={payment._id} className="hover:bg-royal-tint/30 transition-colors">
+                        {/* Receipt number */}
+                        <td className="py-3 px-3 font-mono font-bold text-royal">
+                          {payment.receiptNumber || '—'}
+                        </td>
+
+                        {/* Contribution Type */}
+                        <td className="py-3 px-3">
+                          <span className="font-semibold text-slate-900">{payment.type}</span>
+                          {payment.notes && (
+                            <p className="text-[10px] text-slate-500 truncate max-w-xs">{payment.notes}</p>
+                          )}
+                        </td>
+
+                        {/* Amount */}
+                        <td className="py-3 px-3 font-black text-sm text-royal">
+                          {payment.amount?.toLocaleString()} ETB
+                        </td>
+
+                        {/* Method & Ref / Screenshot */}
+                        <td className="py-3 px-3">
+                          <div className="font-semibold text-slate-900">{payment.paymentMethod}</div>
+                          {payment.transactionRef && (
+                            <div className="text-[10px] font-mono text-slate-500">
+                              Ref: {payment.transactionRef}
+                            </div>
+                          )}
+                          {payment.proofUrl && (
+                            <button
+                              type="button"
+                              onClick={() => setLightboxUrl(payment.proofUrl)}
+                              className="mt-1 text-[10px] text-royal hover:underline flex items-center gap-1 font-semibold"
+                            >
+                              <Eye className="w-3 h-3 text-gold-600" />
+                              <span>Suuraa Ilaali</span>
+                            </button>
+                          )}
+                        </td>
+
+                        {/* Payment Date */}
+                        <td className="py-3 px-3 text-slate-700 text-[11px] font-medium">
+                          {formatDual(payment.paymentDate || payment.createdAt)}
+                        </td>
+
+                        {/* Status */}
+                        <td className="py-3 px-3">
+                          {renderStatusBadge(payment.status, payment.rejectionReason)}
+                        </td>
+
+                        {/* Action */}
+                        <td className="py-3 px-3 text-right">
+                          {payment.status === 'PAID' ? (
+                            <Button
+                              data-tour="payment-receipt-btn"
+                              variant="outline"
+                              size="sm"
+                              icon={Printer}
+                              onClick={() => setActiveReceipt(payment)}
+                            >
+                              Nagahee Maxxansi
+                            </Button>
+                          ) : (
+                            <span className="text-[11px] text-slate-400 italic">
+                              {payment.status === 'PENDING' ? 'Eeggachaa jira' : 'Hin eeyyamamne'}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       )}

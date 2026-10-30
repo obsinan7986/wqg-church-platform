@@ -125,7 +125,7 @@ const MediaLibrary = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Mata-duree ykn maqaa faayiliin barbaadi..."
-                  className="w-full pl-10 pr-24 py-2.5 rounded-2xl bg-white border border-slate-300 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-royal/20 focus:border-royal transition-colors"
+                  className="w-full pl-10 pr-24 py-2.5 rounded-2xl bg-white border border-slate-300 text-[16px] sm:text-xs text-slate-900 placeholder-slate-400 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-royal/20 focus:border-royal transition-colors"
                 />
                 <Button
                   type="submit"
@@ -154,7 +154,7 @@ const MediaLibrary = () => {
             </div>
 
             {/* Category Pills */}
-            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+            <div className="flex items-center gap-2 pt-2 border-t border-slate-100 overflow-x-auto no-scrollbar sm:flex-wrap pb-1 -mx-1 px-1">
               {CATEGORIES.map((cat) => {
                 const isActive = selectedCategory === cat.id;
                 const Icon = cat.icon;
@@ -163,6 +163,7 @@ const MediaLibrary = () => {
                     key={cat.id}
                     variant={isActive ? 'primary' : 'outline'}
                     size="sm"
+                    className="shrink-0 min-h-[38px] sm:min-h-0"
                     onClick={() => setSelectedCategory(cat.id)}
                   >
                     {Icon && <Icon className="w-3.5 h-3.5 mr-1.5" />}
@@ -188,7 +189,7 @@ const MediaLibrary = () => {
               />
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {mediaList.map((doc) => {
                 const url = getMediaUrl(doc.fileUrl);
                 const isPdf = doc.fileType === 'PDF' || doc.category === 'BOOK';
@@ -200,7 +201,7 @@ const MediaLibrary = () => {
                     key={doc._id}
                     className="bg-white border border-slate-200 rounded-2xl flex flex-col justify-between overflow-hidden group hover:border-gold-500 hover:shadow-md transition-all shadow-sm"
                   >
-                    <div className="p-5 space-y-3">
+                    <div className="p-4 sm:p-5 space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2.5">
                           <div className="w-9 h-9 rounded-xl bg-royal-tint border border-gold-500/30 flex items-center justify-center text-gold-600 shadow-xs">

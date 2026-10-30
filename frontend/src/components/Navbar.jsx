@@ -196,11 +196,12 @@ export const Navbar = () => {
             </span>
 
             {/* Church Title and Ge'ez Subtitle */}
-            <div className="flex flex-col">
-              <span className="font-black text-xs sm:text-sm lg:text-[15px] tracking-wide text-white leading-tight uppercase group-hover:text-gold-300 transition-colors">
-                WALDAA ANGAFAA WAREEGAMTOOTA QULQULLUU GIYOORGISII
+            <div className="flex flex-col min-w-0">
+              <span className="font-black text-xs sm:text-sm lg:text-[15px] tracking-wide text-white leading-tight uppercase group-hover:text-gold-300 transition-colors truncate">
+                <span className="sm:hidden">W.A.W.Q. GIYOORGISII</span>
+                <span className="hidden sm:inline">WALDAA ANGAFAA WAREEGAMTOOTA QULQULLUU GIYOORGISII</span>
               </span>
-              <span className="text-gold-400 text-[11px] sm:text-xs font-semibold font-ethiopic leading-snug">
+              <span className="text-gold-400 text-[10px] sm:text-xs font-semibold font-ethiopic leading-snug truncate">
                 የቅዱስ ጊዮርጊስ ማኅበር
               </span>
             </div>
@@ -455,7 +456,7 @@ export const Navbar = () => {
           <div
             ref={mobileDrawerRef}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-xs bg-white h-full p-6 flex flex-col justify-between shadow-2xl animate-in slide-in-from-right duration-200"
+            className="w-full max-w-xs bg-white h-full h-[100dvh] p-5 sm:p-6 flex flex-col justify-between shadow-2xl animate-in slide-in-from-right duration-200 overflow-y-auto pb-safe"
             role="dialog"
             aria-modal="true"
             aria-label="Mobile Navigation Drawer"

@@ -126,30 +126,26 @@ export const DataTable = ({
           </div>
 
           {/* Mobile Card List View (< 640px) */}
-          <div className="sm:hidden p-4 space-y-3">
+          <div className="sm:hidden p-3.5 space-y-3">
             {currentData.map((row, rowIdx) => {
               const globalIdx = shouldPaginate ? startIndex + rowIdx : rowIdx;
               return (
                 <div
                   key={row._id || row.id || rowIdx}
                   onClick={() => onRowClick && onRowClick(row)}
-                  className={`p-4 rounded-xl border border-slate-200 bg-white space-y-2.5 transition-colors shadow-xs ${
+                  className={`p-3.5 rounded-xl border border-slate-200 bg-white space-y-2 transition-colors shadow-xs ${
                     onRowClick ? 'cursor-pointer active:bg-royal-tint/40' : ''
                   }`}
                 >
                   {columns.map((col, colIdx) => (
                     <div
                       key={col.key || colIdx}
-                      className="flex items-center justify-between text-xs gap-2"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-1 sm:gap-2 border-b border-slate-50 last:border-b-0 pb-1.5 last:pb-0"
                     >
-                      <span className="font-bold text-[11px] text-slate-500 uppercase tracking-wider flex-shrink-0">
+                      <span className="font-bold text-[10px] text-slate-400 uppercase tracking-wider flex-shrink-0">
                         {col.header}:
                       </span>
-                      <div
-                        className={`text-right text-slate-800 ${
-                          col.truncate ? 'truncate max-w-[200px]' : ''
-                        }`}
-                      >
+                      <div className="text-slate-800 break-words font-medium text-left sm:text-right">
                         {col.render
                           ? col.render(row[col.key], row, globalIdx)
                           : row[col.key]}

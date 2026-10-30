@@ -314,65 +314,65 @@ export const HeroSlideshow = () => {
       <button
         type="button"
         onClick={handlePrev}
-        className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 hover:bg-white text-white hover:text-royal flex items-center justify-center transition-all duration-200 shadow-md backdrop-blur-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
+        className="absolute left-1.5 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white/20 hover:bg-white text-white hover:text-royal flex items-center justify-center transition-all duration-200 shadow-md backdrop-blur-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
         aria-label="Previous slide"
       >
-        <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" aria-hidden="true" />
+        <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6" aria-hidden="true" />
       </button>
 
       <button
         type="button"
         onClick={handleNext}
-        className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 hover:bg-white text-white hover:text-royal flex items-center justify-center transition-all duration-200 shadow-md backdrop-blur-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
+        className="absolute right-1.5 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white/20 hover:bg-white text-white hover:text-royal flex items-center justify-center transition-all duration-200 shadow-md backdrop-blur-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
         aria-label="Next slide"
       >
-        <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" aria-hidden="true" />
+        <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6" aria-hidden="true" />
       </button>
 
       {/* ════════ Top Right Pause/Play Accessible Control ════════ */}
       <button
         type="button"
         onClick={() => setIsPaused((prev) => !prev)}
-        className="absolute top-4 right-4 sm:top-6 sm:right-6 z-30 p-2 sm:p-2.5 rounded-full bg-black/30 hover:bg-black/50 text-white/90 hover:text-white border border-white/20 backdrop-blur-xs transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
+        className="absolute top-3 right-3 sm:top-6 sm:right-6 z-30 p-2 sm:p-2.5 rounded-full bg-black/30 hover:bg-black/50 text-white/90 hover:text-white border border-white/20 backdrop-blur-xs transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
         aria-label={isPaused ? 'Play slideshow' : 'Pause slideshow'}
         title={isPaused ? 'Play slideshow' : 'Pause slideshow'}
       >
         {isPaused ? (
-          <Play className="w-4 h-4 text-gold-400 fill-gold-400" aria-hidden="true" />
+          <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold-400 fill-gold-400" aria-hidden="true" />
         ) : (
-          <Pause className="w-4 h-4 text-white" aria-hidden="true" />
+          <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" aria-hidden="true" />
         )}
       </button>
 
       {/* ════════ Center Slide Content (Re-keyed on index change for staggered entrance) ════════ */}
       <div
         key={currentIndex}
-        className="relative max-w-4xl mx-auto px-12 sm:px-14 lg:px-8 py-12 sm:py-16 text-center z-30 flex flex-col items-center justify-center space-y-4 sm:space-y-6"
+        className="relative max-w-4xl mx-auto px-10 sm:px-14 lg:px-8 py-8 sm:py-16 text-center z-30 flex flex-col items-center justify-center space-y-3 sm:space-y-6"
         aria-live={isPaused ? 'polite' : 'off'}
       >
         {/* Small Gold Tagline */}
-        <div className="hero-anim-tagline inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-gold-500/20 border border-gold-500/40 text-gold-400 text-[11px] sm:text-xs font-black tracking-widest uppercase">
+        <div className="hero-anim-tagline inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-gold-500/20 border border-gold-500/40 text-gold-400 text-[10px] sm:text-xs font-black tracking-widest uppercase">
           <span className="text-gold-400 select-none">†</span>
           <span>{currentSlide.tagline}</span>
         </div>
 
-        {/* Big White Heading with Highlighted Gold Word */}
-        <h1 className="hero-anim-heading text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight drop-shadow-md">
+        {/* Big White Heading with Highlighted Gold Word & Fluid clamp */}
+        <h1 className="hero-anim-heading text-[clamp(1.5rem,5.5vw,3.75rem)] font-black text-white tracking-tight leading-tight sm:leading-tight drop-shadow-md break-words">
           {currentSlide.headingPrefix}{' '}
           <span className="hero-gold-highlight">{currentSlide.highlight}</span>
           {currentSlide.headingSuffix ? ` ${currentSlide.headingSuffix}` : ''}
         </h1>
 
-        {/* Subtitle */}
-        <p className="hero-anim-subtitle text-xs sm:text-sm lg:text-base text-white/95 max-w-2xl mx-auto leading-relaxed font-medium drop-shadow-xs">
+        {/* Subtitle with fluid clamp */}
+        <p className="hero-anim-subtitle text-[clamp(0.8rem,2.8vw,1.05rem)] text-white/95 max-w-2xl mx-auto leading-relaxed font-medium drop-shadow-xs break-words">
           {currentSlide.subtitle}
         </p>
 
-        {/* Action Buttons: Primary (gold), Secondary (royal+gold), Tertiary (auth-aware) */}
-        <div className="hero-anim-actions pt-3 flex flex-wrap items-center justify-center gap-3.5 sm:gap-4">
+        {/* Action Buttons: Stacks on mobile, inline on desktop, 44px touch targets */}
+        <div className="hero-anim-actions pt-2 sm:pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-4 w-full sm:w-auto max-w-xs sm:max-w-none mx-auto">
           <Link
             to="/services"
-            className="hero-btn-primary px-6 py-3 rounded-full font-black text-xs sm:text-sm flex items-center space-x-2 shadow-lg"
+            className="hero-btn-primary px-6 py-3 rounded-full font-black text-xs sm:text-sm flex items-center justify-center space-x-2 shadow-lg min-h-[44px]"
           >
             <BookOpen className="w-4 h-4 text-royal" aria-hidden="true" />
             <span>Tajaajila Keenya</span>
@@ -381,7 +381,7 @@ export const HeroSlideshow = () => {
 
           <Link
             to="/media-library"
-            className="hero-btn-secondary px-6 py-3 rounded-full font-bold text-xs sm:text-sm flex items-center space-x-2 shadow-lg"
+            className="hero-btn-secondary px-6 py-3 rounded-full font-bold text-xs sm:text-sm flex items-center justify-center space-x-2 shadow-lg min-h-[44px]"
           >
             <Video className="w-4 h-4 text-gold-400" aria-hidden="true" />
             <span>Video Hordofaa</span>
@@ -390,7 +390,7 @@ export const HeroSlideshow = () => {
           {isAuthenticated ? (
             <Link
               to="/dashboard"
-              className="px-5 py-3 rounded-full bg-white text-royal hover:bg-slate-100 font-bold text-xs sm:text-sm flex items-center space-x-2 shadow-md hover:-translate-y-0.5 transition-all"
+              className="px-5 py-3 rounded-full bg-white text-royal hover:bg-slate-100 font-bold text-xs sm:text-sm flex items-center justify-center space-x-2 shadow-md hover:-translate-y-0.5 transition-all min-h-[44px]"
             >
               <LayoutDashboard className="w-4 h-4 text-royal" aria-hidden="true" />
               <span>Go to Dashboard</span>
@@ -398,7 +398,7 @@ export const HeroSlideshow = () => {
           ) : (
             <Link
               to="/register"
-              className="px-5 py-3 rounded-full bg-white/15 hover:bg-white text-white hover:text-royal border border-white/50 font-bold text-xs sm:text-sm flex items-center space-x-2 shadow-md hover:-translate-y-0.5 transition-all"
+              className="px-5 py-3 rounded-full bg-white/15 hover:bg-white text-white hover:text-royal border border-white/50 font-bold text-xs sm:text-sm flex items-center justify-center space-x-2 shadow-md hover:-translate-y-0.5 transition-all min-h-[44px]"
             >
               <Users className="w-4 h-4 text-gold-400" aria-hidden="true" />
               <span>Miseensa Ta'i</span>
@@ -407,9 +407,9 @@ export const HeroSlideshow = () => {
         </div>
       </div>
 
-      {/* ════════ Slide Indicators (Dots, active = gold and wider) ════════ */}
+      {/* ════════ Slide Indicators (Accessible Touch Targets) ════════ */}
       <div
-        className="absolute bottom-5 sm:bottom-7 inset-x-0 z-30 flex items-center justify-center space-x-2"
+        className="absolute bottom-4 sm:bottom-7 inset-x-0 z-30 flex items-center justify-center space-x-1 sm:space-x-2"
         role="tablist"
         aria-label="Slide indicators"
       >
@@ -423,12 +423,16 @@ export const HeroSlideshow = () => {
               onClick={() => handleGoTo(idx)}
               aria-label={`Go to slide ${idx + 1}`}
               aria-current={isActive ? 'true' : 'false'}
-              className={`h-2.5 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 ${
-                isActive
-                  ? 'w-8 bg-gold-400 shadow-sm'
-                  : 'w-2.5 bg-white/45 hover:bg-white/80'
-              }`}
-            />
+              className="p-2 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
+            >
+              <span
+                className={`h-2 rounded-full transition-all duration-300 block ${
+                  isActive
+                    ? 'w-7 sm:w-8 bg-gold-400 shadow-sm'
+                    : 'w-2 sm:w-2.5 bg-white/45 hover:bg-white/80'
+                }`}
+              />
+            </button>
           );
         })}
       </div>

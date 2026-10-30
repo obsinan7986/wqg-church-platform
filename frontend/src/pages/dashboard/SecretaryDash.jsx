@@ -403,7 +403,7 @@ const SecretaryDash = () => {
       {/* Tab 2: YouTube Gospel Media Management */}
       {activeTab === 'gospelMedia' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {mediaList.length === 0 ? (
               <div className="col-span-full">
                 <Card>

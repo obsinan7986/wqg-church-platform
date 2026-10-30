@@ -604,7 +604,7 @@ const CollectorDash = () => {
       <Toast message={errorMsg} type="error" onClose={() => setErrorMsg('')} />
 
       {/* Financial Metrics Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         <StatCard
           icon={TrendingUp}
           label="Ida'ama Qarshii Walitti Qabame"
@@ -847,123 +847,220 @@ const CollectorDash = () => {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-800">
-                <thead className="bg-royal-tint text-[11px] font-bold uppercase text-royal border-b border-slate-200">
-                  <tr>
-                    <th className="py-3 px-3">Miseensa</th>
-                    <th className="py-3 px-3">Gosa & Waldaa</th>
-                    <th className="py-3 px-3">Hanga (ETB)</th>
-                    <th className="py-3 px-3">Mala & Lakk. Dabarsaa</th>
-                    <th className="py-3 px-3">Guyyaa</th>
-                    <th className="py-3 px-3 text-center">Suuraa Nagahee</th>
-                    <th className="py-3 px-3 text-right">Gocha (Actions)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {pendingContributions.map((item) => (
-                    <tr key={item._id} className="hover:bg-royal-tint/40 transition-colors">
-                      {/* Member */}
-                      <td className="py-3 px-3">
-                        <div className="font-bold text-slate-900">
+            <>
+              {/* Mobile Stacked Cards (< 640px) */}
+              <div className="sm:hidden space-y-3">
+                {pendingContributions.map((item) => (
+                  <div
+                    key={item._id}
+                    className="p-4 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3"
+                  >
+                    <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
+                      <div>
+                        <div className="font-bold text-sm text-slate-900">
                           {item.member?.fullName || 'Miseensa'}
                         </div>
-                        <div className="text-[10px] text-slate-500 font-mono">
+                        <div className="text-[11px] text-slate-500 font-mono">
                           {item.member?.address?.phone || item.member?.phone || 'N/A'}
                         </div>
-                      </td>
+                      </div>
+                      <Badge variant="muted" size="sm">{item.type}</Badge>
+                    </div>
 
-                      {/* Type & Church */}
-                      <td className="py-3 px-3">
-                        <Badge variant="muted" size="sm">{item.type}</Badge>
-                        <div className="text-[10px] text-slate-600 mt-0.5 font-medium">
-                          {item.originChurch || item.member?.originChurch || 'Waldaa'}
-                        </div>
-                      </td>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xl font-black text-royal font-mono">
+                        {item.amount?.toLocaleString()} <span className="text-xs font-bold text-slate-500">ETB</span>
+                      </span>
+                      <span className="text-xs text-slate-600 font-medium">
+                        {item.originChurch || item.member?.originChurch || 'Waldaa'}
+                      </span>
+                    </div>
 
-                      {/* Amount */}
-                      <td className="py-3 px-3 font-black text-sm text-royal font-mono">
-                        {item.amount?.toLocaleString()} ETB
-                      </td>
-
-                      {/* Method & Reference */}
-                      <td className="py-3 px-3">
-                        <div className="font-semibold text-slate-900">{item.paymentMethod}</div>
-                        {item.transactionRef ? (
-                          <div className="text-[10px] font-mono text-royal bg-royal-tint px-1.5 py-0.5 rounded border border-slate-200 inline-block mt-0.5">
+                    <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-100 text-slate-600">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Mala Kaffaltii</span>
+                        <span className="font-semibold text-slate-800">{item.paymentMethod}</span>
+                        {item.transactionRef && (
+                          <div className="text-[10px] font-mono text-royal bg-royal-tint px-1.5 py-0.5 rounded border border-slate-200 inline-block mt-0.5 truncate max-w-full">
                             Ref: {item.transactionRef}
                           </div>
+                        )}
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Guyyaa</span>
+                        <span className="font-medium text-slate-700">
+                          {formatDual(item.paymentDate || item.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {item.notes && (
+                      <p className="text-xs text-slate-600 italic bg-slate-50 p-2 rounded-xl">
+                        "{item.notes}"
+                      </p>
+                    )}
+
+                    {item.proofUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setLightboxUrl(item.proofUrl)}
+                        className="w-full py-2 px-3 rounded-xl bg-royal-tint text-royal text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-royal-tint/80 transition-colors"
+                      >
+                        <ZoomIn className="w-3.5 h-3.5 text-gold-600" />
+                        <span>Suuraa Nagahee Ilaali</span>
+                      </button>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <button
+                        type="button"
+                        disabled={reviewingId === item._id}
+                        onClick={() => handleApprovePayment(item)}
+                        className="w-full min-h-[44px] py-2.5 px-3 rounded-xl bg-gold-500 hover:bg-gold-600 text-royal font-black text-xs flex items-center justify-center space-x-1.5 transition-all shadow-sm disabled:opacity-50"
+                      >
+                        {reviewingId === item._id ? (
+                          <Spinner size="sm" />
                         ) : (
-                          <span className="text-[10px] text-slate-400 italic">No ref</span>
+                          <>
+                            <Check className="w-4 h-4" />
+                            <span>Mirkaneessi</span>
+                          </>
                         )}
-                        {item.notes && (
-                          <p className="text-[10px] text-slate-500 truncate max-w-[140px]">{item.notes}</p>
-                        )}
-                      </td>
+                      </button>
 
-                      {/* Date */}
-                      <td className="py-3 px-3 text-slate-700 text-[11px] font-medium">
-                        {formatDual(item.paymentDate || item.createdAt)}
-                      </td>
+                      <button
+                        type="button"
+                        disabled={reviewingId === item._id}
+                        onClick={() => handleOpenRejectDialog(item)}
+                        className="w-full min-h-[44px] py-2.5 px-3 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold text-xs flex items-center justify-center space-x-1.5 transition-all"
+                      >
+                        <X className="w-4 h-4" />
+                        <span>Didi (Reject)</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-                      {/* Screenshot thumbnail */}
-                      <td className="py-3 px-3 text-center">
-                        {item.proofUrl ? (
-                          <button
-                            type="button"
-                            onClick={() => setLightboxUrl(item.proofUrl)}
-                            className="group relative inline-block rounded-xl overflow-hidden border border-slate-200 hover:border-gold-400 transition-all shadow-sm"
-                            title="Suuraa guutuu ilaaluuf cuqaasaa"
-                          >
-                            <img
-                              src={item.proofUrl}
-                              alt="Payment proof thumbnail"
-                              className="w-12 h-12 object-cover"
-                            />
-                            <div className="absolute inset-0 bg-royal/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                              <ZoomIn className="w-4 h-4 text-white" />
-                            </div>
-                          </button>
-                        ) : (
-                          <span className="text-[10px] text-slate-400 italic">Suuraan hin jiru</span>
-                        )}
-                      </td>
-
-                      {/* Action buttons */}
-                      <td className="py-3 px-3 text-right">
-                        <div className="flex items-center justify-end space-x-2">
-                          <button
-                            type="button"
-                            disabled={reviewingId === item._id}
-                            onClick={() => handleApprovePayment(item)}
-                            className="px-3 py-1.5 rounded-xl bg-gold-500 hover:bg-gold-600 text-royal font-black text-xs flex items-center space-x-1 transition-all shadow-sm disabled:opacity-50"
-                          >
-                            {reviewingId === item._id ? (
-                              <Spinner size="sm" />
-                            ) : (
-                              <>
-                                <Check className="w-3.5 h-3.5" />
-                                <span>Mirkaneessi</span>
-                              </>
-                            )}
-                          </button>
-
-                          <button
-                            type="button"
-                            disabled={reviewingId === item._id}
-                            onClick={() => handleOpenRejectDialog(item)}
-                            className="px-2.5 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold text-xs flex items-center space-x-1 transition-all"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                            <span>Didi</span>
-                          </button>
-                        </div>
-                      </td>
+              {/* Desktop/Tablet Table (>= 640px) */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-left text-xs text-slate-800">
+                  <thead className="bg-royal-tint text-[11px] font-bold uppercase text-royal border-b border-slate-200">
+                    <tr>
+                      <th className="py-3 px-3">Miseensa</th>
+                      <th className="py-3 px-3">Gosa & Waldaa</th>
+                      <th className="py-3 px-3">Hanga (ETB)</th>
+                      <th className="py-3 px-3">Mala & Lakk. Dabarsaa</th>
+                      <th className="py-3 px-3">Guyyaa</th>
+                      <th className="py-3 px-3 text-center">Suuraa Nagahee</th>
+                      <th className="py-3 px-3 text-right">Gocha (Actions)</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {pendingContributions.map((item) => (
+                      <tr key={item._id} className="hover:bg-royal-tint/40 transition-colors">
+                        {/* Member */}
+                        <td className="py-3 px-3">
+                          <div className="font-bold text-slate-900">
+                            {item.member?.fullName || 'Miseensa'}
+                          </div>
+                          <div className="text-[10px] text-slate-500 font-mono">
+                            {item.member?.address?.phone || item.member?.phone || 'N/A'}
+                          </div>
+                        </td>
+
+                        {/* Type & Church */}
+                        <td className="py-3 px-3">
+                          <Badge variant="muted" size="sm">{item.type}</Badge>
+                          <div className="text-[10px] text-slate-600 mt-0.5 font-medium">
+                            {item.originChurch || item.member?.originChurch || 'Waldaa'}
+                          </div>
+                        </td>
+
+                        {/* Amount */}
+                        <td className="py-3 px-3 font-black text-sm text-royal font-mono">
+                          {item.amount?.toLocaleString()} ETB
+                        </td>
+
+                        {/* Method & Reference */}
+                        <td className="py-3 px-3">
+                          <div className="font-semibold text-slate-900">{item.paymentMethod}</div>
+                          {item.transactionRef ? (
+                            <div className="text-[10px] font-mono text-royal bg-royal-tint px-1.5 py-0.5 rounded border border-slate-200 inline-block mt-0.5">
+                              Ref: {item.transactionRef}
+                            </div>
+                          ) : (
+                            <span className="text-[10px] text-slate-400 italic">No ref</span>
+                          )}
+                          {item.notes && (
+                            <p className="text-[10px] text-slate-500 truncate max-w-[140px]">{item.notes}</p>
+                          )}
+                        </td>
+
+                        {/* Date */}
+                        <td className="py-3 px-3 text-slate-700 text-[11px] font-medium">
+                          {formatDual(item.paymentDate || item.createdAt)}
+                        </td>
+
+                        {/* Screenshot thumbnail */}
+                        <td className="py-3 px-3 text-center">
+                          {item.proofUrl ? (
+                            <button
+                              type="button"
+                              onClick={() => setLightboxUrl(item.proofUrl)}
+                              className="group relative inline-block rounded-xl overflow-hidden border border-slate-200 hover:border-gold-400 transition-all shadow-sm"
+                              title="Suuraa guutuu ilaaluuf cuqaasaa"
+                            >
+                              <img
+                                src={item.proofUrl}
+                                alt="Payment proof thumbnail"
+                                className="w-12 h-12 object-cover"
+                              />
+                              <div className="absolute inset-0 bg-royal/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                <ZoomIn className="w-4 h-4 text-white" />
+                              </div>
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-slate-400 italic">Suuraan hin jiru</span>
+                          )}
+                        </td>
+
+                        {/* Action buttons */}
+                        <td className="py-3 px-3 text-right">
+                          <div className="flex items-center justify-end space-x-2">
+                            <button
+                              type="button"
+                              disabled={reviewingId === item._id}
+                              onClick={() => handleApprovePayment(item)}
+                              className="px-3 py-1.5 rounded-xl bg-gold-500 hover:bg-gold-600 text-royal font-black text-xs flex items-center space-x-1 transition-all shadow-sm disabled:opacity-50"
+                            >
+                              {reviewingId === item._id ? (
+                                <Spinner size="sm" />
+                              ) : (
+                                <>
+                                  <Check className="w-3.5 h-3.5" />
+                                  <span>Mirkaneessi</span>
+                                </>
+                              )}
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={reviewingId === item._id}
+                              onClick={() => handleOpenRejectDialog(item)}
+                              className="px-2.5 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold text-xs flex items-center space-x-1 transition-all"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                              <span>Didi</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </Card>
       )}

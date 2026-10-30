@@ -475,30 +475,31 @@ const DashboardLayout = () => {
   return (
     <div className="min-h-screen bg-white text-slate-900 flex flex-col">
       {/* ══════ TOP HEADER (Matches Navbar: Royal Blue, Gold, White) ══════ */}
-      <header className="sticky top-0 z-40 bg-royal text-white border-b border-royal-dark/40 shadow-sm h-16 flex items-center justify-between px-4 sm:px-6">
-        <div className="flex items-center space-x-3.5">
+      <header className="sticky top-0 z-40 bg-royal text-white border-b border-royal-dark/40 shadow-sm h-14 sm:h-16 flex items-center justify-between px-3 sm:px-6">
+        <div className="flex items-center space-x-2.5 sm:space-x-3.5 min-w-0">
           {/* Mobile Hamburger Button */}
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="md:hidden p-2 rounded-xl bg-royal-dark border border-gold-500/30 text-white hover:text-gold-400"
+            className="md:hidden p-2 rounded-xl bg-royal-dark border border-gold-500/30 text-white hover:text-gold-400 min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0"
             aria-label="Toggle navigation drawer"
           >
             {mobileSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
           {/* Logo & Church Name */}
-          <Link to="/" className="flex items-center space-x-3 group flex-shrink-0 select-none">
+          <Link to="/" className="flex items-center space-x-2 sm:space-x-3 group min-w-0 select-none">
             <img
               src="/logo-walda.jpg"
               alt="Logo"
-              className="w-10 h-10 rounded-full border-2 border-gold-500 shadow-md object-cover"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-gold-500 shadow-md object-cover shrink-0"
             />
-            <span className="text-gold-500 text-xl font-serif leading-none select-none">†</span>
-            <div className="flex flex-col">
-              <span className="font-black text-xs sm:text-sm tracking-wide text-white leading-tight uppercase group-hover:text-gold-300 transition-colors">
-                WALDAA AMANTOOTA QULQULLUU GIYOORGISII
+            <span className="text-gold-500 text-lg sm:text-xl font-serif leading-none select-none shrink-0">†</span>
+            <div className="flex flex-col min-w-0">
+              <span className="font-black text-xs sm:text-sm tracking-wide text-white leading-tight uppercase group-hover:text-gold-300 transition-colors truncate">
+                <span className="sm:hidden">W.A.W.Q. GIYOORGISII</span>
+                <span className="hidden sm:inline">WALDAA AMANTOOTA QULQULLUU GIYOORGISII</span>
               </span>
-              <span className="text-[11px] text-gold-400 font-semibold font-ethiopic leading-snug">
+              <span className="text-[10px] sm:text-[11px] text-gold-400 font-semibold font-ethiopic leading-snug truncate">
                 የቅዱስ ጊዮርጊስ ማኅበር
               </span>
             </div>
@@ -700,20 +701,26 @@ const DashboardLayout = () => {
           </div>
         </aside>
 
-        {/* Mobile Slide-in Drawer Sidebar */}
+        {/* Mobile Slide-in Drawer Sidebar with Overlay */}
         {mobileSidebarOpen && (
-          <div className="md:hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex">
-            <div className="w-72 bg-royal border-r border-royal-dark/60 h-full p-4 flex flex-col justify-between overflow-y-auto animate-in slide-in-from-left duration-200 text-white">
+          <div
+            className="md:hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex animate-in fade-in duration-200"
+            onClick={() => setMobileSidebarOpen(false)}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-72 max-w-[82vw] bg-royal border-r border-royal-dark/60 h-full h-[100dvh] p-4 flex flex-col justify-between overflow-y-auto animate-in slide-in-from-left duration-200 text-white shadow-2xl pb-safe"
+            >
               <div className="space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-royal-dark/60">
                   <div className="flex items-center space-x-2">
-                    <img src="/logo-walda.jpg" alt="Logo" className="w-7 h-7 rounded-full border-2 border-gold-500 object-cover" />
+                    <img src="/logo-walda.jpg" alt="Logo" className="w-8 h-8 rounded-full border-2 border-gold-500 object-cover" />
                     <span className="font-black text-xs text-white uppercase tracking-wider">Dashboard</span>
                   </div>
                   <button
                     onClick={() => setMobileSidebarOpen(false)}
                     aria-label="Cufi (Close navigation drawer)"
-                    className="p-1 text-white/70 hover:text-white"
+                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-white/70 hover:text-white hover:bg-royal-dark transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -795,7 +802,7 @@ const DashboardLayout = () => {
           {activeTab === 'overview' && (
             <div className="space-y-6">
               {/* 1. Welcome Hero Banner */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-8 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
                 {/* Left Column: Greeting, User Name, Role Chip + Language Chip */}
                 <div className="md:col-span-5 flex items-start space-x-4">
                   <span className="text-gold-600 text-3xl font-serif leading-none mt-1 select-none">
@@ -847,7 +854,7 @@ const DashboardLayout = () => {
               </div>
 
               {/* 2. 4 Metric Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
                 <StatCard
                   icon={Users}
                   label="Miseensota Hawaasaa"
@@ -881,7 +888,7 @@ const DashboardLayout = () => {
               {/* 3. Two-Column Section lg:grid-cols-2 (Profile Information + Latest Announcements) */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Column 1: Profile Information Card */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5 flex flex-col justify-between">
+                <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm space-y-5 flex flex-col justify-between">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                       <div className="flex items-center space-x-2 font-black text-sm text-royal">
@@ -959,7 +966,7 @@ const DashboardLayout = () => {
                 </div>
 
                 {/* Column 2: Latest Announcements DataTable */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+                <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
                   <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                     <div className="flex items-center space-x-2 font-black text-sm text-royal">
                       <Megaphone className="w-4 h-4 text-gold-600" />

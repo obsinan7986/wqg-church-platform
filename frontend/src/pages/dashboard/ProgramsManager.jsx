@@ -1196,6 +1196,10 @@ export const ProgramsManager = () => {
             />
           ) : (
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+              <div className="sm:hidden text-[11px] text-slate-500 font-semibold px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <span>👉 Tarree guutuu arguuf dhiibaa (Swipe to scroll)</span>
+                <span className="text-royal font-bold">⟷</span>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs text-slate-700">
                   <thead className="bg-slate-50 border-b border-slate-200 text-[11px] uppercase font-bold text-slate-500">
@@ -1332,6 +1336,10 @@ export const ProgramsManager = () => {
             />
           ) : (
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+              <div className="sm:hidden text-[11px] text-slate-500 font-semibold px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <span>👉 Tarree guutuu arguuf dhiibaa (Swipe to scroll)</span>
+                <span className="text-royal font-bold">⟷</span>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs text-slate-700">
                   <thead className="bg-slate-50 border-b border-slate-200 text-[11px] uppercase font-bold text-slate-500">
@@ -1485,6 +1493,10 @@ export const ProgramsManager = () => {
 
           {/* Schedule Table */}
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="sm:hidden text-[11px] text-slate-500 font-semibold px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <span>👉 Tarree guutuu arguuf dhiibaa (Swipe to scroll)</span>
+              <span className="text-royal font-bold">⟷</span>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-700">
                 <thead className="bg-slate-50 border-b border-slate-200 text-[11px] uppercase font-bold text-slate-500">

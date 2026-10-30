@@ -176,11 +176,11 @@ const MessagingCenter = () => {
   const isExecutive = EXEC_ROLES.includes(user?.role);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden flex flex-col h-[700px]">
+    <div className="bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden flex flex-col h-[calc(100dvh-180px)] min-h-[480px] max-h-[750px]">
       {/* Header Tabs */}
-      <div className="bg-royal text-white border-b border-royal-dark px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-royal text-white border-b border-royal-dark px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-royal-tint/20 border border-gold-400 flex items-center justify-center text-gold-300 shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-royal-tint/20 border border-gold-400 flex items-center justify-center text-gold-300 shadow-sm shrink-0">
             <MessageSquare className="w-5 h-5" />
           </div>
           <div>
@@ -195,28 +195,28 @@ const MessagingCenter = () => {
         </div>
 
         {/* Tab Switcher Buttons */}
-        <div className="flex items-center space-x-2 bg-royal-dark/80 p-1 rounded-xl border border-white/10 text-xs font-bold">
+        <div className="flex w-full sm:w-auto items-center space-x-1 sm:space-x-2 bg-royal-dark/80 p-1 rounded-xl border border-white/10 text-xs font-bold">
           <button
             onClick={() => setActiveTab('exec')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg transition-all ${
+            className={`flex-1 sm:flex-none justify-center flex items-center space-x-1.5 sm:space-x-2 px-3 py-2 min-h-[44px] rounded-lg transition-all ${
               activeTab === 'exec'
                 ? 'bg-gold-500 text-royal font-black shadow-md'
                 : 'text-white/80 hover:text-white'
             }`}
           >
-            <Shield className="w-3.5 h-3.5" />
-            <span>Ergaa Hooggansaa (5-Actors)</span>
+            <Shield className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Ergaa Hooggansaa</span>
           </button>
           <button
             onClick={() => setActiveTab('broadcast')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg transition-all ${
+            className={`flex-1 sm:flex-none justify-center flex items-center space-x-1.5 sm:space-x-2 px-3 py-2 min-h-[44px] rounded-lg transition-all ${
               activeTab === 'broadcast'
                 ? 'bg-gold-500 text-royal font-black shadow-md'
                 : 'text-white/80 hover:text-white'
             }`}
           >
-            <Radio className="w-3.5 h-3.5" />
-            <span>Beeksisoota Waliigalaa (Broadcast)</span>
+            <Radio className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Beeksisoota (Broadcast)</span>
           </button>
         </div>
       </div>
@@ -340,7 +340,7 @@ const MessagingCenter = () => {
                 value={execInput}
                 onChange={(e) => setExecInput(e.target.value)}
                 placeholder="Ergaa hooggansaa icciitii asitti barreessaa..."
-                className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal/30 text-sm"
+                className="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 sm:px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal/30 text-[16px] sm:text-sm min-h-[44px]"
               />
               <Button
                 type="submit"
@@ -428,7 +428,7 @@ const MessagingCenter = () => {
                 value={broadcastInput}
                 onChange={(e) => setBroadcastInput(e.target.value)}
                 placeholder="Dhaamsa ykn beeksisa amantoota hundaaf dabarsaa..."
-                className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal/30 text-sm"
+                className="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 sm:px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal/30 text-[16px] sm:text-sm min-h-[44px]"
               />
               <Button
                 type="submit"

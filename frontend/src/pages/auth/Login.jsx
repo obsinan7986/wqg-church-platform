@@ -57,7 +57,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center text-slate-900">
+    <div className="min-h-[100dvh] bg-white py-6 sm:py-12 px-3 sm:px-6 flex flex-col justify-center items-center text-slate-900">
       <div className="max-w-md w-full space-y-6">
         {/* Error Alert */}
         {errorMsg && (
@@ -69,7 +69,7 @@ const Login = () => {
         )}
 
         {/* Main Login Card */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 sm:p-10 shadow-xl space-y-6">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-10 shadow-xl space-y-6">
           <div className="text-center mb-6 space-y-3">
             {/* 96px Round Logo with Gold Border */}
             {!logoFailed ? (
@@ -126,13 +126,13 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Jecha icciitii keessan galchaa"
                   required
-                  className="w-full pl-10 pr-10 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-royal/20 focus:border-royal text-xs transition-all"
+                  className="w-full pl-10 pr-12 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-royal/20 focus:border-royal text-[16px] sm:text-xs min-h-[44px] transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? 'Jecha icciitii dhoksi (Hide password)' : 'Jecha icciitii agarsiisi (Show password)'}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-700 transition-colors"
+                  className="absolute inset-y-0 right-0 px-3.5 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors min-w-[44px] min-h-[44px]"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -144,7 +144,7 @@ const Login = () => {
               data-tour="login-submit"
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-royal hover:bg-royal-dark active:scale-[0.98] text-white font-bold transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed select-none text-sm"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 min-h-[44px] rounded-xl bg-royal hover:bg-royal-dark active:scale-[0.98] text-white font-bold transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed select-none text-sm"
             >
               {isSubmitting ? (
                 <>

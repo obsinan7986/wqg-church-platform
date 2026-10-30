@@ -107,7 +107,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center text-slate-900">
+    <div className="min-h-[100dvh] bg-white py-6 sm:py-12 px-3 sm:px-6 flex flex-col justify-center items-center text-slate-900">
       <div className="max-w-xl w-full space-y-6">
         {/* Header with Church Logo */}
         <div className="text-center space-y-2">
@@ -136,7 +136,7 @@ const Register = () => {
         )}
 
         {/* Register Form */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xl">
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-8 shadow-xl">
           <form className="space-y-4" onSubmit={handleSubmit}>
             {/* Full Name */}
             <FormField
@@ -166,7 +166,7 @@ const Register = () => {
                   value={formData.originChurch}
                   onChange={handleChange}
                   placeholder={t('auth.originChurchPlaceholder')}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-royal/20 focus:border-royal text-xs transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-royal/20 focus:border-royal text-[16px] sm:text-xs min-h-[44px] transition-all"
                 />
                 <datalist id="branch-list">
                   {branchSuggestions.map((b, i) => (
@@ -230,7 +230,7 @@ const Register = () => {
                     onChange={handleChange}
                     placeholder="Min. 6 chars"
                     required
-                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-royal/20 focus:border-royal text-xs transition-all"
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-royal/20 focus:border-royal text-[16px] sm:text-xs min-h-[44px] transition-all"
                   />
                 </div>
               </div>
@@ -250,12 +250,13 @@ const Register = () => {
                     onChange={handleChange}
                     placeholder="Repeat password"
                     required
-                    className="w-full pl-10 pr-10 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-royal/20 focus:border-royal text-xs transition-all"
+                    className="w-full pl-10 pr-12 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-royal/20 focus:border-royal text-[16px] sm:text-xs min-h-[44px] transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700"
+                    aria-label={showPassword ? 'Jecha icciitii dhoksi' : 'Jecha icciitii agarsiisi'}
+                    className="absolute inset-y-0 right-0 px-3.5 flex items-center justify-center text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px]"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>

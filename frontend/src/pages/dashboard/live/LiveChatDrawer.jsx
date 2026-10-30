@@ -143,13 +143,13 @@ const LiveChatDrawer = ({
           value={commentInput}
           onChange={(e) => onCommentInputChange(e.target.value)}
           placeholder="Yaada keessan asitti barreessaa..."
-          className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal/30"
+          className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-[16px] sm:text-xs min-h-[44px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal/30"
         />
         <button
           type="submit"
           disabled={isSendingComment || !commentInput.trim()}
           aria-label="Send comment"
-          className="p-2.5 rounded-xl bg-gold-500 hover:bg-gold-600 active:scale-95 disabled:opacity-50 text-royal font-black transition-all shadow-md shrink-0"
+          className="w-11 h-11 rounded-xl bg-gold-500 hover:bg-gold-600 active:scale-95 disabled:opacity-50 text-royal font-black transition-all shadow-md shrink-0 flex items-center justify-center min-h-[44px] min-w-[44px]"
         >
           <Send className="w-4 h-4 text-royal" />
         </button>
@@ -162,7 +162,7 @@ const LiveChatDrawer = ({
     return (
       <div className="fixed inset-0 z-50 flex flex-col justify-end bg-slate-950/60 backdrop-blur-sm lg:hidden animate-in fade-in">
         <div
-          className="bg-white rounded-t-3xl max-h-[75vh] h-[520px] w-full p-4 flex flex-col shadow-2xl border-t border-slate-200 animate-in slide-in-from-bottom"
+          className="bg-white rounded-t-3xl max-h-[85dvh] h-[520px] w-full p-4 pb-safe flex flex-col shadow-2xl border-t border-slate-200 animate-in slide-in-from-bottom"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Bottom sheet drag indicator */}

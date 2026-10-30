@@ -23,7 +23,7 @@ export const FormField = forwardRef(({
 }, ref) => {
   const inputId = id || name;
   const hasAsterisk = typeof label === 'string' && label.includes('*');
-  const baseInputStyles = `w-full bg-white border rounded-xl px-3.5 py-2.5 text-slate-900 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-royal focus-visible:ring-2 focus-visible:ring-royal/20 transition-all disabled:opacity-50 disabled:bg-slate-100 disabled:cursor-not-allowed ${
+  const baseInputStyles = `w-full bg-white border rounded-xl px-3.5 py-2.5 text-slate-900 placeholder-slate-400 text-[16px] sm:text-sm min-h-[44px] focus:outline-none focus:border-royal focus-visible:ring-2 focus-visible:ring-royal/20 transition-all disabled:opacity-50 disabled:bg-slate-100 disabled:cursor-not-allowed ${
     error ? 'border-red-500 focus:border-red-600 focus-visible:ring-red-200' : 'border-slate-300'
   } ${Icon ? 'pl-10' : ''} ${className}`;
 
