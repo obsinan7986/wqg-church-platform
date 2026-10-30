@@ -3,6 +3,8 @@ import {
   Shield,
   VolumeX,
   Volume2,
+  Mic,
+  MicOff,
   Video,
   VideoOff,
   UserCheck,
