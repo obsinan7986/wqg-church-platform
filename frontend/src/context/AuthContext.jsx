@@ -6,11 +6,22 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('wqg_user');
-    return savedUser ? JSON.parse(savedUser) : null;
+    try {
+      const savedUser = localStorage.getItem('wqg_user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
   });
   const [token, setToken] = useState(() => localStorage.getItem('wqg_token') || null);
-  const [loading, setLoading] = useState(true);
+  // Stale-while-revalidate: if we already have a cached token and user in localStorage,
+  // do not block the UI with a full-screen loading spinner. Revalidate in the background.
+  const [loading, setLoading] = useState(() => {
+    const storedToken = localStorage.getItem('wqg_token');
+    const storedUser = localStorage.getItem('wqg_user');
+    if (!storedToken) return false;
+    return !storedUser;
+  });
 
   // Validate session on initialization
   useEffect(() => {

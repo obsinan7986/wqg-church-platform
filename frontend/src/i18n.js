@@ -98,21 +98,37 @@ export const applySiteTextOverrides = (overrides) => {
   i18n.emit('languageChanged', i18n.language);
 };
 
+let inFlightFetch = null;
+let lastFetchedAt = 0;
+const CACHE_TTL_MS = 60 * 1000; // 1 minute in-memory cache
+
 /**
  * Fetches overrides from GET /api/site-text and merges them into i18next
  */
 export const fetchAndApplySiteTextOverrides = async () => {
-  try {
-    const res = await api.get('/site-text');
-    if (res.data?.success && Array.isArray(res.data.data)) {
-      applySiteTextOverrides(res.data.data);
-      return res.data.data;
-    }
-  } catch (err) {
-    // Non-blocking fallback to default bundled JSONs
-    console.debug('[i18n] Fallback to default translations:', err.message);
+  if (inFlightFetch) return inFlightFetch;
+  if (Date.now() - lastFetchedAt < CACHE_TTL_MS) {
+    return Promise.resolve([]);
   }
-  return [];
+
+  inFlightFetch = (async () => {
+    try {
+      const res = await api.get('/site-text', { timeout: 6000 });
+      if (res.data?.success && Array.isArray(res.data.data)) {
+        applySiteTextOverrides(res.data.data);
+        lastFetchedAt = Date.now();
+        return res.data.data;
+      }
+    } catch (err) {
+      // Non-blocking fallback to default bundled JSONs
+      console.debug('[i18n] Fallback to default translations:', err?.message || err);
+    } finally {
+      inFlightFetch = null;
+    }
+    return [];
+  })();
+
+  return inFlightFetch;
 };
 
 // Automatically attempt to fetch and merge overrides on initial script load

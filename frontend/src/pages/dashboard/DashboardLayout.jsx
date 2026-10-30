@@ -241,9 +241,10 @@ const DashboardLayout = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Fetch real data for Overview tab
+  // Fetch real data for Overview tab (only when active tab is overview)
   useEffect(() => {
     if (!isAuthenticated || !user) return;
+    if (activeTab !== 'overview') return;
 
     const fetchDashboardData = async () => {
       try {
@@ -309,7 +310,7 @@ const DashboardLayout = () => {
     };
 
     fetchDashboardData();
-  }, [isAuthenticated, user, i18n.language]);
+  }, [isAuthenticated, user, i18n.language, activeTab]);
 
   if (loading) {
     return <LoadingScreen label="Loading your profile..." />;
