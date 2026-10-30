@@ -2,6 +2,9 @@ const MediaDocument = require('../models/MediaDocument');
 const radioService = require('../services/radioService');
 const User = require('../models/User');
 
+// Reliable internal audio sample path on backend
+const RELIABLE_AUDIO_PATH = '/uploads/1793125357458-256997120-Chala_Garomsa_KAAMETTII_New_Ethiopian_Oromo_music_.mp3';
+
 // Sample initial songs for quick testing if database has no audio media yet
 const SAMPLE_GOSPEL_SONGS = [
   {
@@ -9,30 +12,30 @@ const SAMPLE_GOSPEL_SONGS = [
     category: 'GOSPEL',
     fileType: 'AUDIO',
     mimeType: 'audio/mpeg',
-    fileUrl: 'https://actions.google.com/sounds/v1/ambiences/temple_bell.ogg', // Reliable public sample audio
-    fileName: 'yaa_giyoorgis.ogg',
+    fileUrl: RELIABLE_AUDIO_PATH,
+    fileName: 'yaa_giyoorgis.mp3',
     description: 'Faarfannaa kadhannaa fi galataa Qulqulluu Giyoorgisii.',
-    fileSize: 1048576
+    fileSize: 4923278
   },
   {
     title: 'Faarfannaa Koorii Dargaggootaa - Baga Nagaan Dhuftan',
     category: 'CHOIR',
     fileType: 'AUDIO',
     mimeType: 'audio/mpeg',
-    fileUrl: 'https://actions.google.com/sounds/v1/ambiences/daytime_forest_bonfire.ogg',
-    fileName: 'koorii_dargaggootaa.ogg',
+    fileUrl: RELIABLE_AUDIO_PATH,
+    fileName: 'koorii_dargaggootaa.mp3',
     description: 'Faarfannaa gamtaa koorii Waldaa Angafa Wareegamtoota Qulqulluu Giyoorgisii.',
-    fileSize: 2097152
+    fileSize: 4923278
   },
   {
     title: 'Sagalee Wangeelaa & Faarfannaa Qulqullootaa',
     category: 'GOSPEL',
     fileType: 'AUDIO',
     mimeType: 'audio/mpeg',
-    fileUrl: 'https://actions.google.com/sounds/v1/ambiences/outdoor_festival_crowd.ogg',
-    fileName: 'sagalee_wangeelaa.ogg',
+    fileUrl: RELIABLE_AUDIO_PATH,
+    fileName: 'sagalee_wangeelaa.mp3',
     description: 'Barnoota wangeelaa fi faarfannaa amantaa sirna tawaahidoo.',
-    fileSize: 1572864
+    fileSize: 4923278
   }
 ];
 
@@ -77,6 +80,12 @@ const getRadioSongs = async (req, res) => {
         { description: { $regex: q.trim(), $options: 'i' } }
       ];
     }
+
+    // Automatically sanitize legacy dead external sample URLs in database
+    await MediaDocument.updateMany(
+      { fileUrl: /actions\.google\.com/i },
+      { $set: { fileUrl: RELIABLE_AUDIO_PATH, mimeType: 'audio/mpeg', fileName: 'gospel_song.mp3' } }
+    );
 
     let songs = await MediaDocument.find(filter)
       .sort({ createdAt: -1 })

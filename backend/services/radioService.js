@@ -75,6 +75,15 @@ class RadioService {
             ? state.queue.map((q) => ({ ...q, url: resolveServerMediaUrl(q.url) }))
             : []
         };
+
+        // Ensure any dead actions.google.com URLs are sanitized immediately
+        if (this.nowPlaying.url && /actions\.google\.com/i.test(this.nowPlaying.url)) {
+          this.nowPlaying.url = resolveServerMediaUrl('/uploads/1793125357458-256997120-Chala_Garomsa_KAAMETTII_New_Ethiopian_Oromo_music_.mp3');
+          await RadioState.updateMany(
+            { url: /actions\.google\.com/i },
+            { $set: { url: this.nowPlaying.url } }
+          ).catch(() => {});
+        }
       }
       this.initialized = true;
       console.log('[RadioService] Initialized radio state:', this.nowPlaying.title || '(idle)');

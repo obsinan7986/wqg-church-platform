@@ -27,6 +27,7 @@ export default function GospelRadioMiniPlayer() {
     setUserVolume,
     autoplayBlocked,
     unlockAutoplay,
+    retryPlayback,
     loadError,
     currentTime,
     isStaff
@@ -97,8 +98,8 @@ export default function GospelRadioMiniPlayer() {
               {loadError}
             </span>
             <button
-              onClick={() => window.location.reload()}
-              className="text-[11px] underline hover:text-rose-100 ml-2"
+              onClick={retryPlayback}
+              className="text-[11px] font-semibold underline hover:text-rose-100 ml-2 py-1 px-2 rounded hover:bg-white/10 transition-colors"
             >
               Irra deebi'i (Retry)
             </button>

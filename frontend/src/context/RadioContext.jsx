@@ -141,10 +141,27 @@ export const RadioProvider = ({ children }) => {
       if (state.isPlaying) {
         if (isListeningRef.current) {
           try {
-            // Apply drift seek if difference > 0.8s
-            if (Math.abs(audio.currentTime - targetPos) > 0.8) {
-              audio.currentTime = targetPos;
+            // Apply drift seek if difference > 0.8s and audio is ready to seek
+            if (audio.readyState >= 1 && !Number.isNaN(targetPos) && targetPos > 0) {
+              try {
+                if (Math.abs(audio.currentTime - targetPos) > 0.8) {
+                  audio.currentTime = targetPos;
+                }
+              } catch (seekErr) {
+                console.warn('[Gospel Radio] Safe seek skipped:', seekErr);
+              }
+            } else if (targetPos > 0) {
+              // Wait for metadata loaded to set position
+              const onMeta = () => {
+                try {
+                  if (audio.duration && targetPos < audio.duration) {
+                    audio.currentTime = targetPos;
+                  }
+                } catch {}
+              };
+              audio.addEventListener('loadedmetadata', onMeta, { once: true });
             }
+
             audio.volume = userVolume;
             const playPromise = audio.play();
             if (playPromise !== undefined) {
@@ -168,8 +185,10 @@ export const RadioProvider = ({ children }) => {
       } else {
         // Paused or stopped
         audio.pause();
-        if (state.pausedAt) {
-          audio.currentTime = targetPos;
+        if (state.pausedAt && audio.readyState >= 1) {
+          try {
+            audio.currentTime = targetPos;
+          } catch {}
         }
       }
     },
@@ -197,6 +216,42 @@ export const RadioProvider = ({ children }) => {
       }
     } catch (err) {
       console.warn('[Gospel Radio] Unlock failed:', err);
+    }
+  }, [calculateTargetPosition, userVolume, socket]);
+
+  // Retry playback if an error or interruption occurred
+  const retryPlayback = useCallback(async () => {
+    setLoadError(null);
+    setAutoplayBlocked(false);
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    try {
+      // Re-fetch state from server in case track URL changed
+      const res = await api.get('/radio/state').catch(() => null);
+      const state = res?.data?.state || radioStateRef.current;
+      if (state && state.url) {
+        setRadioState(state);
+        const fullUrl = resolveMediaUrl(state.url);
+        audio.removeAttribute('crossorigin');
+        audio.src = fullUrl;
+        audio.load();
+        const targetPos = calculateTargetPosition(state);
+        if (targetPos > 0) {
+          audio.currentTime = targetPos;
+        }
+        audio.volume = userVolume;
+        await audio.play();
+        setLoadError(null);
+        if (socket) socket.emit('radio_listen_start');
+      }
+    } catch (err) {
+      console.warn('[Gospel Radio] Retry playback failed:', err);
+      if (err.name === 'NotAllowedError') {
+        setAutoplayBlocked(true);
+      } else {
+        setLoadError("Faarfannaa fe'uu hin dandeenye (Audio playback failed)");
+      }
     }
   }, [calculateTargetPosition, userVolume, socket]);
 
@@ -453,6 +508,7 @@ export const RadioProvider = ({ children }) => {
         setUserVolume,
         autoplayBlocked,
         unlockAutoplay,
+        retryPlayback,
         loadError,
         currentTime,
         audioRef,

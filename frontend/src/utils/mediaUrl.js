@@ -3,6 +3,19 @@
  */
 export function resolveMediaUrl(relativeOrFull) {
   if (!relativeOrFull) return '';
+
+  const metaEnv = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env : {};
+  const backendBase =
+    metaEnv.VITE_BACKEND_URL ||
+    (metaEnv.VITE_API_URL
+      ? metaEnv.VITE_API_URL.replace(/\/api\/?$/, '')
+      : (metaEnv.DEV ? 'http://localhost:5000' : 'https://wqg-church-platform.onrender.com'));
+
+  // Guard against legacy dead sample audio links (e.g. actions.google.com)
+  if (typeof relativeOrFull === 'string' && relativeOrFull.includes('actions.google.com')) {
+    return `${backendBase}/uploads/1793125357458-256997120-Chala_Garomsa_KAAMETTII_New_Ethiopian_Oromo_music_.mp3`;
+  }
+
   if (
     relativeOrFull.startsWith('http://') ||
     relativeOrFull.startsWith('https://') ||
@@ -11,10 +24,5 @@ export function resolveMediaUrl(relativeOrFull) {
   ) {
     return relativeOrFull;
   }
-  const backendBase =
-    import.meta.env.VITE_BACKEND_URL ||
-    (import.meta.env.VITE_API_URL
-      ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '')
-      : (import.meta.env.DEV ? 'http://localhost:5000' : 'https://wqg-church-platform.onrender.com'));
   return `${backendBase}${relativeOrFull.startsWith('/') ? '' : '/'}${relativeOrFull}`;
 }
