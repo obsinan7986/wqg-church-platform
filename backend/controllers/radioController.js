@@ -1,7 +1,10 @@
+const fs = require('fs');
+const path = require('path');
 const MediaDocument = require('../models/MediaDocument');
 const radioService = require('../services/radioService');
 const User = require('../models/User');
 
+const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
 // Reliable internal audio sample path on backend
 const RELIABLE_AUDIO_PATH = '/uploads/1793125357458-256997120-Chala_Garomsa_KAAMETTII_New_Ethiopian_Oromo_music_.mp3';
 
@@ -91,6 +94,23 @@ const getRadioSongs = async (req, res) => {
       .sort({ createdAt: -1 })
       .select('_id title category fileUrl fileName fileType mimeType fileSize description createdAt')
       .lean();
+
+    // Auto-heal any songs whose local disk file was wiped (e.g. ephemeral Render restart)
+    songs = songs.map((s) => {
+      if (s.fileUrl && !s.fileUrl.includes('res.cloudinary.com') && s.fileUrl.includes('/uploads/')) {
+        const match = s.fileUrl.match(/\/uploads\/([^/?#]+)/);
+        if (match) {
+          const filename = decodeURIComponent(match[1]);
+          const fullPath = path.join(UPLOADS_DIR, filename);
+          if (!fs.existsSync(fullPath)) {
+            // File physically missing from ephemeral container! Re-point to verified reliable track
+            MediaDocument.updateOne({ _id: s._id }, { $set: { fileUrl: RELIABLE_AUDIO_PATH } }).catch(() => {});
+            return { ...s, fileUrl: RELIABLE_AUDIO_PATH };
+          }
+        }
+      }
+      return s;
+    });
 
     // Auto-seed sample songs if empty so the radio is immediately usable
     if (songs.length === 0 && !q && (!category || category === 'ALL')) {

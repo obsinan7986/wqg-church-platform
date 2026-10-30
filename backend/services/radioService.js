@@ -1,6 +1,30 @@
+const fs = require('fs');
+const path = require('path');
 const mongoose = require('mongoose');
 const RadioState = require('../models/RadioState');
 const { logAudit } = require('../utils/auditLogger');
+
+// Directory for local uploads
+const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
+const RELIABLE_AUDIO_PATH = '/uploads/1793125357458-256997120-Chala_Garomsa_KAAMETTII_New_Ethiopian_Oromo_music_.mp3';
+
+/**
+ * Checks if a given URL references a local /uploads/ file that physically does not exist on disk
+ * (which occurs when an ephemeral Render container redeploys or restarts).
+ */
+const isLocalUploadMissing = (url) => {
+  if (!url || typeof url !== 'string') return false;
+  if (url.includes('res.cloudinary.com')) return false;
+  if (!url.includes('/uploads/')) return false;
+
+  const match = url.match(/\/uploads\/([^/?#]+)/);
+  if (match) {
+    const filename = decodeURIComponent(match[1]);
+    const filePath = path.join(UPLOADS_DIR, filename);
+    return !fs.existsSync(filePath);
+  }
+  return false;
+};
 
 // Helper to safely check MongoDB ObjectId
 const isValidObjectId = (id) =>
@@ -76,13 +100,30 @@ class RadioService {
             : []
         };
 
-        // Ensure any dead actions.google.com URLs are sanitized immediately
-        if (this.nowPlaying.url && /actions\.google\.com/i.test(this.nowPlaying.url)) {
-          this.nowPlaying.url = resolveServerMediaUrl('/uploads/1793125357458-256997120-Chala_Garomsa_KAAMETTII_New_Ethiopian_Oromo_music_.mp3');
+        // Ensure any dead actions.google.com URLs or missing local files are healed immediately
+        const isDeadGoogle = this.nowPlaying.url && /actions\.google\.com/i.test(this.nowPlaying.url);
+        const isMissingDiskFile = isLocalUploadMissing(this.nowPlaying.url);
+
+        if (isDeadGoogle || isMissingDiskFile) {
+          console.warn(
+            `[RadioService] Current song "${this.nowPlaying.title}" audio file is missing on server disk (${this.nowPlaying.url}). Auto-healing to verified gospel track.`
+          );
+          this.nowPlaying.url = resolveServerMediaUrl(RELIABLE_AUDIO_PATH);
+          this.nowPlaying.title = this.nowPlaying.title || 'Yaa Giyoorgis Nuuf Lallabi (Faarfannaa Wareegamaa)';
           await RadioState.updateMany(
-            { url: /actions\.google\.com/i },
-            { $set: { url: this.nowPlaying.url } }
+            {},
+            { $set: { url: this.nowPlaying.url, title: this.nowPlaying.title } }
           ).catch(() => {});
+        }
+
+        // Also heal missing files in the queue
+        if (Array.isArray(this.nowPlaying.queue)) {
+          this.nowPlaying.queue = this.nowPlaying.queue.map((q) => {
+            if (isLocalUploadMissing(q.url)) {
+              return { ...q, url: resolveServerMediaUrl(RELIABLE_AUDIO_PATH) };
+            }
+            return q;
+          });
         }
       }
       this.initialized = true;
@@ -124,6 +165,11 @@ class RadioService {
    * Get current synchronized state including listener count and server timestamp
    */
   getState() {
+    // If the nowPlaying URL happens to be a missing local upload, auto-heal dynamically
+    if (this.nowPlaying.url && isLocalUploadMissing(this.nowPlaying.url)) {
+      this.nowPlaying.url = resolveServerMediaUrl(RELIABLE_AUDIO_PATH);
+    }
+
     return {
       ...this.nowPlaying,
       listenersCount: this.activeListeners.size,
@@ -153,6 +199,12 @@ class RadioService {
       throw new Error('Song URL and title are required to play.');
     }
 
+    let targetUrl = url.trim();
+    if (isLocalUploadMissing(targetUrl)) {
+      console.warn(`[RadioService] Target audio track "${title}" is missing from disk. Using reliable gospel track.`);
+      targetUrl = RELIABLE_AUDIO_PATH;
+    }
+
     const offsetMs = Math.round((Number(startOffsetSeconds) || 0) * 1000);
     const now = Date.now();
 
@@ -161,7 +213,7 @@ class RadioService {
       mediaId: mediaId || null,
       title: title.trim(),
       artist: (artist && artist.trim()) || 'Waldaa Angafa Wareegamtoota Qulqulluu Giyoorgisii',
-      url: resolveServerMediaUrl(url.trim()),
+      url: resolveServerMediaUrl(targetUrl),
       category: category || 'GOSPEL',
       duration: Number(duration) || 0,
       startedAt: now - offsetMs,

@@ -6,6 +6,8 @@ import { resolveMediaUrl } from '../utils/mediaUrl';
 
 const RadioContext = createContext(null);
 
+const RELIABLE_AUDIO_FALLBACK = '/uploads/1793125357458-256997120-Chala_Garomsa_KAAMETTII_New_Ethiopian_Oromo_music_.mp3';
+
 const DEFAULT_RADIO_STATE = {
   mediaId: null,
   title: '',
@@ -55,6 +57,11 @@ export const RadioProvider = ({ children }) => {
   const isListeningRef = useRef(isListening);
   const radioStateRef = useRef(radioState);
   const isSyncingRef = useRef(false);
+  const fallbackAttemptedRef = useRef(false);
+
+  const isStaff = user && ['SUPER_ADMIN', 'ADMIN', 'SECRETARY'].includes(user.role);
+  const isStaffRef = useRef(isStaff);
+  isStaffRef.current = isStaff;
 
   isListeningRef.current = isListening;
   radioStateRef.current = radioState;
@@ -132,6 +139,7 @@ export const RadioProvider = ({ children }) => {
 
       // Change source if different
       if (audio.src !== fullUrl) {
+        fallbackAttemptedRef.current = false;
         audio.src = fullUrl;
         audio.load();
       }
@@ -227,12 +235,16 @@ export const RadioProvider = ({ children }) => {
     if (!audio) return;
 
     try {
-      // Re-fetch state from server in case track URL changed
+      // Re-fetch state from server in case track URL changed / healed
       const res = await api.get('/radio/state').catch(() => null);
       const state = res?.data?.state || radioStateRef.current;
       if (state && state.url) {
         setRadioState(state);
-        const fullUrl = resolveMediaUrl(state.url);
+        let fullUrl = resolveMediaUrl(state.url);
+        // If the server URL failed before, use the reliable backup track
+        if (fallbackAttemptedRef.current) {
+          fullUrl = resolveMediaUrl(RELIABLE_AUDIO_FALLBACK);
+        }
         audio.removeAttribute('crossorigin');
         audio.src = fullUrl;
         audio.load();
@@ -246,11 +258,27 @@ export const RadioProvider = ({ children }) => {
         if (socket) socket.emit('radio_listen_start');
       }
     } catch (err) {
-      console.warn('[Gospel Radio] Retry playback failed:', err);
+      console.warn('[Gospel Radio] Retry playback failed, attempting reliable backup track:', err);
       if (err.name === 'NotAllowedError') {
         setAutoplayBlocked(true);
       } else {
-        setLoadError("Faarfannaa fe'uu hin dandeenye (Audio playback failed)");
+        // Fallback directly to verified backup audio
+        try {
+          const backupUrl = resolveMediaUrl(RELIABLE_AUDIO_FALLBACK);
+          audio.removeAttribute('crossorigin');
+          audio.src = backupUrl;
+          audio.load();
+          audio.volume = userVolume;
+          await audio.play();
+          setLoadError(null);
+          fallbackAttemptedRef.current = true;
+        } catch (backupErr) {
+          if (backupErr.name === 'NotAllowedError') {
+            setAutoplayBlocked(true);
+          } else {
+            setLoadError("Faarfannaa fe'uu hin dandeenye (Audio playback failed)");
+          }
+        }
       }
     }
   }, [calculateTargetPosition, userVolume, socket]);
@@ -380,7 +408,7 @@ export const RadioProvider = ({ children }) => {
 
   const handleAudioError = (e) => {
     const audio = audioRef.current;
-    console.error('[Gospel Radio] Audio error:', e, audio?.error);
+    console.warn('[Gospel Radio] Audio playback error:', e, audio?.error);
     if (!radioStateRef.current?.url) return;
 
     // Retry once without crossOrigin attribute if CORS or element restriction occurs
@@ -394,12 +422,41 @@ export const RadioProvider = ({ children }) => {
       return;
     }
 
+    // Auto-heal on missing audio (e.g. 404 after ephemeral Render restart)
+    const fallbackUrl = resolveMediaUrl(RELIABLE_AUDIO_FALLBACK);
+    if (!fallbackAttemptedRef.current && audio && audio.src !== fallbackUrl) {
+      fallbackAttemptedRef.current = true;
+      console.warn('[Gospel Radio] Track missing on server. Auto-healing to verified backup gospel hymn...');
+      audio.removeAttribute('crossorigin');
+      audio.src = fallbackUrl;
+      audio.load();
+      audio.volume = userVolume;
+      audio.play()
+        .then(() => {
+          setLoadError(null);
+          // If staff is active, automatically broadcast healed state to server
+          if (isStaffRef.current && socket && socket.connected) {
+            socket.emit('radio_play', {
+              title: radioStateRef.current.title || 'Faarfannaa Bakka Bu\'aa (Gospel Hymn)',
+              url: RELIABLE_AUDIO_FALLBACK,
+              category: radioStateRef.current.category || 'GOSPEL'
+            });
+          }
+        })
+        .catch((playErr) => {
+          if (playErr.name === 'NotAllowedError') {
+            setAutoplayBlocked(true);
+          } else {
+            setLoadError("Faarfannaa fe'uu hin dandeenye (Audio playback failed)");
+          }
+        });
+      return;
+    }
+
     setLoadError("Faarfannaa fe'uu hin dandeenye (Audio playback failed)");
   };
 
   // Staff Controls
-  const isStaff = user && ['SUPER_ADMIN', 'ADMIN', 'SECRETARY'].includes(user.role);
-
   const playSong = async (songPayload) => {
     if (!isStaff) return { success: false, message: 'Unauthorized' };
     if (socket && socket.connected) {

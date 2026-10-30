@@ -6,6 +6,8 @@ build/
 !.env.example
 backend/uploads/*
 !backend/uploads/.gitkeep
+!backend/uploads/*.mp3
+!backend/uploads/**/*.mp3
 .vscode/
 .DS_Store
 *.log
