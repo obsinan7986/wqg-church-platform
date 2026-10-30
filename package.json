@@ -1,0 +1,9 @@
+{
+  "name": "wqg-church-platform",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/checkI18n.js && npm --prefix frontend run build",
+    "check:i18n": "node scripts/checkI18n.js"
+  }
+}

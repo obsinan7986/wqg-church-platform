@@ -1,5 +1,6 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { fetchAndApplySiteTextOverrides } from './i18n';
 import { AuthProvider } from './context/AuthContext';
 import { DateSettingsProvider } from './context/DateSettingsContext';
 import { SocketProvider } from './context/SocketContext';
@@ -38,6 +39,10 @@ const PageFallback = () => (
 const AppContent = () => {
   const location = useLocation();
   const isDashboard = location.pathname.startsWith('/dashboard');
+
+  useEffect(() => {
+    fetchAndApplySiteTextOverrides();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-slate-900 overflow-x-hidden">

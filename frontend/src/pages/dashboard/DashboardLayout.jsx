@@ -32,7 +32,8 @@ import {
   ChevronDown,
   ShieldCheck,
   Calendar,
-  HelpCircle
+  HelpCircle,
+  Languages
 } from 'lucide-react';
 import { useTour } from '../../context/TourContext';
 import { useDateSettings } from '../../context/DateSettingsContext';
@@ -51,6 +52,7 @@ const MediaLibrary = React.lazy(() => import('../public/MediaLibrary'));
 const ProfileAndSecurity = React.lazy(() => import('./ProfileAndSecurity'));
 const ProgramsManager = React.lazy(() => import('./ProgramsManager'));
 const GospelRadioStudio = React.lazy(() => import('./GospelRadioStudio'));
+const SiteTextEditor = React.lazy(() => import('./SiteTextEditor'));
 
 import LoadingScreen from '../../components/LoadingScreen';
 import NotificationBell from '../../components/NotificationBell';
@@ -134,7 +136,11 @@ const DashboardLayout = () => {
     branches: 'finance',
     announcements: 'records',
     'live-studio': 'live',
-    meetings: 'live'
+    meetings: 'live',
+    'site-text': 'site-texts',
+    'site-texts': 'site-texts',
+    texts: 'site-texts',
+    i18n: 'site-texts'
   };
 
   const rawTab = paramTab || searchParams.get('tab') || 'overview';
@@ -424,6 +430,13 @@ const DashboardLayout = () => {
       subtitle: 'My Profile & Security',
       icon: ShieldCheck,
       roles: ['SUPER_ADMIN', 'ADMIN', 'COLLECTOR', 'HR', 'SECRETARY', 'MEMBER']
+    },
+    {
+      id: 'site-texts',
+      title: 'Barreeffama Marsariitii',
+      subtitle: 'Site Text Editor (i18n)',
+      icon: Languages,
+      roles: ['SUPER_ADMIN', 'ADMIN']
     },
     {
       id: 'settings',
@@ -1065,6 +1078,9 @@ const DashboardLayout = () => {
 
             {/* TAB: PROGRAMS & ANNOUNCEMENTS (SUPER_ADMIN, ADMIN, SECRETARY) */}
             {activeTab === 'programs' && <ProgramsManager />}
+
+            {/* TAB: SITE TEXT EDITOR (SUPER_ADMIN, ADMIN) */}
+            {activeTab === 'site-texts' && <SiteTextEditor />}
 
             {/* TAB 10: SETTINGS (ADMIN) */}
             {activeTab === 'settings' && <AdminDash />}

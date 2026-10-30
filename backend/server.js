@@ -23,6 +23,7 @@ const eventRoutes = require('./routes/eventRoutes');
 const scheduleRoutes = require('./routes/scheduleRoutes');
 const auditRoutes = require('./routes/auditRoutes');
 const radioRoutes = require('./routes/radioRoutes');
+const siteTextRoutes = require('./routes/siteTextRoutes');
 const radioService = require('./services/radioService');
 const initSocketHandler = require('./socket/socketHandler');
 const { seedIfEmpty } = require('./controllers/scheduleController');
@@ -186,6 +187,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/schedule', scheduleRoutes);
 app.use('/api/audit-logs', auditRoutes);
 app.use('/api/radio', radioRoutes);
+app.use('/api/site-text', siteTextRoutes);
 
 // 404 Route Handler
 app.use((req, res) => {
