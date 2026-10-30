@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, Navigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -21,6 +21,8 @@ const Login = () => {
   const { t } = useTranslation();
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTarget = location.state?.from || '/dashboard';
 
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -29,9 +31,9 @@ const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [logoFailed, setLogoFailed] = useState(false);
 
-  // If the user is already logged in, redirect to /dashboard
+  // If the user is already logged in, redirect to intended target or /dashboard
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={redirectTarget} replace />;
   }
 
   const handleSubmit = async (e) => {
@@ -48,7 +50,7 @@ const Login = () => {
     setIsSubmitting(false);
 
     if (result.success) {
-      navigate('/dashboard');
+      navigate(redirectTarget, { replace: true });
     } else {
       setErrorMsg(result.message);
     }

@@ -194,20 +194,27 @@ const initSocketHandler = (io) => {
       });
     });
 
-    // WebRTC Signaling Forwarder (offer, answer, candidate)
+    // WebRTC Signaling Forwarder (offer, answer, candidate, renegotiate, etc.)
     socket.on('webrtc_signal', ({ to, signal, meetingId }) => {
+      const payload = {
+        from: socket.id,
+        senderUser: socket.user ? {
+          _id: socket.user._id,
+          fullName: socket.user.fullName,
+          role: socket.user.role,
+          originChurch: socket.user.originChurch,
+          avatarUrl: socket.user.avatarUrl
+        } : null,
+        signal
+      };
+
       if (to) {
-        io.to(to).emit('webrtc_signal', {
-          from: socket.id,
-          senderUser: socket.user,
-          signal
-        });
+        const targetRoom = (typeof to === 'string' && /^[0-9a-fA-F]{24}$/.test(to))
+          ? `user_${to}`
+          : to;
+        io.to(targetRoom).emit('webrtc_signal', payload);
       } else if (meetingId) {
-        socket.to(`meeting_${meetingId}`).emit('webrtc_signal', {
-          from: socket.id,
-          senderUser: socket.user,
-          signal
-        });
+        socket.to(`meeting_${meetingId}`).emit('webrtc_signal', payload);
       }
     });
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Navigate, Link, useSearchParams, useParams, useNavigate } from 'react-router-dom';
+import { Navigate, Link, useSearchParams, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
@@ -124,6 +124,7 @@ const DashboardLayout = () => {
   const { unreadCount } = useSocket();
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { tab: paramTab } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -306,7 +307,7 @@ const DashboardLayout = () => {
   }
 
   if (!isAuthenticated || !user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location.pathname + location.search }} replace />;
   }
 
   const handleLanguageChange = (lang) => {

@@ -79,6 +79,18 @@ const LiveMeetingSchema = new mongoose.Schema(
         ref: 'User'
       }
     ],
+    allowedMicUsers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
+    ],
+    allowedVideoUsers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
+    ],
     mutedUsers: [
       {
         type: mongoose.Schema.Types.ObjectId,

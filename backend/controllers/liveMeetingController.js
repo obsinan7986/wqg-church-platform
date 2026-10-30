@@ -1,6 +1,52 @@
 const LiveMeeting = require('../models/LiveMeeting');
 const Notification = require('../models/Notification');
 const crypto = require('crypto');
+const mongoose = require('mongoose');
+
+/**
+ * @desc    Get STUN + TURN ICE servers configuration
+ * @route   GET /api/live/ice-servers
+ * @access  Private
+ */
+const getIceServers = async (req, res) => {
+  try {
+    const stunServers = [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:stun3.l.google.com:19302' },
+      { urls: 'stun:stun4.l.google.com:19302' }
+    ];
+
+    const turnUrl = process.env.TURN_URL;
+    const turnUsername = process.env.TURN_USERNAME;
+    const turnCredential = process.env.TURN_CREDENTIAL;
+
+    const iceServers = [...stunServers];
+
+    if (turnUrl) {
+      const urls = turnUrl.split(',').map((u) => u.trim()).filter(Boolean);
+      const turnConfig = {
+        urls,
+        ...(turnUsername ? { username: turnUsername } : {}),
+        ...(turnCredential ? { credential: turnCredential } : {})
+      };
+      iceServers.push(turnConfig);
+    }
+
+    return res.status(200).json({
+      success: true,
+      iceServers
+    });
+  } catch (error) {
+    console.error('[GetIceServers Error]:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve ICE servers',
+      error: error.message
+    });
+  }
+};
 
 /**
  * @desc    Schedule or create a new live meeting studio
@@ -39,7 +85,10 @@ const scheduleMeeting = async (req, res) => {
       host: req.user._id,
       waitingRoom: [],
       allowedParticipants: [req.user._id],
+      allowedMicUsers: [req.user._id],
+      allowedVideoUsers: [req.user._id],
       mutedUsers: [],
+      videoOffUsers: [],
       likes: [],
       dislikes: [],
       comments: []
@@ -48,6 +97,8 @@ const scheduleMeeting = async (req, res) => {
     const populated = await LiveMeeting.findById(meeting._id)
       .populate('host', 'fullName role originChurch avatarUrl')
       .populate('allowedParticipants', 'fullName role originChurch avatarUrl address.city')
+      .populate('allowedMicUsers', 'fullName role originChurch avatarUrl')
+      .populate('allowedVideoUsers', 'fullName role originChurch avatarUrl')
       .populate('waitingRoom', 'fullName role originChurch avatarUrl address.city');
 
     if (req.io) { req.io.to("all_users_room").emit("content_updated", { type: "LIVE", id: meeting._id }); }
@@ -79,6 +130,8 @@ const getActiveMeeting = async (req, res) => {
       .populate('host', 'fullName role originChurch avatarUrl')
       .populate('waitingRoom', 'fullName role originChurch avatarUrl address.city')
       .populate('allowedParticipants', 'fullName role originChurch avatarUrl address.city')
+      .populate('allowedMicUsers', 'fullName role originChurch avatarUrl')
+      .populate('allowedVideoUsers', 'fullName role originChurch avatarUrl')
       .populate('mutedUsers', '_id')
       .populate('videoOffUsers', '_id');
 
@@ -91,6 +144,10 @@ const getActiveMeeting = async (req, res) => {
         host: req.user._id,
         waitingRoom: [],
         allowedParticipants: [req.user._id],
+        allowedMicUsers: [req.user._id],
+        allowedVideoUsers: [req.user._id],
+        mutedUsers: [],
+        videoOffUsers: [],
         comments: [
           {
             user: req.user._id,
@@ -107,7 +164,10 @@ const getActiveMeeting = async (req, res) => {
         .populate('host', 'fullName role originChurch avatarUrl')
         .populate('waitingRoom', 'fullName role originChurch avatarUrl address.city')
         .populate('allowedParticipants', 'fullName role originChurch avatarUrl address.city')
-        .populate('mutedUsers', '_id');
+        .populate('allowedMicUsers', 'fullName role originChurch avatarUrl')
+        .populate('allowedVideoUsers', 'fullName role originChurch avatarUrl')
+        .populate('mutedUsers', '_id')
+        .populate('videoOffUsers', '_id');
     }
 
     return res.status(200).json({
@@ -125,25 +185,29 @@ const getActiveMeeting = async (req, res) => {
 };
 
 /**
- * @desc    Get live meeting by unique meeting link
+ * @desc    Get live meeting by unique meeting link or ID
  * @route   GET /api/live/:meetingLink
  * @access  Private
  */
 const getMeetingByLink = async (req, res) => {
   try {
     const { meetingLink } = req.params;
+    const isId = mongoose.Types.ObjectId.isValid(meetingLink);
+    const query = isId ? { $or: [{ meetingLink }, { _id: meetingLink }] } : { meetingLink };
 
-    const meeting = await LiveMeeting.findOne({ meetingLink })
+    const meeting = await LiveMeeting.findOne(query)
       .populate('host', 'fullName role originChurch avatarUrl')
       .populate('waitingRoom', 'fullName role originChurch avatarUrl address.city')
       .populate('allowedParticipants', 'fullName role originChurch avatarUrl address.city')
+      .populate('allowedMicUsers', 'fullName role originChurch avatarUrl')
+      .populate('allowedVideoUsers', 'fullName role originChurch avatarUrl')
       .populate('mutedUsers', '_id')
       .populate('videoOffUsers', '_id');
 
     if (!meeting) {
       return res.status(404).json({
         success: false,
-        message: 'Live meeting not found with this link'
+        message: 'Live meeting not found with this link or ID'
       });
     }
 
@@ -381,13 +445,30 @@ const admitMember = async (req, res) => {
       if (!isAlreadyIn) {
         meeting.allowedParticipants.push(userId);
       }
+      // Default per spec: mic and video OFF until host allows
+      if (!meeting.allowedMicUsers) meeting.allowedMicUsers = [meeting.host];
+      if (!meeting.allowedVideoUsers) meeting.allowedVideoUsers = [meeting.host];
+      if (!meeting.mutedUsers) meeting.mutedUsers = [];
+      if (!meeting.videoOffUsers) meeting.videoOffUsers = [];
+
+      meeting.allowedMicUsers = meeting.allowedMicUsers.filter((u) => u.toString() !== userId.toString());
+      meeting.allowedVideoUsers = meeting.allowedVideoUsers.filter((u) => u.toString() !== userId.toString());
+
+      if (!meeting.mutedUsers.some((u) => u.toString() === userId.toString())) {
+        meeting.mutedUsers.push(userId);
+      }
+      if (!meeting.videoOffUsers.some((u) => u.toString() === userId.toString())) {
+        meeting.videoOffUsers.push(userId);
+      }
     }
 
     await meeting.save();
 
     const populated = await LiveMeeting.findById(id)
       .populate('waitingRoom', 'fullName role originChurch avatarUrl address.city')
-      .populate('allowedParticipants', 'fullName role originChurch avatarUrl address.city');
+      .populate('allowedParticipants', 'fullName role originChurch avatarUrl address.city')
+      .populate('allowedMicUsers', 'fullName role originChurch avatarUrl')
+      .populate('allowedVideoUsers', 'fullName role originChurch avatarUrl');
 
     if (req.io) {
       if (action === 'accept') {
@@ -402,13 +483,21 @@ const admitMember = async (req, res) => {
       req.io.to(`meeting_${id}`).emit('participants_updated', {
         allowedParticipants: populated.allowedParticipants
       });
+      req.io.to(`meeting_${id}`).emit('participant_permissions_updated', {
+        allowedVideoUsers: populated.allowedVideoUsers,
+        allowedMicUsers: populated.allowedMicUsers,
+        videoOffUsers: populated.videoOffUsers,
+        mutedUsers: populated.mutedUsers
+      });
     }
 
     return res.status(200).json({
       success: true,
       message: `User ${action === 'accept' ? 'accepted into live studio' : 'rejected'}`,
       waitingRoom: populated.waitingRoom,
-      allowedParticipants: populated.allowedParticipants
+      allowedParticipants: populated.allowedParticipants,
+      allowedMicUsers: populated.allowedMicUsers,
+      allowedVideoUsers: populated.allowedVideoUsers
     });
   } catch (error) {
     console.error('[AdmitMember Error]:', error);
@@ -421,7 +510,204 @@ const admitMember = async (req, res) => {
 };
 
 /**
- * @desc    Super Admin mutes or unmutes a user
+ * @desc    Host allows camera/video for a participant (max 8 concurrent)
+ * @route   POST /api/live/:id/allow-video
+ * @access  Private (SUPER_ADMIN or HOST only)
+ */
+const allowVideo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'userId is required' });
+    }
+
+    const meeting = await LiveMeeting.findById(id);
+    if (!meeting) {
+      return res.status(404).json({ success: false, message: 'Meeting not found' });
+    }
+
+    if (!meeting.allowedVideoUsers) meeting.allowedVideoUsers = [];
+    if (!meeting.videoOffUsers) meeting.videoOffUsers = [];
+
+    const isHost = meeting.host.toString() === userId.toString();
+    const currentVideoCount = meeting.allowedVideoUsers.filter(
+      (u) => u.toString() !== meeting.host.toString()
+    ).length;
+
+    const alreadyAllowed = meeting.allowedVideoUsers.some(
+      (u) => u.toString() === userId.toString()
+    );
+
+    // Limit check: at most 8 participants with video at the same time (excluding host)
+    if (!isHost && !alreadyAllowed && currentVideoCount >= 8) {
+      return res.status(400).json({
+        success: false,
+        limitReached: true,
+        message: "Qulqullinaaf kaameeraa hirmaattotaa 8 qofatu tamsaasa yeroo tokkotti banamuu danda'a (Maximum 8 participants with video allowed at the same time to ensure high quality)."
+      });
+    }
+
+    if (!alreadyAllowed) {
+      meeting.allowedVideoUsers.push(userId);
+    }
+    meeting.videoOffUsers = meeting.videoOffUsers.filter((u) => u.toString() !== userId.toString());
+
+    await meeting.save();
+
+    if (req.io) {
+      req.io.to(`user_${userId}`).emit('video_permission_changed', { meetingId: id, allowed: true });
+      req.io.to(`user_${userId}`).emit('allow_video', { meetingId: id });
+      req.io.to(`meeting_${id}`).emit('participant_permissions_updated', {
+        allowedVideoUsers: meeting.allowedVideoUsers,
+        allowedMicUsers: meeting.allowedMicUsers || [],
+        videoOffUsers: meeting.videoOffUsers,
+        mutedUsers: meeting.mutedUsers
+      });
+      req.io.to(`meeting_${id}`).emit('video_status_updated', {
+        videoOffUsers: meeting.videoOffUsers,
+        allowedVideoUsers: meeting.allowedVideoUsers
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Video permission granted to participant',
+      allowedVideoUsers: meeting.allowedVideoUsers
+    });
+  } catch (error) {
+    console.error('[AllowVideo Error]:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to allow video for participant',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Host stops camera/video for a participant
+ * @route   POST /api/live/:id/stop-video
+ * @access  Private (SUPER_ADMIN or HOST only)
+ */
+const stopVideo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'userId is required' });
+    }
+
+    const meeting = await LiveMeeting.findById(id);
+    if (!meeting) {
+      return res.status(404).json({ success: false, message: 'Meeting not found' });
+    }
+
+    if (!meeting.allowedVideoUsers) meeting.allowedVideoUsers = [];
+    if (!meeting.videoOffUsers) meeting.videoOffUsers = [];
+
+    meeting.allowedVideoUsers = meeting.allowedVideoUsers.filter(
+      (u) => u.toString() !== userId.toString()
+    );
+    if (!meeting.videoOffUsers.some((u) => u.toString() === userId.toString())) {
+      meeting.videoOffUsers.push(userId);
+    }
+
+    await meeting.save();
+
+    if (req.io) {
+      req.io.to(`user_${userId}`).emit('video_permission_changed', { meetingId: id, allowed: false });
+      req.io.to(`user_${userId}`).emit('force_video_off', { meetingId: id });
+      req.io.to(`meeting_${id}`).emit('participant_permissions_updated', {
+        allowedVideoUsers: meeting.allowedVideoUsers,
+        allowedMicUsers: meeting.allowedMicUsers || [],
+        videoOffUsers: meeting.videoOffUsers,
+        mutedUsers: meeting.mutedUsers
+      });
+      req.io.to(`meeting_${id}`).emit('video_status_updated', {
+        videoOffUsers: meeting.videoOffUsers,
+        allowedVideoUsers: meeting.allowedVideoUsers
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Video stopped for participant',
+      allowedVideoUsers: meeting.allowedVideoUsers
+    });
+  } catch (error) {
+    console.error('[StopVideo Error]:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to stop video',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Host allows mic for a participant
+ * @route   POST /api/live/:id/allow-mic
+ * @access  Private (SUPER_ADMIN or HOST only)
+ */
+const allowMic = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'userId is required' });
+    }
+
+    const meeting = await LiveMeeting.findById(id);
+    if (!meeting) {
+      return res.status(404).json({ success: false, message: 'Meeting not found' });
+    }
+
+    if (!meeting.allowedMicUsers) meeting.allowedMicUsers = [];
+    if (!meeting.mutedUsers) meeting.mutedUsers = [];
+
+    if (!meeting.allowedMicUsers.some((u) => u.toString() === userId.toString())) {
+      meeting.allowedMicUsers.push(userId);
+    }
+    meeting.mutedUsers = meeting.mutedUsers.filter((u) => u.toString() !== userId.toString());
+
+    await meeting.save();
+
+    if (req.io) {
+      req.io.to(`user_${userId}`).emit('mic_permission_changed', { meetingId: id, allowed: true });
+      req.io.to(`user_${userId}`).emit('allow_unmute', { meetingId: id });
+      req.io.to(`meeting_${id}`).emit('participant_permissions_updated', {
+        allowedVideoUsers: meeting.allowedVideoUsers || [],
+        allowedMicUsers: meeting.allowedMicUsers,
+        videoOffUsers: meeting.videoOffUsers,
+        mutedUsers: meeting.mutedUsers
+      });
+      req.io.to(`meeting_${id}`).emit('mute_status_updated', {
+        mutedUsers: meeting.mutedUsers,
+        allowedMicUsers: meeting.allowedMicUsers
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Mic permission granted to participant',
+      allowedMicUsers: meeting.allowedMicUsers
+    });
+  } catch (error) {
+    console.error('[AllowMic Error]:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to allow mic',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Host mutes or unmutes a user
  * @route   POST /api/live/:id/mute
  * @access  Private (SUPER_ADMIN only)
  */
@@ -430,35 +716,57 @@ const muteUser = async (req, res) => {
     const { id } = req.params;
     const { userId, mute } = req.body; // mute: true | false
 
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'userId is required' });
+    }
+
     const meeting = await LiveMeeting.findById(id);
     if (!meeting) {
       return res.status(404).json({ success: false, message: 'Meeting not found' });
     }
 
-    if (mute) {
+    if (!meeting.allowedMicUsers) meeting.allowedMicUsers = [];
+    if (!meeting.mutedUsers) meeting.mutedUsers = [];
+
+    const shouldMute = mute === undefined || mute === true;
+
+    if (shouldMute) {
+      meeting.allowedMicUsers = meeting.allowedMicUsers.filter((u) => u.toString() !== userId.toString());
       if (!meeting.mutedUsers.some((u) => u.toString() === userId.toString())) {
         meeting.mutedUsers.push(userId);
       }
     } else {
+      if (!meeting.allowedMicUsers.some((u) => u.toString() === userId.toString())) {
+        meeting.allowedMicUsers.push(userId);
+      }
       meeting.mutedUsers = meeting.mutedUsers.filter((u) => u.toString() !== userId.toString());
     }
 
     await meeting.save();
 
     if (req.io) {
-      if (mute) {
+      req.io.to(`user_${userId}`).emit('mic_permission_changed', { meetingId: id, allowed: !shouldMute });
+      if (shouldMute) {
         req.io.to(`user_${userId}`).emit('force_mute', { meetingId: id });
       } else {
         req.io.to(`user_${userId}`).emit('allow_unmute', { meetingId: id });
       }
-      req.io.to(`meeting_${id}`).emit('mute_status_updated', {
+      req.io.to(`meeting_${id}`).emit('participant_permissions_updated', {
+        allowedVideoUsers: meeting.allowedVideoUsers || [],
+        allowedMicUsers: meeting.allowedMicUsers,
+        videoOffUsers: meeting.videoOffUsers,
         mutedUsers: meeting.mutedUsers
+      });
+      req.io.to(`meeting_${id}`).emit('mute_status_updated', {
+        mutedUsers: meeting.mutedUsers,
+        allowedMicUsers: meeting.allowedMicUsers
       });
     }
 
     return res.status(200).json({
       success: true,
-      message: `User ${mute ? 'muted' : 'unmuted'} successfully`,
+      message: `User ${shouldMute ? 'muted' : 'unmuted'} successfully`,
+      allowedMicUsers: meeting.allowedMicUsers,
       mutedUsers: meeting.mutedUsers
     });
   } catch (error) {
@@ -472,62 +780,21 @@ const muteUser = async (req, res) => {
 };
 
 /**
- * @desc    Super Admin turns off or restores video for a user
+ * @desc    Backward compatible toggle video off / allow video
  * @route   POST /api/live/:id/video-off
  * @access  Private (SUPER_ADMIN only)
  */
 const toggleVideoOff = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { userId, videoOff } = req.body; // videoOff: true | false
-
-    const meeting = await LiveMeeting.findById(id);
-    if (!meeting) {
-      return res.status(404).json({ success: false, message: 'Meeting not found' });
-    }
-
-    if (!meeting.videoOffUsers) {
-      meeting.videoOffUsers = [];
-    }
-
-    if (videoOff) {
-      if (!meeting.videoOffUsers.some((u) => u.toString() === userId.toString())) {
-        meeting.videoOffUsers.push(userId);
-      }
-    } else {
-      meeting.videoOffUsers = meeting.videoOffUsers.filter((u) => u.toString() !== userId.toString());
-    }
-
-    await meeting.save();
-
-    if (req.io) {
-      if (videoOff) {
-        req.io.to(`user_${userId}`).emit('force_video_off', { meetingId: id });
-      } else {
-        req.io.to(`user_${userId}`).emit('allow_video', { meetingId: id });
-      }
-      req.io.to(`meeting_${id}`).emit('video_status_updated', {
-        videoOffUsers: meeting.videoOffUsers
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: `User video ${videoOff ? 'turned off' : 'enabled'} successfully`,
-      videoOffUsers: meeting.videoOffUsers
-    });
-  } catch (error) {
-    console.error('[ToggleVideoOff Error]:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to update user video status',
-      error: error.message
-    });
+  const { videoOff } = req.body;
+  if (videoOff) {
+    return stopVideo(req, res);
+  } else {
+    return allowVideo(req, res);
   }
 };
 
 /**
- * @desc    Super Admin mutes all allowed participants
+ * @desc    Host mutes all allowed participants
  * @route   POST /api/live/:id/mute-all
  * @access  Private (SUPER_ADMIN only)
  */
@@ -540,7 +807,9 @@ const muteAll = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Meeting not found' });
     }
 
-    // Add all participants except host to mutedUsers
+    // Keep only host in allowedMicUsers
+    meeting.allowedMicUsers = [meeting.host];
+
     const nonHostParticipants = meeting.allowedParticipants.filter(
       (p) => p.toString() !== meeting.host.toString()
     );
@@ -550,14 +819,22 @@ const muteAll = async (req, res) => {
 
     if (req.io) {
       req.io.to(`meeting_${id}`).emit('force_mute_all', { meetingId: id });
-      req.io.to(`meeting_${id}`).emit('mute_status_updated', {
+      req.io.to(`meeting_${id}`).emit('participant_permissions_updated', {
+        allowedVideoUsers: meeting.allowedVideoUsers || [],
+        allowedMicUsers: meeting.allowedMicUsers,
+        videoOffUsers: meeting.videoOffUsers,
         mutedUsers: meeting.mutedUsers
+      });
+      req.io.to(`meeting_${id}`).emit('mute_status_updated', {
+        mutedUsers: meeting.mutedUsers,
+        allowedMicUsers: meeting.allowedMicUsers
       });
     }
 
     return res.status(200).json({
       success: true,
       message: 'All participants have been muted',
+      allowedMicUsers: meeting.allowedMicUsers,
       mutedUsers: meeting.mutedUsers
     });
   } catch (error) {
@@ -729,6 +1006,7 @@ const getPublicNextLive = async (req, res) => {
 };
 
 module.exports = {
+  getIceServers,
   getPublicNextLive,
   scheduleMeeting,
   getActiveMeeting,
@@ -737,6 +1015,9 @@ module.exports = {
   endLive,
   requestJoin,
   admitMember,
+  allowVideo,
+  stopVideo,
+  allowMic,
   muteUser,
   muteAll,
   toggleVideoOff,
