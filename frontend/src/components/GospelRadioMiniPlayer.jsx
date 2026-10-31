@@ -15,7 +15,8 @@ import {
   ChevronDown,
   Headphones,
   Music2,
-  Disc3
+  Disc3,
+  Youtube,
 } from 'lucide-react';
 
 export default function GospelRadioMiniPlayer() {
@@ -26,11 +27,18 @@ export default function GospelRadioMiniPlayer() {
     userVolume,
     setUserVolume,
     autoplayBlocked,
+    autoplayGate,
     unlockAutoplay,
     retryPlayback,
     loadError,
+    ytError,
     currentTime,
-    isStaff
+    isStaff,
+    isYouTube,
+    ytAvailable,
+    ytPlayerCollapsed,
+    setYtPlayerCollapsed,
+    brokenTracks,
   } = useRadio();
 
   const { isAuthenticated } = useAuth();
@@ -39,8 +47,11 @@ export default function GospelRadioMiniPlayer() {
 
   const [isMinimized, setIsMinimized] = useState(false);
 
-  // If there's no track and radio is idle, don't show the bar
-  const hasTrack = Boolean(radioState.url && radioState.title);
+  // A track is present for FILE sources (url+title) or YOUTUBE sources (youtubeVideoId+title)
+  const hasTrack = isYouTube
+    ? Boolean(radioState.youtubeVideoId && radioState.title)
+    : Boolean(radioState.url && radioState.title);
+
   if (!hasTrack && !isStaff) {
     return null;
   }
@@ -55,28 +66,34 @@ export default function GospelRadioMiniPlayer() {
 
   const isLiveMeeting = location.pathname.includes('/dashboard') && location.search.includes('tab=live');
 
+  // Aggregate error: ytError takes precedence for YouTube tracks
+  const displayError = isYouTube ? (ytError || loadError) : loadError;
+  // Show autoplay gate for both FILE and YOUTUBE tracks
+  const showAutoplayGate = autoplayBlocked || autoplayGate;
+
   return (
     <aside
       aria-label="Gospel Radio Mini Player"
       className="fixed bottom-0 left-0 right-0 z-40 transition-all duration-300 pointer-events-none"
     >
       <div className="max-w-7xl mx-auto px-2 sm:px-4 pb-2 sm:pb-3 pointer-events-auto">
+
         {/* Autoplay Unlock Banner */}
-        {autoplayBlocked && (
+        {showAutoplayGate && (
           <div
             role="alert"
             className="mb-2 p-3 bg-amber-500/95 backdrop-blur-md text-white rounded-xl shadow-lg border border-amber-400 flex flex-wrap items-center justify-between gap-3 animate-bounce motion-reduce:animate-none"
           >
             <div className="flex items-center gap-2.5">
               <span className="p-1.5 bg-white/20 rounded-full">
-                <Headphones className="w-4 h-4 text-white" />
+                {isYouTube ? <Youtube className="w-4 h-4 text-white" /> : <Headphones className="w-4 h-4 text-white" />}
               </span>
               <div>
                 <p className="text-xs sm:text-sm font-bold">
                   Sagalee dhageeffachuuf as tuqi (Tap to unlock audio)
                 </p>
                 <p className="text-[11px] text-amber-100 hidden sm:block">
-                  Browser requires user gesture before playing synchronized live audio.
+                  Browser requires user gesture before playing synchronized live {isYouTube ? 'video' : 'audio'}.
                 </p>
               </div>
             </div>
@@ -90,12 +107,20 @@ export default function GospelRadioMiniPlayer() {
           </div>
         )}
 
-        {/* Load Error Banner */}
-        {loadError && (
+        {/* YouTube unavailable warning */}
+        {isYouTube && !ytAvailable && (
+          <div className="mb-2 px-3 py-2 bg-yellow-600/90 backdrop-blur-md text-white text-xs rounded-lg shadow flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <span>YouTube player unavailable (script blocked or offline). Check your connection or ad-blocker settings.</span>
+          </div>
+        )}
+
+        {/* Load / YT Error Banner */}
+        {displayError && (
           <div className="mb-2 px-3 py-2 bg-rose-600/90 backdrop-blur-md text-white text-xs rounded-lg shadow flex items-center justify-between">
             <span className="flex items-center gap-1.5">
               <AlertCircle className="w-4 h-4" />
-              {loadError}
+              {displayError}
             </span>
             <button
               onClick={retryPlayback}
@@ -126,17 +151,25 @@ export default function GospelRadioMiniPlayer() {
             <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4">
               {/* Left: Radio badge & Track info */}
               <div className="flex items-center gap-3 w-full sm:w-auto min-w-0">
-                {/* Vinyl / Disc icon */}
+                {/* Thumbnail or Disc icon */}
                 <div className="relative flex-shrink-0">
-                  <div
-                    className={`w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center text-white shadow-md ${
-                      radioState.isPlaying && isListening
-                        ? 'animate-spin [animation-duration:6s] motion-reduce:animate-none'
-                        : ''
-                    }`}
-                  >
-                    <Disc3 className="w-5 h-5 text-amber-100" />
-                  </div>
+                  {isYouTube && radioState.thumbnailUrl ? (
+                    <img
+                      src={radioState.thumbnailUrl}
+                      alt={radioState.title}
+                      className="w-10 h-10 rounded-xl object-cover shadow-md"
+                    />
+                  ) : (
+                    <div
+                      className={`w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center text-white shadow-md ${
+                        radioState.isPlaying && isListening
+                          ? 'animate-spin [animation-duration:6s] motion-reduce:animate-none'
+                          : ''
+                      }`}
+                    >
+                      <Disc3 className="w-5 h-5 text-amber-100" />
+                    </div>
+                  )}
                   {radioState.isPlaying && (
                     <span
                       aria-label="Live on air"
@@ -149,11 +182,18 @@ export default function GospelRadioMiniPlayer() {
 
                 {/* Title & Artist */}
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1">
                       <Radio className="w-3 h-3" />
                       Gospel Radio
                     </span>
+                    {/* Source badge */}
+                    {isYouTube ? (
+                      <span className="flex items-center gap-0.5 px-1.5 py-0.5 bg-red-700/80 text-white text-[9px] font-bold rounded uppercase tracking-wide">
+                        <Youtube className="w-2.5 h-2.5" />
+                        YouTube
+                      </span>
+                    ) : null}
                     {radioState.listenersCount > 0 && (
                       <span className="text-[10px] text-slate-400 font-medium">
                         • {radioState.listenersCount} {radioState.listenersCount === 1 ? 'listener' : 'listeners'}
@@ -165,7 +205,8 @@ export default function GospelRadioMiniPlayer() {
                   </h4>
                   <p className="text-[11px] text-slate-400 truncate">
                     {radioState.artist || 'Waldaa Angafa Wareegamtoota Qulqulluu Giyoorgisii'}
-                    {radioState.duration > 0 && (
+                    {/* Only show duration for FILE tracks */}
+                    {!isYouTube && radioState.duration > 0 && (
                       <span className="ml-1 text-slate-500">
                         [{formatTime(currentTime)} / {formatTime(radioState.duration)}]
                       </span>
@@ -176,6 +217,18 @@ export default function GospelRadioMiniPlayer() {
 
               {/* Center / Controls: Listen Switch & Volume */}
               <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+                {/* YouTube collapse/expand toggle */}
+                {isYouTube && (
+                  <button
+                    onClick={() => setYtPlayerCollapsed(c => !c)}
+                    className="flex items-center gap-1 px-2.5 py-1.5 bg-red-700/30 text-red-300 hover:bg-red-700/50 border border-red-700/50 rounded-xl text-xs font-medium transition-colors"
+                    title={ytPlayerCollapsed ? 'Show YouTube player' : 'Minimize YouTube player'}
+                  >
+                    <Youtube className="w-3.5 h-3.5" />
+                    <span className="hidden lg:inline">{ytPlayerCollapsed ? 'Expand' : 'Minimize'}</span>
+                  </button>
+                )}
+
                 {/* "Listen to Gospel Radio" Toggle Switch */}
                 <div className="flex items-center gap-2 bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-700/60">
                   <span className="text-[11px] font-medium text-slate-300 hidden md:inline">
@@ -252,8 +305,8 @@ export default function GospelRadioMiniPlayer() {
               </div>
             </div>
 
-            {/* Subtle progress bar for track duration if known */}
-            {radioState.duration > 0 && (
+            {/* Progress bar — FILE tracks only (duration known) */}
+            {!isYouTube && radioState.duration > 0 && (
               <div className="w-full bg-slate-800 h-1 rounded-full mt-2.5 overflow-hidden">
                 <div
                   className="bg-gradient-to-r from-amber-500 to-amber-300 h-full transition-all duration-300"

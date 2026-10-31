@@ -57,6 +57,11 @@ const GospelMediaSchema = new mongoose.Schema(
       trim: true,
       default: 'St. George Fellowship'
     },
+    thumbnailUrl: {
+      type: String,
+      trim: true,
+      default: ''
+    },
     addedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

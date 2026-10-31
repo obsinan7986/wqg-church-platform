@@ -354,6 +354,26 @@ const initSocketHandler = (io) => {
         if (callback) callback({ success: false, error: err.message });
       }
     });
+
+    socket.on('radio_ended', async (data, callback) => {
+      try {
+        const { trackId, startedAt } = data || {};
+        // Any connected client can report ended (it's idempotent)
+        // But only advance if the reported track matches the current playing track
+        const currentState = radioService.getState();
+        if (currentState.mediaId && currentState.mediaId.toString() !== String(trackId)) {
+          if (callback) callback({ success: false, message: 'Track mismatch, ignoring.' });
+          return;
+        }
+        // Use a system user for the next() call - use the socket user if available, else a fallback
+        const actingUser = socket.user || { _id: 'system', role: 'SUPER_ADMIN', fullName: 'Auto-Advance' };
+        const state = await radioService.trackEnded(trackId, startedAt, actingUser, io);
+        if (callback) callback({ success: true, state });
+      } catch (err) {
+        console.error('[radio_ended socket error]:', err.message);
+        if (callback) callback({ success: false, error: err.message });
+      }
+    });
   });
 };
 

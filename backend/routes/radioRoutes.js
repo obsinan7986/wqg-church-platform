@@ -3,6 +3,8 @@ const router = express.Router();
 const {
   getRadioState,
   getRadioSongs,
+  getRadioLibrary,
+  reportTrackEnded,
   playRadio,
   pauseRadio,
   resumeRadio,
@@ -18,6 +20,7 @@ const STAFF_ROLES = ['SUPER_ADMIN', 'ADMIN', 'SECRETARY'];
 // Public / general endpoints
 router.get('/state', getRadioState);
 router.get('/songs', getRadioSongs);
+router.get('/library', getRadioLibrary);
 
 // Staff-only endpoints
 router.use(protect);
@@ -30,5 +33,6 @@ router.post('/stop', stopRadio);
 router.post('/seek', seekRadio);
 router.post('/next', nextRadio);
 router.post('/queue', updateRadioQueue);
+router.post('/track-ended', reportTrackEnded);
 
 module.exports = router;

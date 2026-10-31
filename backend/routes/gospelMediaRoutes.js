@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   getAllMedia,
   createMedia,
+  updateMedia,
   deleteMedia
 } = require('../controllers/gospelMediaController');
 const { protect, roleMiddleware } = require('../middleware/authMiddleware');
@@ -16,6 +17,13 @@ router.post(
   protect,
   roleMiddleware('SUPER_ADMIN', 'ADMIN', 'SECRETARY'),
   createMedia
+);
+
+router.patch(
+  '/:id',
+  protect,
+  roleMiddleware('SUPER_ADMIN', 'ADMIN', 'SECRETARY'),
+  updateMedia
 );
 
 router.delete(

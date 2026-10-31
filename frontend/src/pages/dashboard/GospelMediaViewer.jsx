@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/AuthContext';
+import GospelMediaManager from './admin/GospelMediaManager';
 import api from '../../api/axios';
 import {
   Tv,
@@ -24,7 +26,14 @@ import { getLocalizedText } from '../../utils/localized';
 
 const GospelMediaViewer = () => {
   const { t, i18n } = useTranslation();
+  const { user } = useAuth();
   const currentLang = i18n.language || 'om';
+
+  const isStaff = user && ['SUPER_ADMIN', 'ADMIN', 'SECRETARY'].includes(user.role);
+
+  if (isStaff) {
+    return <GospelMediaManager />;
+  }
 
   const [mediaList, setMediaList] = useState([]);
   const [category, setCategory] = useState('ALL');

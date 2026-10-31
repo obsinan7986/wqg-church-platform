@@ -65,12 +65,18 @@ class RadioService {
       loop: false,
       startedBy: null,
       startedByName: '',
+      sourceType: 'FILE',
+      youtubeVideoId: '',
+      thumbnailUrl: '',
       queue: []
     };
 
     // Set of active socket IDs currently tuned into the radio
     this.activeListeners = new Set();
     this.initialized = false;
+
+    // Guard map to prevent double-advance on track-ended events
+    this.trackEndedGuard = new Map();
   }
 
   /**
@@ -95,8 +101,17 @@ class RadioService {
           loop: !!state.loop,
           startedBy: state.startedBy ? state.startedBy.toString() : null,
           startedByName: state.startedByName || '',
+          sourceType: state.sourceType || 'FILE',
+          youtubeVideoId: state.youtubeVideoId || '',
+          thumbnailUrl: state.thumbnailUrl || '',
           queue: Array.isArray(state.queue)
-            ? state.queue.map((q) => ({ ...q, url: resolveServerMediaUrl(q.url) }))
+            ? state.queue.map((q) => ({
+                ...q,
+                url: resolveServerMediaUrl(q.url),
+                sourceType: q.sourceType || 'FILE',
+                youtubeVideoId: q.youtubeVideoId || '',
+                thumbnailUrl: q.thumbnailUrl || ''
+              }))
             : []
         };
 
@@ -142,10 +157,16 @@ class RadioService {
         ...this.nowPlaying,
         mediaId: isValidObjectId(this.nowPlaying.mediaId) ? this.nowPlaying.mediaId : null,
         startedBy: isValidObjectId(this.nowPlaying.startedBy) ? this.nowPlaying.startedBy : null,
+        sourceType: this.nowPlaying.sourceType || 'FILE',
+        youtubeVideoId: this.nowPlaying.youtubeVideoId || '',
+        thumbnailUrl: this.nowPlaying.thumbnailUrl || '',
         queue: Array.isArray(this.nowPlaying.queue)
           ? this.nowPlaying.queue.map((item) => ({
               ...item,
-              mediaId: isValidObjectId(item.mediaId) ? item.mediaId : null
+              mediaId: isValidObjectId(item.mediaId) ? item.mediaId : null,
+              sourceType: item.sourceType || 'FILE',
+              youtubeVideoId: item.youtubeVideoId || '',
+              thumbnailUrl: item.thumbnailUrl || ''
             }))
           : [],
         updatedAt: new Date()
@@ -193,14 +214,21 @@ class RadioService {
       throw new Error('Unauthorized: Only Super Admin, Admin, or Secretary can control Gospel Radio.');
     }
 
-    const { mediaId, title, url, artist, category, duration, queue, loop, volume, startOffsetSeconds } = payload || {};
+    const { mediaId, title, url, artist, category, duration, queue, loop, volume, startOffsetSeconds, sourceType, youtubeVideoId, thumbnailUrl } = payload || {};
 
-    if (!url || !title) {
+    if (!title) {
+      throw new Error('Song title is required to play.');
+    }
+
+    // For FILE tracks, url is required; for YOUTUBE tracks, url may be empty (client-side playback)
+    const resolvedSourceType = sourceType || 'FILE';
+    if (resolvedSourceType === 'FILE' && !url) {
       throw new Error('Song URL and title are required to play.');
     }
 
-    let targetUrl = url.trim();
-    if (isLocalUploadMissing(targetUrl)) {
+    let targetUrl = (url || '').trim();
+    // Only check for missing local uploads for FILE tracks
+    if (resolvedSourceType === 'FILE' && isLocalUploadMissing(targetUrl)) {
       console.warn(`[RadioService] Target audio track "${title}" is missing from disk. Using reliable gospel track.`);
       targetUrl = RELIABLE_AUDIO_PATH;
     }
@@ -213,7 +241,7 @@ class RadioService {
       mediaId: mediaId || null,
       title: title.trim(),
       artist: (artist && artist.trim()) || 'Waldaa Angafa Wareegamtoota Qulqulluu Giyoorgisii',
-      url: resolveServerMediaUrl(targetUrl),
+      url: resolvedSourceType === 'YOUTUBE' ? '' : resolveServerMediaUrl(targetUrl),
       category: category || 'GOSPEL',
       duration: Number(duration) || 0,
       startedAt: now - offsetMs,
@@ -223,6 +251,9 @@ class RadioService {
       loop: typeof loop === 'boolean' ? loop : this.nowPlaying.loop,
       startedBy: user._id,
       startedByName: user.fullName || 'Church Staff',
+      sourceType: resolvedSourceType,
+      youtubeVideoId: youtubeVideoId || '',
+      thumbnailUrl: thumbnailUrl || '',
       queue: Array.isArray(queue)
         ? queue.map((q) => ({ ...q, url: resolveServerMediaUrl(q.url) }))
         : this.nowPlaying.queue
@@ -269,7 +300,7 @@ class RadioService {
       throw new Error('Unauthorized: Only Super Admin, Admin, or Secretary can control Gospel Radio.');
     }
 
-    if (this.nowPlaying.isPlaying || !this.nowPlaying.url) return this.getState();
+    if (this.nowPlaying.isPlaying || (!this.nowPlaying.url && !this.nowPlaying.youtubeVideoId)) return this.getState();
 
     const now = Date.now();
     if (this.nowPlaying.pausedAt) {
@@ -311,7 +342,10 @@ class RadioService {
       mediaId: null,
       title: '',
       url: '',
-      duration: 0
+      duration: 0,
+      sourceType: 'FILE',
+      youtubeVideoId: '',
+      thumbnailUrl: ''
     };
 
     await this.persist();
@@ -367,6 +401,9 @@ class RadioService {
           url: nextSong.url,
           category: nextSong.category,
           duration: nextSong.duration,
+          sourceType: nextSong.sourceType || 'FILE',
+          youtubeVideoId: nextSong.youtubeVideoId || '',
+          thumbnailUrl: nextSong.thumbnailUrl || '',
           queue: this.nowPlaying.queue
         },
         user,
@@ -375,7 +412,7 @@ class RadioService {
     }
 
     // If loop is enabled and queue is empty, restart current song
-    if (this.nowPlaying.loop && this.nowPlaying.url) {
+    if (this.nowPlaying.loop && (this.nowPlaying.url || this.nowPlaying.youtubeVideoId)) {
       return this.seek(0, user, io);
     }
 
@@ -429,6 +466,27 @@ class RadioService {
         });
       }
     }
+  }
+
+  /**
+   * Called when a client reports a YouTube track has ended naturally.
+   * Guards against duplicate advances using a (trackId, startedAt) key.
+   */
+  async trackEnded(trackId, startedAt, user, io) {
+    // Guard: only advance once per (trackId, startedAt) combination
+    const guardKey = `${trackId}_${startedAt}`;
+    if (this.trackEndedGuard.has(guardKey)) return this.getState();
+    this.trackEndedGuard.set(guardKey, Date.now());
+
+    // Clean old guard entries (older than 5 min)
+    const now = Date.now();
+    for (const [k, v] of this.trackEndedGuard.entries()) {
+      if (now - v > 300000) this.trackEndedGuard.delete(k);
+    }
+
+    // Log and advance
+    await logAudit(null, 'RADIO_TRACK_ENDED', { trackId, startedAt, title: this.nowPlaying.title }, user);
+    return this.next(user, io);
   }
 }
 

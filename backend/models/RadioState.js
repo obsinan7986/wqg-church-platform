@@ -25,6 +25,19 @@ const RadioQueueItemSchema = new mongoose.Schema(
     duration: {
       type: Number,
       default: 0 // Duration in seconds
+    },
+    sourceType: {
+      type: String,
+      enum: ['FILE', 'YOUTUBE'],
+      default: 'FILE'
+    },
+    youtubeVideoId: {
+      type: String,
+      default: ''
+    },
+    thumbnailUrl: {
+      type: String,
+      default: ''
     }
   },
   { _id: true }
@@ -88,6 +101,19 @@ const RadioStateSchema = new mongoose.Schema(
       default: null
     },
     startedByName: {
+      type: String,
+      default: ''
+    },
+    sourceType: {
+      type: String,
+      enum: ['FILE', 'YOUTUBE'],
+      default: 'FILE'
+    },
+    youtubeVideoId: {
+      type: String,
+      default: ''
+    },
+    thumbnailUrl: {
       type: String,
       default: ''
     },
