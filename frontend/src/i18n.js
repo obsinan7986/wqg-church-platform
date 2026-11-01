@@ -98,16 +98,32 @@ export const applySiteTextOverrides = (overrides) => {
   i18n.emit('languageChanged', i18n.language);
 };
 
+/**
+ * Reapplies JSON defaults first, then layers active overrides on top
+ * Useful when resetting an override back to defaults
+ */
+export const reapplyAllTranslations = (overrides = []) => {
+  ['om', 'am', 'en'].forEach((lng) => {
+    i18n.addResourceBundle(lng, 'translation', defaultLocales[lng], true, true);
+  });
+  if (Array.isArray(overrides) && overrides.length > 0) {
+    applySiteTextOverrides(overrides);
+  } else {
+    i18n.emit('languageChanged', i18n.language);
+  }
+};
+
 let inFlightFetch = null;
 let lastFetchedAt = 0;
 const CACHE_TTL_MS = 60 * 1000; // 1 minute in-memory cache
 
 /**
- * Fetches overrides from GET /api/site-text and merges them into i18next
+ * Fetches overrides from GET /site-text and merges them into i18next
+ * @param {boolean} force If true, bypasses in-memory TTL cache
  */
-export const fetchAndApplySiteTextOverrides = async () => {
+export const fetchAndApplySiteTextOverrides = async (force = false) => {
   if (inFlightFetch) return inFlightFetch;
-  if (Date.now() - lastFetchedAt < CACHE_TTL_MS) {
+  if (!force && Date.now() - lastFetchedAt < CACHE_TTL_MS) {
     return Promise.resolve([]);
   }
 
@@ -115,7 +131,7 @@ export const fetchAndApplySiteTextOverrides = async () => {
     try {
       const res = await api.get('/site-text', { timeout: 6000 });
       if (res.data?.success && Array.isArray(res.data.data)) {
-        applySiteTextOverrides(res.data.data);
+        reapplyAllTranslations(res.data.data);
         lastFetchedAt = Date.now();
         return res.data.data;
       }

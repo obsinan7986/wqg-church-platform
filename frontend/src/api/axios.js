@@ -23,9 +23,20 @@ const api = axios.create({
   }
 });
 
-// Request interceptor to attach JWT token
+// Request interceptor to normalize url and attach JWT token
 api.interceptors.request.use(
   (config) => {
+    // Safeguard: Strip leading '/api/' or 'api/' so baseURL + url never produces /api/api/...
+    if (config.url) {
+      if (config.url.startsWith('/api/')) {
+        config.url = config.url.replace(/^\/api\//, '/');
+      } else if (config.url === '/api') {
+        config.url = '/';
+      } else if (config.url.startsWith('api/')) {
+        config.url = config.url.replace(/^api\//, '/');
+      }
+    }
+
     const token = localStorage.getItem('wqg_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

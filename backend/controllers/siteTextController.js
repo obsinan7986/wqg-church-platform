@@ -148,6 +148,11 @@ exports.updateSiteText = async (req, res) => {
       updatedBy: req.user?.fullName
     });
 
+    const io = req.app?.get('io');
+    if (io) {
+      io.emit('content_updated', { type: 'site_text', key });
+    }
+
     return res.status(200).json({
       success: true,
       message: `Site text for '${key}' updated successfully.`,
@@ -192,6 +197,11 @@ exports.deleteSiteText = async (req, res) => {
       previousValues: deleted ? { om: deleted.om, am: deleted.am, en: deleted.en } : null,
       resetBy: req.user?.fullName
     });
+
+    const io = req.app?.get('io');
+    if (io) {
+      io.emit('content_updated', { type: 'site_text', key });
+    }
 
     return res.status(200).json({
       success: true,

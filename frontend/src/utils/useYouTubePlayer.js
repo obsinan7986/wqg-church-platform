@@ -98,7 +98,7 @@ export function useYouTubePlayer({ containerId, onReady, onStateChange, onError 
         playerRef.current = new window.YT.Player(containerId, {
           height: '100%',
           width: '100%',
-          host: 'https://www.youtube-nocookie.com',
+          host: 'https://www.youtube.com',
           videoId,
           playerVars: {
             autoplay: 1,

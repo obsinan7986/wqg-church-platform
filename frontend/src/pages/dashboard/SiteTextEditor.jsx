@@ -187,7 +187,7 @@ const SiteTextEditor = () => {
         en: draft.en || ''
       };
 
-      const res = await api.put(`/api/site-text/${encodeURIComponent(key)}`, payload);
+      const res = await api.put(`/site-text/${encodeURIComponent(key)}`, payload);
       if (res.data?.success) {
         // Update local state
         setOverrides((prev) => {
@@ -220,7 +220,7 @@ const SiteTextEditor = () => {
 
     try {
       setResettingKey(key);
-      const res = await api.delete(`/api/site-text/${encodeURIComponent(key)}`);
+      const res = await api.delete(`/site-text/${encodeURIComponent(key)}`);
       if (res.data?.success) {
         // Remove from local overrides
         setOverrides((prev) => prev.filter((o) => o.key !== key));
@@ -235,8 +235,8 @@ const SiteTextEditor = () => {
           }
         }));
 
-        // Re-apply remaining overrides to i18n
-        const updated = await fetchAndApplySiteTextOverrides();
+        // Re-apply remaining overrides to i18n (forcing fresh fetch)
+        const updated = await fetchAndApplySiteTextOverrides(true);
         setOverrides(updated);
 
         setToastMsg({
