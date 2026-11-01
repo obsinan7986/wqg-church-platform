@@ -33,17 +33,43 @@ const NotificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: {
-        values: ['LIVE_STARTED', 'NEW_SCHEDULE', 'ANNOUNCEMENT', 'PAYMENT_REMINDER'],
-        message: '{VALUE} is not a valid notification type'
-      },
-      required: true
+      enum: [
+        'LIVE_STARTED',
+        'NEW_SCHEDULE',
+        'ANNOUNCEMENT',
+        'PAYMENT_REMINDER',
+        'CONTACT_MESSAGE',
+        'GENERAL',
+        'EVENT',
+        'URGENT'
+      ],
+      default: 'GENERAL'
     },
+    // audience: array of roles allowed to see this notification.
+    // Empty array or null = visible to ALL roles (including MEMBER)
+    audience: {
+      type: [String],
+      enum: ['SUPER_ADMIN', 'ADMIN', 'SECRETARY', 'HR', 'COLLECTOR', 'MEMBER'],
+      default: []
+    },
+    // Frontend route or URL to navigate to when clicked
     link: {
       type: String,
       trim: true,
       default: null
     },
+    // Reference model type (e.g. 'CONTACT_MESSAGE', 'EVENT')
+    refType: {
+      type: String,
+      trim: true,
+      default: null
+    },
+    // Reference document ID
+    refId: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null
+    },
+    // Per-user read state: users who have marked this notification as read
     readBy: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -57,5 +83,7 @@ const NotificationSchema = new mongoose.Schema(
 );
 
 NotificationSchema.index({ createdAt: -1 });
+NotificationSchema.index({ audience: 1 });
+NotificationSchema.index({ readBy: 1 });
 
 module.exports = mongoose.model('Notification', NotificationSchema);

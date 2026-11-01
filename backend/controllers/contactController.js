@@ -2,21 +2,22 @@ const ContactMessage = require('../models/ContactMessage');
 const Notification = require('../models/Notification');
 const { logAudit } = require('../utils/auditLogger');
 
-// In-memory rate limiting map: IP -> array of timestamps
+// In-memory rate limiting map: ip -> Array of timestamps
 const rateLimitMap = new Map();
-const RATE_LIMIT_MAX = 5;
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const MAX_REQUESTS_PER_WINDOW = 5;
 
+/**
+ * Clean up expired rate-limit timestamps
+ */
 const checkRateLimit = (ip) => {
   const now = Date.now();
   const timestamps = rateLimitMap.get(ip) || [];
+  const validTimestamps = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
 
-  // Filter out timestamps older than 1 hour
-  const validTimestamps = timestamps.filter((time) => now - time < RATE_LIMIT_WINDOW_MS);
-
-  if (validTimestamps.length >= RATE_LIMIT_MAX) {
+  if (validTimestamps.length >= MAX_REQUESTS_PER_WINDOW) {
     rateLimitMap.set(ip, validTimestamps);
-    return false; // Rate limit exceeded
+    return false;
   }
 
   validTimestamps.push(now);
@@ -26,27 +27,26 @@ const checkRateLimit = (ip) => {
 
 /**
  * POST /api/contact (Public)
+ * Rate limit 5/hour/IP, honeypot spam protection, admin notification
  */
 const submitContactMessage = async (req, res) => {
   try {
     const ip =
       req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
-      req.connection?.remoteAddress ||
-      req.socket?.remoteAddress ||
-      'unknown';
+      req.socket.remoteAddress ||
+      '127.0.0.1';
 
-    // 1. Honeypot check: bots fill hidden fields
+    // Honeypot spam check
     const honeypot = req.body._gotcha || req.body.website || req.body.honeypot;
     if (honeypot) {
       console.warn(`[Contact Honeypot Triggered] Spambot detected from IP ${ip}`);
-      // Return 200 to trick spam bots without saving
       return res.status(200).json({
         success: true,
-        message: "Ergaan keessan milkaa'inaan dhiyaateera. (Message sent successfully)"
+        message: "Ergaan keessan milkaa'inaan nu gaheera. Galatoomaa!"
       });
     }
 
-    // 2. IP Rate Limit check (5 messages per hour per IP)
+    // Rate limiter
     if (!checkRateLimit(ip)) {
       return res.status(429).json({
         success: false,
@@ -82,27 +82,43 @@ const submitContactMessage = async (req, res) => {
       status: 'NEW'
     });
 
-    // Create Admin Notification for the Bell
+    // Create Admin Notification for the Bell:
+    // audience: ["SUPER_ADMIN", "ADMIN"]
+    // title: "New contact message"
+    // preview: first 80 characters, NO email or phone
+    const shortPreview = trimmedMessage.slice(0, 80);
+
     try {
       const notif = await Notification.create({
         title: {
           om: 'Ergaa Quunnamtii Haaraa',
-          am: 'አዲስ የመልዕክት ጥያቄ',
-          en: 'New Contact Message'
+          am: 'አዲስ የመልእክት ጥያቄ',
+          en: 'New contact message'
         },
         message: {
-          om: `${trimmedName} (${trimmedContact}) irraa ergaan haaraa dhufeera.`,
-          am: `ከ${trimmedName} አዲስ መልእክት ደርሷል።`,
-          en: `New message received from ${trimmedName} (${trimmedContact}).`
+          om: shortPreview,
+          am: shortPreview,
+          en: shortPreview
         },
-        type: 'ANNOUNCEMENT',
-        link: '/dashboard?tab=contact-inbox'
+        type: 'CONTACT_MESSAGE',
+        audience: ['SUPER_ADMIN', 'ADMIN'],
+        refType: 'CONTACT_MESSAGE',
+        refId: newMsg._id,
+        link: `/dashboard?tab=contact-inbox&id=${newMsg._id}`
       });
 
-      const io = req.app.get('io');
+      const io = req.app?.get('io');
       if (io) {
-        io.emit('notification', notif);
-        io.emit('new_contact_message', { id: newMsg._id, name: trimmedName, contact: trimmedContact });
+        // Emit ONLY to the admin room (never to all_users_room or member sockets)
+        io.to('admin_room').emit('new_notification', {
+          ...notif.toObject(),
+          isRead: false
+        });
+        io.to('admin_room').emit('new_contact_message', {
+          id: newMsg._id,
+          name: trimmedName,
+          subject: trimmedSubject
+        });
       }
     } catch (notifErr) {
       console.warn('[Contact notification error]:', notifErr.message);
@@ -124,14 +140,25 @@ const submitContactMessage = async (req, res) => {
 
 /**
  * GET /api/contact (SUPER_ADMIN, ADMIN)
- * List contact messages with status filter and pagination
+ * List contact messages with status filter, search, and pagination
  */
 const getContactMessages = async (req, res) => {
   try {
-    const { status, page = 1, limit = 20 } = req.query;
+    const { status, search, page = 1, limit = 20 } = req.query;
     const filter = {};
+
     if (status && ['NEW', 'READ', 'DONE'].includes(status)) {
       filter.status = status;
+    }
+
+    if (search && typeof search === 'string' && search.trim()) {
+      const sRegex = new RegExp(search.trim(), 'i');
+      filter.$or = [
+        { name: sRegex },
+        { contact: sRegex },
+        { subject: sRegex },
+        { message: sRegex }
+      ];
     }
 
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
@@ -161,6 +188,37 @@ const getContactMessages = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to retrieve messages.'
+    });
+  }
+};
+
+/**
+ * GET /api/contact/:id (SUPER_ADMIN, ADMIN)
+ * Get single contact message and auto-mark as READ if NEW
+ */
+const getContactMessageById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let msg = await ContactMessage.findById(id);
+
+    if (!msg) {
+      return res.status(404).json({ success: false, message: 'Message not found.' });
+    }
+
+    if (msg.status === 'NEW') {
+      msg.status = 'READ';
+      await msg.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: msg
+    });
+  } catch (error) {
+    console.error('[getContactMessageById Error]:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve message.'
     });
   }
 };
@@ -233,6 +291,7 @@ const deleteContactMessage = async (req, res) => {
 module.exports = {
   submitContactMessage,
   getContactMessages,
+  getContactMessageById,
   updateContactMessageStatus,
   deleteContactMessage
 };

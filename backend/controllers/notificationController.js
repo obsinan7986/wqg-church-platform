@@ -2,21 +2,33 @@ const Notification = require('../models/Notification');
 
 /**
  * @desc    Get recent notifications with unread count for current user
+ *          Filtered strictly by user role audience (or public/empty audience)
  * @route   GET /api/notifications
  * @access  Private
  */
 const getNotifications = async (req, res) => {
   try {
     const userId = req.user._id;
+    const userRole = req.user.role || 'MEMBER';
 
-    const notifications = await Notification.find()
+    // Role-based audience filter:
+    // Visible if audience is empty, null, not defined, or contains user's role
+    const audienceFilter = {
+      $or: [
+        { audience: { $exists: false } },
+        { audience: { $size: 0 } },
+        { audience: userRole }
+      ]
+    };
+
+    const notifications = await Notification.find(audienceFilter)
       .sort({ createdAt: -1 })
-      .limit(30)
+      .limit(50)
       .lean();
 
     const formatted = notifications.map((n) => ({
       ...n,
-      isRead: n.readBy && n.readBy.some((id) => id.toString() === userId.toString())
+      isRead: Array.isArray(n.readBy) && n.readBy.some((id) => id.toString() === userId.toString())
     }));
 
     const unreadCount = formatted.filter((n) => !n.isRead).length;
@@ -37,7 +49,7 @@ const getNotifications = async (req, res) => {
 };
 
 /**
- * @desc    Mark a single notification as read
+ * @desc    Mark a single notification as read for current user
  * @route   PATCH /api/notifications/:id/read
  * @access  Private
  */
@@ -78,16 +90,26 @@ const markAsRead = async (req, res) => {
 };
 
 /**
- * @desc    Mark all notifications as read for current user
+ * @desc    Mark all role-eligible notifications as read for current user
  * @route   PATCH /api/notifications/mark-all-read
  * @access  Private
  */
 const markAllAsRead = async (req, res) => {
   try {
     const userId = req.user._id;
+    const userRole = req.user.role || 'MEMBER';
+
+    const audienceFilter = {
+      $or: [
+        { audience: { $exists: false } },
+        { audience: { $size: 0 } },
+        { audience: userRole }
+      ],
+      readBy: { $ne: userId }
+    };
 
     await Notification.updateMany(
-      { readBy: { $ne: userId } },
+      audienceFilter,
       { $addToSet: { readBy: userId } }
     );
 
@@ -112,29 +134,44 @@ const markAllAsRead = async (req, res) => {
  */
 const createNotification = async (req, res) => {
   try {
-    const { title, message, type, link } = req.body;
+    const { title, message, type, link, audience, refType, refId } = req.body;
 
-    if (!title || !message || !type) {
+    if (!title || !message) {
       return res.status(400).json({
         success: false,
-        message: 'Title, message, and type are required'
+        message: 'Title and message are required'
       });
     }
 
     const notification = await Notification.create({
       title: typeof title === 'string' ? { om: title, am: title, en: title } : title,
       message: typeof message === 'string' ? { om: message, am: message, en: message } : message,
-      type,
+      type: type || 'GENERAL',
       link: link || null,
+      audience: Array.isArray(audience) ? audience : [],
+      refType: refType || null,
+      refId: refId || null,
       readBy: [req.user._id]
     });
 
-    // Emit real-time notification to all connected users
-    if (req.io) {
-      req.io.to('all_users_room').emit('new_notification', {
+    const io = req.app?.get('io');
+    if (io) {
+      const payload = {
         ...notification.toObject(),
         isRead: false
-      });
+      };
+
+      if (Array.isArray(audience) && audience.length > 0) {
+        // If audience is only admins
+        if (audience.length === 2 && audience.includes('SUPER_ADMIN') && audience.includes('ADMIN')) {
+          io.to('admin_room').emit('new_notification', payload);
+        } else {
+          // Send to exec or relevant room
+          io.to('exec_5_actors_room').emit('new_notification', payload);
+        }
+      } else {
+        io.to('all_users_room').emit('new_notification', payload);
+      }
     }
 
     return res.status(201).json({

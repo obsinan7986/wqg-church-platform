@@ -57,6 +57,11 @@ const initSocketHandler = (io) => {
         console.log(`[Socket] Joined executive room: ${user.fullName} (${user.role})`);
       }
 
+      if (['SUPER_ADMIN', 'ADMIN'].includes(user.role)) {
+        socket.join('admin_room');
+        console.log(`[Socket] Joined admin room: ${user.fullName} (${user.role})`);
+      }
+
       // Mark user online in DB
       await User.findByIdAndUpdate(user._id, { isOnline: true }).catch(() => {});
       io.to('all_users_room').emit('user_status_changed', {
@@ -82,6 +87,10 @@ const initSocketHandler = (io) => {
 
           if (EXEC_ROLES.includes(authedUser.role)) {
             socket.join('exec_5_actors_room');
+          }
+
+          if (['SUPER_ADMIN', 'ADMIN'].includes(authedUser.role)) {
+            socket.join('admin_room');
           }
 
           await User.findByIdAndUpdate(authedUser._id, { isOnline: true }).catch(() => {});

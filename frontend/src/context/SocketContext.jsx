@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef, useMemo } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 import api from '../api/axios';
@@ -9,10 +9,14 @@ export const SocketProvider = ({ children }) => {
   const { user, token, isAuthenticated } = useAuth();
   const [socket, setSocket] = useState(null);
   const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [toastNotification, setToastNotification] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
   const toastTimeoutRef = useRef(null);
+
+  // Derive unread count strictly from items list
+  const unreadCount = useMemo(() => {
+    return notifications.filter((n) => !n.isRead).length;
+  }, [notifications]);
 
   // Fetch initial notifications when authenticated
   useEffect(() => {
@@ -20,9 +24,8 @@ export const SocketProvider = ({ children }) => {
       const fetchInitialNotifications = async () => {
         try {
           const res = await api.get('/notifications');
-          if (res.data?.success) {
-            setNotifications(res.data.notifications || []);
-            setUnreadCount(res.data.unreadCount || 0);
+          if (res.data?.success && Array.isArray(res.data.notifications)) {
+            setNotifications(res.data.notifications);
           }
         } catch (err) {
           console.warn('[SocketContext] Failed to load notifications:', err.message);
@@ -32,7 +35,6 @@ export const SocketProvider = ({ children }) => {
       fetchInitialNotifications();
     } else {
       setNotifications([]);
-      setUnreadCount(0);
     }
   }, [isAuthenticated, token]);
 
@@ -61,8 +63,11 @@ export const SocketProvider = ({ children }) => {
     // Real-time Notification Listener
     newSocket.on('new_notification', (notification) => {
       console.log('[Socket.io Client] New notification received:', notification);
-      setNotifications((prev) => [notification, ...prev]);
-      setUnreadCount((prev) => prev + 1);
+      setNotifications((prev) => {
+        const exists = prev.some((n) => n._id === notification._id);
+        if (exists) return prev;
+        return [notification, ...prev];
+      });
 
       // Trigger real-time floating toast
       setToastNotification(notification);
@@ -104,7 +109,6 @@ export const SocketProvider = ({ children }) => {
       setNotifications((prev) =>
         prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
       );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (err) {
       console.error('[markNotificationRead Error]:', err.message);
     }
@@ -114,7 +118,6 @@ export const SocketProvider = ({ children }) => {
     try {
       await api.patch('/notifications/mark-all-read');
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      setUnreadCount(0);
     } catch (err) {
       console.error('[markAllNotificationsRead Error]:', err.message);
     }
@@ -150,3 +153,5 @@ export const useSocket = () => {
   }
   return context;
 };
+
+export default SocketContext;

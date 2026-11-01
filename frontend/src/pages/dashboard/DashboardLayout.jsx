@@ -30,13 +30,15 @@ import {
   ShieldCheck,
   Calendar,
   HelpCircle,
-  Languages
+  Languages,
+  Inbox
 } from 'lucide-react';
 import { useTour } from '../../context/TourContext';
 import { useDateSettings } from '../../context/DateSettingsContext';
 import DateSettingsBar from '../../components/DateSettingsBar';
 // Lazy-load dashboard tabs with React.lazy + Suspense for optimal bundle size
 const MessagingCenter = React.lazy(() => import('../../components/MessagingCenter'));
+const ContactInbox = React.lazy(() => import('./ContactInbox'));
 const CollectorDash = React.lazy(() => import('./CollectorDash'));
 const MemberPaymentDash = React.lazy(() => import('./MemberPaymentDash'));
 const HRDash = React.lazy(() => import('./HRDash'));
@@ -118,12 +120,15 @@ const DEFAULT_ANNOUNCEMENTS = [
 const DashboardLayout = () => {
   const { t, i18n } = useTranslation();
   const { user, isAuthenticated, loading, logout } = useAuth();
-  const { unreadCount } = useSocket();
+  const { unreadCount, socket } = useSocket();
 
   const navigate = useNavigate();
   const location = useLocation();
   const { tab: paramTab } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Contact inbox unread messages count for admins
+  const [unreadContactCount, setUnreadContactCount] = useState(0);
 
   // Tab alias mapping for backward compatibility: legacy library, upload, and live URLs redirect to overview
   const tabAliases = {
@@ -140,7 +145,10 @@ const DashboardLayout = () => {
     'site-text': 'site-texts',
     'site-texts': 'site-texts',
     texts: 'site-texts',
-    i18n: 'site-texts'
+    i18n: 'site-texts',
+    'contact-inbox': 'contact-inbox',
+    inbox: 'contact-inbox',
+    contact: 'contact-inbox'
   };
 
   const rawTab = paramTab || searchParams.get('tab') || 'overview';
@@ -152,6 +160,34 @@ const DashboardLayout = () => {
       navigate('/dashboard', { replace: true });
     }
   }, [rawTab, paramTab, searchParams, navigate]);
+
+  // Fetch & sync unread contact messages count for Admin / SuperAdmin
+  useEffect(() => {
+    if (!isAuthenticated || !user || !['SUPER_ADMIN', 'ADMIN'].includes(user.role)) return;
+
+    const fetchUnreadContactCount = async () => {
+      try {
+        const res = await api.get('/contact', { params: { limit: 1 } });
+        if (res.data?.success && typeof res.data.unreadCount === 'number') {
+          setUnreadContactCount(res.data.unreadCount);
+        }
+      } catch (err) {
+        // silent catch
+      }
+    };
+
+    fetchUnreadContactCount();
+
+    if (socket) {
+      const handleContactMsg = () => fetchUnreadContactCount();
+      socket.on('new_contact_message', handleContactMsg);
+      socket.on('content_updated', handleContactMsg);
+      return () => {
+        socket.off('new_contact_message', handleContactMsg);
+        socket.off('content_updated', handleContactMsg);
+      };
+    }
+  }, [isAuthenticated, user, socket]);
 
   const handleSelectTab = (tabId) => {
     setSearchParams({ tab: tabId });
@@ -363,6 +399,14 @@ const DashboardLayout = () => {
       icon: MessageSquare,
       badgeCount: unreadCount > 0 ? unreadCount : null,
       roles: ['SUPER_ADMIN', 'ADMIN', 'COLLECTOR', 'HR', 'SECRETARY', 'MEMBER']
+    },
+    {
+      id: 'contact-inbox',
+      title: t('dashboard.menuContactInbox') || 'Ergaa Qunnamtii',
+      subtitle: t('dashboard.menuContactInboxSub') || 'Contact Inbox',
+      icon: Inbox,
+      badgeCount: unreadContactCount > 0 ? unreadContactCount : null,
+      roles: ['SUPER_ADMIN', 'ADMIN']
     },
     {
       id: 'radio',
@@ -1040,6 +1084,11 @@ const DashboardLayout = () => {
           >
             {/* TAB: MESSAGES */}
             {activeTab === 'messages' && <MessagingCenter />}
+
+            {/* TAB: CONTACT INBOX (SUPER_ADMIN, ADMIN) */}
+            {activeTab === 'contact-inbox' && (
+              <ContactInbox onCountChange={(cnt) => setUnreadContactCount(cnt)} />
+            )}
 
             {/* TAB: GOSPEL RADIO BROADCAST STUDIO (STAFF) */}
             {activeTab === 'radio' && <GospelRadioStudio />}
