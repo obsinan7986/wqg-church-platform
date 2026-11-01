@@ -12,7 +12,6 @@ import {
   Pause,
   BookOpen,
   ArrowRight,
-  Video,
   Users,
   LayoutDashboard
 } from 'lucide-react';
@@ -377,14 +376,6 @@ export const HeroSlideshow = () => {
             <BookOpen className="w-4 h-4 text-royal" aria-hidden="true" />
             <span>Tajaajila Keenya</span>
             <ArrowRight className="w-4 h-4 text-royal" aria-hidden="true" />
-          </Link>
-
-          <Link
-            to="/media-library"
-            className="hero-btn-secondary px-6 py-3 rounded-full font-bold text-xs sm:text-sm flex items-center justify-center space-x-2 shadow-lg min-h-[44px]"
-          >
-            <Video className="w-4 h-4 text-gold-400" aria-hidden="true" />
-            <span>Video Hordofaa</span>
           </Link>
 
           {isAuthenticated ? (

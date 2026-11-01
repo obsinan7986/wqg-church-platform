@@ -56,10 +56,10 @@ const AppContent = () => {
             <Route path="/events" element={<EventsPage />} />
             <Route path="/announcements" element={<AnnouncementsPage />} />
             <Route path="/announcements/:id" element={<AnnouncementsPage />} />
-            {/* Redirect legacy library / upload / live URLs to dashboard overview */}
-            <Route path="/media-library" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/library" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/media" element={<Navigate to="/dashboard" replace />} />
+            {/* Redirect legacy library URLs to "/" and live / upload URLs to dashboard overview */}
+            <Route path="/media-library" element={<Navigate to="/" replace />} />
+            <Route path="/library" element={<Navigate to="/" replace />} />
+            <Route path="/media" element={<Navigate to="/" replace />} />
             <Route path="/live" element={<Navigate to="/dashboard" replace />} />
             <Route path="/live-studio" element={<Navigate to="/dashboard" replace />} />
             <Route path="/upload" element={<Navigate to="/dashboard" replace />} />

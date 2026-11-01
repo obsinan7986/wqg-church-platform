@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import {
-  BookOpen,
   Music,
   HeartHandshake,
   Video,
@@ -163,30 +162,6 @@ const Services = () => {
               );
             })}
           </div>
-
-          {/* Media Library Feature Banner */}
-          <Card className="border-gold-500/40 p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-2 max-w-2xl">
-              <Badge variant="solid-gold">
-                <BookOpen className="w-3.5 h-3.5 mr-1" />
-                <span>Wiirtuu Kitaabotaa fi Faayilootaa (Digital Library)</span>
-              </Badge>
-              <h2 className="text-2xl sm:text-3xl font-black text-white">
-                Kitaabota Hafuuraa (PDF), Faarfannaa (MP3) fi Lallaba (MP4)
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-300">
-                Galmee faayilootaa waldichaa keessaa kitaabota seera amantaa dubbisaa, faarfannaa  dhaggeeffadhaa, ykn bilisaan buufadhaa.
-              </p>
-            </div>
-
-            <Link
-              to="/media-library"
-              className="px-6 py-3.5 rounded-2xl bg-gold-500 hover:bg-gold-600 text-navy-900 font-semibold text-xs uppercase tracking-wider flex items-center space-x-2 shadow-xl shadow-gold-500/20 hover:scale-105 transition-all whitespace-nowrap"
-            >
-              <span>Wiirtuu Faayilii Seeni</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </Card>
 
           {/* Dynamic YouTube Gospel Media & Videos Section */}
           <div className="space-y-8 pt-6 border-t border-slate-700/80">
