@@ -17,11 +17,20 @@ class ErrorBoundary extends React.Component {
   }
 
   handleReload = () => {
-    window.location.reload();
+    try {
+      if (window.caches) {
+        caches.keys().then((names) => {
+          for (const name of names) caches.delete(name);
+        });
+      }
+    } catch (_) {}
+    const url = new URL(window.location.href);
+    url.searchParams.set('_t', Date.now().toString());
+    window.location.replace(url.toString());
   };
 
   handleGoHome = () => {
-    window.location.href = '/';
+    window.location.href = '/?_t=' + Date.now().toString();
   };
 
   render() {

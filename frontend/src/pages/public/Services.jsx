@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import {
+  BookOpen,
   Music,
   HeartHandshake,
   Video,
