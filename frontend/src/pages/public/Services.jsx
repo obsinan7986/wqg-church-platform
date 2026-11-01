@@ -13,6 +13,7 @@ import {
   Tv
 } from 'lucide-react';
 import {
+  Card,
   Container,
   Section,
   Button,

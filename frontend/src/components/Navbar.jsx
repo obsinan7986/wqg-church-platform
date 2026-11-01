@@ -22,7 +22,8 @@ import {
   Coins,
   MessageSquare,
   Radio,
-  HelpCircle
+  HelpCircle,
+  Mail
 } from 'lucide-react';
 import { Avatar } from './ui';
 import NotificationBell from './NotificationBell';
@@ -119,8 +120,14 @@ export const Navbar = () => {
     { name: 'Mana (Home)', path: '/', icon: HomeIcon },
     { name: 'Seenaa (History)', path: '/about', icon: BookOpen },
     { name: 'Tajaajiloota (Services)', path: '/services', icon: HeartHandshake },
-    { name: 'Beeksisa', path: '/announcements', icon: Megaphone },
-    { name: 'Gargaarsa (Help)', path: '/help', icon: HelpCircle },
+    {
+    name: 'Beeksisa', path: '/announcements', icon: Megaphone
+  },
+  {
+    name: t('nav.contact') || 'Nu Qunnamaa', path: '/contact', icon: Mail
+  },
+  {
+    name: 'Gargaarsa (Help)', path: '/help', icon: HelpCircle },
     {
       name: isAuthenticated ? 'Dashboard' : 'Seeni/Login',
       path: isAuthenticated ? '/dashboard' : '/login',
@@ -167,6 +174,13 @@ export const Navbar = () => {
 
           {/* Right Section Desktop */}
           <div className="hidden lg:flex items-center space-x-3.5">
+            <Link
+              to="/contact"
+              className="hidden xl:inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold text-white/90 hover:text-white hover:bg-royal-dark transition-colors border border-transparent hover:border-gold-500/40"
+            >
+              <Mail className="w-3.5 h-3.5 text-gold-400" />
+              <span>{t('nav.contact') || 'Nu Qunnamaa'}</span>
+            </Link>
             {/* Compact Language Selector Pills with Globe */}
             <div
               data-tour="nav-lang"

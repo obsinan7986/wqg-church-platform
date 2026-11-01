@@ -13,7 +13,8 @@
     "dashboard": "Dashboard",
     "logout": "Logout",
     "profile": "Profile",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "contact": "Contact"
   },
   "roles": {
     "SUPER_ADMIN": "Super Admin",
@@ -197,5 +198,38 @@
     "menuRecordsSub": "Secretariat & Records",
     "menuSettings": "Settings",
     "menuSettingsSub": "System & Audit Settings"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Reach out to us for spiritual guidance, prayers, questions, or church inquiries.",
+    "emailCardTitle": "Official Email",
+    "phoneCardTitle": "Phone Numbers",
+    "addressCardTitle": "Church Address",
+    "officeHoursCardTitle": "Office Hours",
+    "socialCardTitle": "Follow Us on Social Media",
+    "openInMaps": "Open in Google Maps",
+    "liveMeetingTitle": "Live Prayer & Teaching",
+    "liveNow": "LIVE NOW",
+    "joinLive": "Join Live Meeting",
+    "loginToJoin": "Log in to see the join link",
+    "meetingId": "Meeting ID",
+    "passcode": "Passcode",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "sendMessageTitle": "Send Us a Message",
+    "sendMessageSubtitle": "Have a prayer request, suggestion, or question? Send us a note below.",
+    "name": "Full Name",
+    "namePlaceholder": "Enter your full name",
+    "contactInfo": "Email or Phone",
+    "contactInfoPlaceholder": "Your email address or phone number",
+    "subject": "Subject",
+    "subjectPlaceholder": "Subject of your message",
+    "message": "Message",
+    "messagePlaceholder": "Write your detailed message here...",
+    "submit": "Send Message",
+    "submitting": "Sending...",
+    "successMessage": "Thank you! Your message has been received successfully. We will get back to you soon.",
+    "sendAnother": "Send another message",
+    "tooManyRequests": "Too many requests. Please try again after an hour."
   }
 }

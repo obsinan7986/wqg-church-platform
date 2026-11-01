@@ -13,7 +13,8 @@
     "dashboard": "Dashboard",
     "logout": "ውጣ",
     "profile": "መገለጫ",
-    "notifications": "ማስታወቂያዎች"
+    "notifications": "ማስታወቂያዎች",
+    "contact": "ያግኙን"
   },
   "roles": {
     "SUPER_ADMIN": "Super Admin",
@@ -197,5 +198,38 @@
     "menuRecordsSub": "Secretariat & Records",
     "menuSettings": "ማስተካከያ",
     "menuSettingsSub": "System & Audit Settings"
+  },
+  "contact": {
+    "title": "ያግኙን",
+    "subtitle": "ለጸሎት ጥያቄ፣ ለመንፈሳዊ ምክር ወይም ለማንኛውም ጥያቄ በማንኛውም ጊዜ ሊያገኙን ይችላሉ።",
+    "emailCardTitle": "ኢሜይል (Email)",
+    "phoneCardTitle": "ስልክ ቁጥሮች (Phone)",
+    "addressCardTitle": "የማኅበሩ አድራሻ (Address)",
+    "officeHoursCardTitle": "የሥራ ሰዓት (Office Hours)",
+    "socialCardTitle": "ማህበራዊ ሚዲያ (Social Media)",
+    "openInMaps": "በካርታ ክፈት (Open in Maps)",
+    "liveMeetingTitle": "የቀጥታ የጸሎትና የትምህርት ጉባኤ",
+    "liveNow": "በቀጥታ ሥርጭት ላይ (LIVE NOW)",
+    "joinLive": "ጉባኤውን ይቀላቀሉ (Join Live Meeting)",
+    "loginToJoin": "የመቀላቀያ ሊንኩን ለማግኘት ይግቡ",
+    "meetingId": "የስብሰባ መለያ (Meeting ID)",
+    "passcode": "የይለፍ ቃል (Passcode)",
+    "copy": "ቅዳ (Copy)",
+    "copied": "ተቀድቷል!",
+    "sendMessageTitle": "መልእክት ይላኩልን",
+    "sendMessageSubtitle": "የጸሎት ጥያቄ፣ አስተያየት ወይም ጥያቄ ካለዎት እባክዎ መልእክትዎን ይጻፉ።",
+    "name": "ሙሉ ስም",
+    "namePlaceholder": "ሙሉ ስምዎን ያስገቡ",
+    "contactInfo": "ኢሜይል ወይም ስልክ",
+    "contactInfoPlaceholder": "ኢሜይልዎን ወይም ስልክ ቁጥርዎን ያስገቡ",
+    "subject": "የመልእክቱ ርዕስ",
+    "subjectPlaceholder": "የመልእክትዎን ርዕስ ያስገቡ",
+    "message": "መልእክት",
+    "messagePlaceholder": "መልእክትዎን በዝርዝር እዚህ ይጻፉ...",
+    "submit": "መልእክት ላክ",
+    "submitting": "እየላከ ነው...",
+    "successMessage": "እናመሰግናለን! መልእክትዎ በተሳካ ሁኔታ ደርሶናል። በቅርቡ እናገኝዎታለን።",
+    "sendAnother": "ሌላ መልእክት ይላኩ",
+    "tooManyRequests": "ብዙ መልእክቶች ተልከዋል። እባክዎ ከአንድ ሰዓት በኋላ እንደገና ይሞክሩ።"
   }
 }

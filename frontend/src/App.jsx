@@ -19,6 +19,7 @@ const Services = React.lazy(() => import('./pages/public/Services'));
 const EventsPage = React.lazy(() => import('./pages/public/EventsPage'));
 const AnnouncementsPage = React.lazy(() => import('./pages/public/AnnouncementsPage'));
 const HelpCenter = React.lazy(() => import('./pages/public/HelpCenter'));
+const Contact = React.lazy(() => import('./pages/public/Contact'));
 const NotFound = React.lazy(() => import('./pages/public/NotFound'));
 
 // Auth Pages
@@ -56,6 +57,7 @@ const AppContent = () => {
             <Route path="/events" element={<EventsPage />} />
             <Route path="/announcements" element={<AnnouncementsPage />} />
             <Route path="/announcements/:id" element={<AnnouncementsPage />} />
+            <Route path="/contact" element={<Contact />} />
             {/* Redirect legacy library URLs to "/" and live / upload URLs to dashboard overview */}
             <Route path="/media-library" element={<Navigate to="/" replace />} />
             <Route path="/library" element={<Navigate to="/" replace />} />

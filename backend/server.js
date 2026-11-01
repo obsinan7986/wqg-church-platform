@@ -22,6 +22,8 @@ const scheduleRoutes = require('./routes/scheduleRoutes');
 const auditRoutes = require('./routes/auditRoutes');
 const radioRoutes = require('./routes/radioRoutes');
 const siteTextRoutes = require('./routes/siteTextRoutes');
+const siteSettingsRoutes = require('./routes/siteSettingsRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 const radioService = require('./services/radioService');
 const initSocketHandler = require('./socket/socketHandler');
 const { seedIfEmpty } = require('./controllers/scheduleController');
@@ -116,6 +118,7 @@ const io = new Server(server, {
 
 // Initialize Socket.io custom handlers & authentication
 initSocketHandler(io);
+app.set('io', io);
 
 // Enable CORS middleware first to immediately handle preflight OPTIONS requests
 app.use(cors(corsOptions));
@@ -182,6 +185,8 @@ app.use('/api/schedule', scheduleRoutes);
 app.use('/api/audit-logs', auditRoutes);
 app.use('/api/radio', radioRoutes);
 app.use('/api/site-text', siteTextRoutes);
+app.use('/api/site-settings', siteSettingsRoutes);
+app.use('/api/contact', contactRoutes);
 
 // 404 Route Handler
 app.use((req, res) => {

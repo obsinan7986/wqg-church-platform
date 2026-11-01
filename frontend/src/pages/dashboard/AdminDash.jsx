@@ -24,6 +24,8 @@ import AdminBannersTab from './admin/AdminBannersTab';
 import AdminMediaTab from './admin/AdminMediaTab';
 import AdminAuditTab from './admin/AdminAuditTab';
 import AdminCreateStaffTab from './admin/AdminCreateStaffTab';
+import AdminContactSettingsTab from './admin/AdminContactSettingsTab';
+import AdminContactInboxTab from './admin/AdminContactInboxTab';
 
 const AdminDash = () => {
   const { t } = useTranslation();
@@ -351,6 +353,8 @@ const AdminDash = () => {
     { id: 'staff', label: 'Tajaajiltoota', count: staffList.length },
     { id: 'banners', label: 'Banners', count: banners.length },
     { id: 'media', label: 'YouTube', count: mediaList.length },
+    { id: 'contactSettings', label: 'Contact & Links' },
+    { id: 'inbox', label: 'Ergaa (Inbox)' },
     ...(isSuperAdmin ? [{ id: 'audit', label: 'Audit Logs' }] : []),
     ...(isSuperAdmin ? [{ id: 'createStaff', label: '+ Staff Haaraa' }] : [])
   ];
@@ -414,6 +418,12 @@ const AdminDash = () => {
           onDeleteMedia={handleDeleteMedia}
         />
       )}
+
+      {/* Tab: Contact & Site Links Settings */}
+      {activeTab === 'contactSettings' && <AdminContactSettingsTab />}
+
+      {/* Tab: Contact Inbox Messages */}
+      {activeTab === 'inbox' && <AdminContactInboxTab />}
 
       {/* Tab 5: Audit Logs System (Strictly Super Admin) */}
       {activeTab === 'audit' && isSuperAdmin && (

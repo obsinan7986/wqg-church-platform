@@ -13,7 +13,8 @@
     "dashboard": "Dashboard",
     "logout": "Bahi",
     "profile": "Eenyummaa",
-    "notifications": "Beeksisoota"
+    "notifications": "Beeksisoota",
+    "contact": "Nu Qunnamaa"
   },
   "roles": {
     "SUPER_ADMIN": "Super Admin",
@@ -197,5 +198,38 @@
     "menuRecordsSub": "Secretariat & Records",
     "menuSettings": "Qindaa'ina",
     "menuSettingsSub": "System & Audit Settings"
+  },
+  "contact": {
+    "title": "Nu Qunnamaa (Contact Us)",
+    "subtitle": "Gaaffii, yaada ykn gargaarsa hafuuraaf yeroo kamiyyuu nu qunnamuu dandeessu.",
+    "emailCardTitle": "Imeelii (Email)",
+    "phoneCardTitle": "Bilbila (Phone)",
+    "addressCardTitle": "Teessoo Waldichaa (Address)",
+    "officeHoursCardTitle": "Sa'aatii Hojii (Office Hours)",
+    "socialCardTitle": "Miidiyaa Hawaasummaa (Social Media)",
+    "openInMaps": "Kaartaa irratti Bani",
+    "liveMeetingTitle": "Walga'ii fi Barnoota Kallattii",
+    "liveNow": "KALLATTII (LIVE NOW)",
+    "joinLive": "Kallattiin Seeni (Join Live Meeting)",
+    "loginToJoin": "Liinkii argachuuf dura seenaa (Log in to see link)",
+    "meetingId": "ID Walga'ii",
+    "passcode": "Koodii Iccitii",
+    "copy": "Waraabi",
+    "copied": "Waraabameera!",
+    "sendMessageTitle": "Ergaa Nuuf Ergaa",
+    "sendMessageSubtitle": "Yaada, kadhannaa ykn gaaffii qabdan asitti nuuf barreessaa.",
+    "name": "Maqaa Guutuu",
+    "namePlaceholder": "Maqaa keessan barreessaa",
+    "contactInfo": "Imeelii ykn Bilbila",
+    "contactInfoPlaceholder": "Imeelii ykn lakkoofsa bilbilaa",
+    "subject": "Dhimma Ergaa",
+    "subjectPlaceholder": "Mata-duree ergaa keessanii",
+    "message": "Ergaa",
+    "messagePlaceholder": "Ergaa keessan asitti bal'inaan barreessaa...",
+    "submit": "Ergaa Ergi",
+    "submitting": "Ergamaa jira...",
+    "successMessage": "Galatoomaa! Ergaan keessan milkaa'inaan nu ga'eera. Dhiyootti isin qunnamna.",
+    "sendAnother": "Ergaa biraa ergi",
+    "tooManyRequests": "Ergaan baay'ee dhiyaateera. Maaloo sa'aatii tokko booda irra deebi'aa yaalaa."
   }
 }

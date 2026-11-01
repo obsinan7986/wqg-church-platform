@@ -85,8 +85,41 @@ const roleMiddleware = (...allowedRoles) => {
   };
 };
 
+/**
+ * Optional authentication middleware:
+ * If a valid token is provided, attaches req.user; otherwise proceeds without failing.
+ */
+const optionalAuth = async (req, res, next) => {
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if (user && (!user.lockUntil || user.lockUntil <= Date.now())) {
+      if (decoded.tokenVersion === undefined || decoded.tokenVersion === (user.tokenVersion || 0)) {
+        req.user = user;
+      }
+    }
+  } catch (_) {
+    // Ignore invalid tokens for optional auth
+  }
+
+  next();
+};
+
 module.exports = {
   protect,
+  optionalAuth,
   roleMiddleware,
   authorizeRoles: roleMiddleware // alias for convenience
 };

@@ -2,6 +2,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('./models/User');
+const SiteSettings = require('./models/SiteSettings');
 const ScheduleItem = require('./models/ScheduleItem');
 const { seedIfEmpty } = require('./controllers/scheduleController');
 
@@ -469,6 +470,53 @@ const seedDatabase = async () => {
       }))
     );
     console.log('='.repeat(80));
+
+        const existingSettings = await SiteSettings.findOne();
+    if (!existingSettings) {
+      await SiteSettings.create({
+        emails: ['waldaa.giyoorgisii23@gmail.com', 'contact@waldaagiyoorgisii.org'],
+        phones: ['+251911000001', '+251911000002'],
+        address: {
+          om: 'Finfinnee, Oromiyaa, Itoophiyaa (St. George Hall)',
+          am: 'አዲስ አበባ፣ ኦሮሚያ፣ ኢትዮጵያ (ቅዱስ ጊዮርጊስ አዳራሽ)',
+          en: 'Addis Ababa, Oromia, Ethiopia (St. George Hall)'
+        },
+        mapUrl: 'https://maps.google.com/?q=St+George+Church+Addis+Ababa',
+        officeHours: {
+          om: 'Wiixata - Jimaata: 2:30 - 11:30 | Sanbata: 2:30 - 6:30',
+          am: 'ሰኞ - አርብ፡ 2:30 - 11:30 | ቅዳሜ፡ 2:30 - 6:30',
+          en: 'Monday - Friday: 8:30 AM - 5:30 PM | Saturday: 8:30 AM - 12:30 PM'
+        },
+        socialLinks: [
+          { platform: 'FACEBOOK', url: 'https://www.facebook.com/WaldaaQulqulluuGiyoorgisii', enabled: true },
+          { platform: 'YOUTUBE', url: 'https://www.youtube.com/@WaldaaQulqulluuGiyoorgisii', enabled: true },
+          { platform: 'TELEGRAM', url: 'https://t.me/WaldaaQulqulluuGiyoorgisii', enabled: true },
+          { platform: 'TIKTOK', url: 'https://www.tiktok.com/@waldaagiyoorgisii', enabled: true },
+          { platform: 'INSTAGRAM', url: 'https://www.instagram.com/waldaagiyoorgisii', enabled: true },
+          { platform: 'WHATSAPP', url: 'https://wa.me/251911000001', enabled: true }
+        ],
+        liveMeeting: {
+          title: {
+            om: 'Sagantaa Kadhannaa fi Lallaba Kallattii',
+            am: 'የቀጥታ የጸሎትና የወንጌል ትምህርት መርሐ-ግብር',
+            en: 'Online Prayer & Spiritual Teaching Fellowship'
+          },
+          platform: 'ZOOM',
+          url: 'https://zoom.us/j/84920491823',
+          meetingId: '849 2049 1823',
+          passcode: '777777',
+          isLive: false,
+          nextStartAt: new Date(Date.now() + 86400000 * 2),
+          scheduleText: {
+            om: "Kamisa fi Dilbata sa'aatii 12:00 Galgala",
+            am: 'ሐሙስ እና እሁድ ከምሽቱ 12:00 ሰዓት',
+            en: 'Every Thursday & Sunday at 6:00 PM (Addis Time)'
+          },
+          visibility: 'PUBLIC'
+        }
+      });
+      console.log('[Seed] Successfully seeded initial site settings.');
+    }
 
     await seedIfEmpty();
     await mongoose.connection.close();

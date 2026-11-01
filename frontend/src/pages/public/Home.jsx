@@ -151,6 +151,22 @@ const Home = () => {
   });
   const [loadingSchedule, setLoadingSchedule] = useState(true);
 
+  // Live Meeting status for compact top strip
+  const [liveMeetingData, setLiveMeetingData] = useState(null);
+
+  const fetchLiveStatus = useCallback(async () => {
+    try {
+      const res = await api.get('/site-settings/contact');
+      if (res.data?.success && res.data.settings?.liveMeeting) {
+        setLiveMeetingData(res.data.settings.liveMeeting);
+      }
+    } catch (_) {}
+  }, []);
+
+  useEffect(() => {
+    fetchLiveStatus();
+  }, [fetchLiveStatus]);
+
   // Stats Count-up observer state
   const [statsVisible, setStatsVisible] = useState(false);
   const statsRef = useRef(null);
@@ -227,8 +243,20 @@ const Home = () => {
 
     socket.on('content_updated', handleContentUpdate);
 
+    const handleLiveMeeting = (data) => {
+      if (data && typeof data.isLive === 'boolean') {
+        setLiveMeetingData((prev) => (prev ? { ...prev, isLive: data.isLive } : { isLive: data.isLive }));
+      } else {
+        fetchLiveStatus();
+      }
+    };
+    socket.on('live_meeting_status', handleLiveMeeting);
+    socket.on('site_settings_updated', fetchLiveStatus);
+
     return () => {
       socket.off('content_updated', handleContentUpdate);
+      socket.off('live_meeting_status', handleLiveMeeting);
+      socket.off('site_settings_updated', fetchLiveStatus);
     };
   }, [socket, fetchUpcomingEvents, fetchAnnouncements, fetchSchedule]);
 
@@ -414,6 +442,35 @@ const Home = () => {
 
   return (
     <div className="flex flex-col bg-white text-slate-900">
+      {/* ══════ COMPACT LIVE STREAM / FELLOWSHIP STRIP ══════ */}
+      {liveMeetingData?.isLive && (
+        <aside
+          aria-label="Live fellowship announcement"
+          className="bg-red-600 text-white py-2.5 px-4 sm:px-6 shadow-md border-b border-red-700 animate-in fade-in transition-all z-20"
+        >
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs">
+            <div className="flex items-center space-x-2.5">
+              <span className="flex h-2.5 w-2.5 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+              </span>
+              <span className="font-black tracking-wide uppercase text-[11px] bg-red-700 px-2 py-0.5 rounded">
+                Kallattii (LIVE)
+              </span>
+              <span className="font-bold text-white truncate">
+                {liveMeetingData?.title ? getLocalizedText(liveMeetingData.title, currentLang) : "Sagantaa Kadhannaa fi Lallaba Kallattii"}
+              </span>
+            </div>
+            <Link
+              to="/contact"
+              className="inline-flex items-center space-x-1 px-3 py-1 rounded-full bg-white text-red-700 hover:bg-gold-400 hover:text-royal font-black text-xs shadow transition-all shrink-0"
+            >
+              <Video className="w-3.5 h-3.5" />
+              <span>Hirmaadhaa (Join Now)</span>
+            </Link>
+          </div>
+        </aside>
+      )}
       {/* ══════ 1. ANIMATED HERO SLIDESHOW (Directly under navbar, no gap) ══════ */}
       <HeroSlideshow />
 
