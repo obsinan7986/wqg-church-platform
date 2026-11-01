@@ -68,7 +68,7 @@ export const ProgramsManager = () => {
   const isSecretary = user?.role === 'SECRETARY';
   const canManage = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN';
 
-  // Sub-tabs: announcements | events | schedule | live | banners
+  // Sub-tabs: announcements | events | schedule | banners
   const [activeSubTab, setActiveSubTab] = useState('announcements');
 
   // Data states
@@ -76,7 +76,6 @@ export const ProgramsManager = () => {
   const [events, setEvents] = useState([]);
   const [scheduleItems, setScheduleItems] = useState([]);
   const [banners, setBanners] = useState([]);
-  const [liveMeeting, setLiveMeeting] = useState(null);
 
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
@@ -86,7 +85,7 @@ export const ProgramsManager = () => {
   const [scheduleGroup, setScheduleGroup] = useState('SUNDAY_SERVICE');
 
   // Modals state
-  const [modalType, setModalType] = useState(null); // 'announcement' | 'event' | 'schedule' | 'banner' | 'scheduleLive'
+  const [modalType, setModalType] = useState(null); // 'announcement' | 'event' | 'schedule' | 'banner'
   const [editItem, setEditItem] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null); // { type, item }
 
@@ -169,10 +168,6 @@ export const ProgramsManager = () => {
   const [bannerBadge, setBannerBadge] = useState('Ayyaana & Sagantaa Addaa');
   const [bannerLinkUrl, setBannerLinkUrl] = useState('/services');
 
-  // Live schedule form fields
-  const [liveTitle, setLiveTitle] = useState('');
-  const [liveDescription, setLiveDescription] = useState('');
-  const [liveScheduledDate, setLiveScheduledDate] = useState('');
 
   // Fetch Announcements
   const fetchAnnouncements = useCallback(async () => {
@@ -222,18 +217,6 @@ export const ProgramsManager = () => {
     }
   }, []);
 
-  // Fetch Live Info
-  const fetchLive = useCallback(async () => {
-    try {
-      const res = await api.get('/live/active');
-      if (res.data?.success) {
-        setLiveMeeting(res.data.meeting || null);
-      }
-    } catch (err) {
-      console.error('[fetchLive Error]:', err);
-    }
-  }, []);
-
   // Initial load
   useEffect(() => {
     setLoading(true);
@@ -241,10 +224,9 @@ export const ProgramsManager = () => {
       fetchAnnouncements(),
       fetchEvents(),
       fetchSchedule(),
-      fetchBanners(),
-      fetchLive()
+      fetchBanners()
     ]).finally(() => setLoading(false));
-  }, [fetchAnnouncements, fetchEvents, fetchSchedule, fetchBanners, fetchLive]);
+  }, [fetchAnnouncements, fetchEvents, fetchSchedule, fetchBanners]);
 
   // Socket auto refresh on content_updated
   useEffect(() => {
@@ -254,11 +236,10 @@ export const ProgramsManager = () => {
       fetchEvents();
       fetchSchedule();
       fetchBanners();
-      fetchLive();
     };
     socket.on('content_updated', handleUpdate);
     return () => socket.off('content_updated', handleUpdate);
-  }, [socket, fetchAnnouncements, fetchEvents, fetchSchedule, fetchBanners, fetchLive]);
+  }, [socket, fetchAnnouncements, fetchEvents, fetchSchedule, fetchBanners]);
 
   // Image upload handler
   const handleImageUpload = async (e, uploadType = 'banners') => {
@@ -344,10 +325,6 @@ export const ProgramsManager = () => {
 
     setBannerBadge('Ayyaana & Sagantaa Addaa');
     setBannerLinkUrl('/services');
-
-    setLiveTitle('');
-    setLiveDescription('');
-    setLiveScheduledDate(new Date(Date.now() + 86400000).toISOString());
 
     setEditItem(null);
     setFormLangTab('om');
@@ -905,57 +882,6 @@ export const ProgramsManager = () => {
     }
   };
 
-  // Schedule Live Meeting
-  const handleScheduleLive = async (e) => {
-    e.preventDefault();
-    const errs = {};
-    if (!liveTitle.trim()) {
-      errs.liveTitle = 'Mata dureen walga\'ii dirqama (Live title required).';
-    }
-    if (!liveScheduledDate) {
-      errs.liveScheduledDate = 'Guyyaa fi sa\'aatiin sagantaa dirqama (Scheduled date & time required).';
-    } else if (new Date(liveScheduledDate).getTime() < Date.now() - 60000) {
-      errs.liveScheduledDate = 'Guyyaan sagantaa darbeera (Scheduled date cannot be in the past).';
-    }
-
-    if (Object.keys(errs).length > 0) {
-      setModalErrors(errs);
-      setModalAlertMsg(Object.values(errs)[0]);
-      setTimeout(() => {
-        document.querySelector('[data-error="true"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 50);
-      return;
-    }
-
-    setModalErrors({});
-    setModalAlertMsg('');
-    setFormLoading(true);
-    try {
-      const payload = {
-        title: liveTitle.trim(),
-        description: liveDescription.trim(),
-        scheduledDate: new Date(liveScheduledDate)
-      };
-
-      await api.post('/live/schedule', payload);
-      setToast({ type: 'success', message: 'Sagantaan Live qophaa\'eera (Live meeting scheduled)!' });
-      setModalType(null);
-      setEditItem(null);
-      setIsFormDirty(false);
-      fetchLive();
-      if (socket) socket.emit('content_updated', { type: 'LIVE' });
-    } catch (err) {
-      const serverErrs = err.response?.data?.errors;
-      if (serverErrs && typeof serverErrs === 'object') setModalErrors(serverErrs);
-      setModalAlertMsg(err.response?.data?.message || 'Live qopheessuu hin dandeenye (Failed to schedule live).');
-      setTimeout(() => {
-        document.querySelector('[data-error="true"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 50);
-    } finally {
-      setFormLoading(false);
-    }
-  };
-
   // Delete Action
   const handleConfirmDelete = async () => {
     if (!deleteConfirm) return;
@@ -1048,17 +974,6 @@ export const ProgramsManager = () => {
             </Button>
           )}
 
-          {activeSubTab === 'live' && canManage && (
-            <Button
-              variant="primary"
-              size="md"
-              icon={Radio}
-              onClick={() => handleOpenCreate('scheduleLive')}
-            >
-              Live Haaraa Qopheessi
-            </Button>
-          )}
-
           {activeSubTab === 'banners' && canManage && (
             <Button
               variant="primary"
@@ -1120,25 +1035,6 @@ export const ProgramsManager = () => {
           <span className="ml-1.5 px-2 py-0.5 rounded-full text-[10px] bg-white/20">
             {scheduleItems.length}
           </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => { setActiveSubTab('live'); setSearchTerm(''); }}
-          className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            activeSubTab === 'live'
-              ? 'bg-royal text-white shadow-md'
-              : 'text-slate-600 hover:text-royal hover:bg-white/60'
-          }`}
-        >
-          <Radio className="w-4 h-4 text-gold-400" />
-          <span>Tajaajila Kallattii (Live Studio)</span>
-          {liveMeeting && liveMeeting.status === 'LIVE' && (
-            <span className="ml-1.5 flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
-            </span>
-          )}
         </button>
 
         <button
@@ -1585,89 +1481,7 @@ export const ProgramsManager = () => {
         </div>
       )}
 
-      {/* ════════ SUB-TAB 4: LIVE BROADCAST ════════ */}
-      {activeSubTab === 'live' && (
-        <div className="space-y-6">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-red-100 border border-red-300 text-red-600 flex items-center justify-center">
-                  <Radio className="w-5 h-5 animate-pulse" />
-                </div>
-                <div>
-                  <h3 className="font-black text-base text-royal">
-                    Haala Tajaajila Kallattii (Current Live Session)
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Kutaa Live WebRTC fi qophii sagantaa kallattii
-                  </p>
-                </div>
-              </div>
-
-              {liveMeeting && (
-                <Badge variant={liveMeeting.status === 'LIVE' ? 'solid-gold' : 'muted'} size="md">
-                  {liveMeeting.status}
-                </Badge>
-              )}
-            </div>
-
-            {liveMeeting ? (
-              <div className="space-y-3">
-                <div className="p-4 bg-royal-tint rounded-xl border border-slate-200/60">
-                  <h4 className="font-black text-sm text-royal">{liveMeeting.title}</h4>
-                  <p className="text-xs text-slate-600 mt-1">{liveMeeting.description}</p>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mt-3 text-xs text-slate-500 font-mono gap-1">
-                    <span>Guyyaa: {formatDateTime(liveMeeting.scheduledDate, { showDeviceNote: true })}</span>
-                    <span>({formatDual(liveMeeting.scheduledDate)})</span>
-                    <span>Qophii: {liveMeeting.status}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3 pt-2">
-                  <a
-                    href="/dashboard/live"
-                    className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-royal hover:bg-royal-dark text-white font-bold text-xs shadow-md transition-all"
-                  >
-                    <Radio className="w-4 h-4 text-gold-400" />
-                    <span>Gara Live Studio Seenaa</span>
-                    <ExternalLink className="w-3.5 h-3.5 text-gold-400 ml-1" />
-                  </a>
-
-                  {canManage && (
-                    <Button
-                      variant="outline"
-                      size="md"
-                      onClick={() => handleOpenCreate('scheduleLive')}
-                    >
-                      Sagantaa Live Haaraa Qopheessi
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <EmptyState
-                icon={Radio}
-                title="Sagantaan Live amma hin jiru"
-                description="Sagantaa kallattii haaraa qopheessuuf qabduu gadii cuqaasaa."
-                action={
-                  canManage && (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      icon={Radio}
-                      onClick={() => handleOpenCreate('scheduleLive')}
-                    >
-                      Live Qopheessi
-                    </Button>
-                  )
-                }
-              />
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ════════ SUB-TAB 5: BANNERS ════════ */}
+      {/* ════════ SUB-TAB: BANNERS ════════ */}
       {activeSubTab === 'banners' && (
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -2949,103 +2763,6 @@ export const ProgramsManager = () => {
                 disabled={formLoading}
               >
                 {editItem ? 'Kuusi' : 'Dabali'}
-              </Button>
-            </div>
-          </form>
-        </Modal>
-      )}
-
-      {/* ════════ MODAL: SCHEDULE LIVE MEETING ════════ */}
-      {modalType === 'scheduleLive' && (
-        <Modal
-          isOpen={true}
-          onClose={handleModalClose}
-          title="Sagantaa Live Haaraa Qopheessi (Schedule Live Session)"
-          size="md"
-        >
-          <form noValidate onSubmit={handleScheduleLive} className="flex flex-col min-h-0">
-            {/* Scrollable Modal Body */}
-            <div className="space-y-4 max-h-[60vh] overflow-y-auto px-1 pr-2">
-              {/* Alert at top */}
-              {modalAlertMsg && (
-                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-2 animate-in fade-in">
-                  <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <strong className="block font-bold">Dogoggora (Validation Error)</strong>
-                    <span>{modalAlertMsg}</span>
-                  </div>
-                </div>
-              )}
-
-              <div data-error={!!modalErrors.liveTitle}>
-                <FormField label="Mata Duree Sagantaa Live" required error={modalErrors.liveTitle}>
-                  <input
-                    type="text"
-                    value={liveTitle}
-                    onChange={(e) => {
-                      setLiveTitle(e.target.value);
-                      setIsFormDirty(true);
-                      if (modalErrors.liveTitle) setModalErrors((prev) => ({ ...prev, liveTitle: null }));
-                    }}
-                    placeholder="Fkn: Kadhannaa fi Sagalee Waaqayyoo Kallattii"
-                    className={`w-full px-3.5 py-2 rounded-xl bg-white border text-xs text-slate-800 font-bold ${
-                      modalErrors.liveTitle ? 'border-red-500 ring-2 ring-red-200' : 'border-slate-300'
-                    }`}
-                  />
-                </FormField>
-              </div>
-
-              <FormField label="Ibsa Sagantaa">
-                <textarea
-                  rows={3}
-                  value={liveDescription}
-                  onChange={(e) => {
-                    setLiveDescription(e.target.value);
-                    setIsFormDirty(true);
-                  }}
-                  placeholder="Ibsa sagantaa kallattii..."
-                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-xs text-slate-800"
-                />
-              </FormField>
-
-              <div data-error={!!modalErrors.liveScheduledDate}>
-                <DateTimePicker
-                  label="Guyyaa fi Sa'aatii (Scheduled Date & Time) *"
-                  value={liveScheduledDate}
-                  onChange={(val) => {
-                    setLiveScheduledDate(val);
-                    setIsFormDirty(true);
-                    if (modalErrors.liveScheduledDate) setModalErrors((prev) => ({ ...prev, liveScheduledDate: null }));
-                  }}
-                  error={modalErrors.liveScheduledDate}
-                  required
-                />
-              </div>
-
-              <div className="p-3 rounded-xl bg-royal-tint border border-slate-200 text-xs text-slate-600 space-y-1">
-                <div className="font-bold text-royal flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-gold-600" />
-                  <span>Notice:</span>
-                </div>
-                <p>
-                  Sagantaan kun yeroo qophaa'u fuula duraa (Home) irratti strip ta'ee amantoota hundaaf ni mul'ata.
-                </p>
-              </div>
-            </div>
-
-            {/* Sticky Footer */}
-            <div className="sticky bottom-0 bg-white border-t border-slate-200 pt-3 mt-4 flex justify-end space-x-3 z-10">
-              <Button variant="ghost" size="md" type="button" onClick={handleModalClose}>
-                Dhiisi (Cancel)
-              </Button>
-              <Button
-                variant="primary"
-                size="md"
-                type="submit"
-                loading={formLoading}
-                disabled={formLoading}
-              >
-                Qopheessi (Schedule Live)
               </Button>
             </div>
           </form>

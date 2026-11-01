@@ -64,11 +64,9 @@ export default function GospelRadioMiniPlayer() {
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  const isLiveMeeting = location.pathname.includes('/dashboard') && location.search.includes('tab=live');
-
   // Aggregate error: ytError takes precedence for YouTube tracks
-  const displayError = isYouTube ? (ytError || loadError) : loadError;
-  // Show autoplay gate for both FILE and YOUTUBE tracks
+  const displayError = ytError || loadError;
+  // Show autoplay gate
   const showAutoplayGate = autoplayBlocked || autoplayGate;
 
   return (

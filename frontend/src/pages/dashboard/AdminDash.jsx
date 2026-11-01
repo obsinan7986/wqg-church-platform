@@ -7,7 +7,6 @@ import {
   Image as ImageIcon,
   Tv
 } from 'lucide-react';
-import AdminUpload from './AdminUpload';
 import {
   Button,
   PageHeader,
@@ -352,7 +351,6 @@ const AdminDash = () => {
     { id: 'staff', label: 'Tajaajiltoota', count: staffList.length },
     { id: 'banners', label: 'Banners', count: banners.length },
     { id: 'media', label: 'YouTube', count: mediaList.length },
-    { id: 'uploads', label: "Faayiloota Fe'i (Uploads)" },
     ...(isSuperAdmin ? [{ id: 'audit', label: 'Audit Logs' }] : []),
     ...(isSuperAdmin ? [{ id: 'createStaff', label: '+ Staff Haaraa' }] : [])
   ];
@@ -416,9 +414,6 @@ const AdminDash = () => {
           onDeleteMedia={handleDeleteMedia}
         />
       )}
-
-      {/* Tab: File Uploads & Document Management */}
-      {activeTab === 'uploads' && <AdminUpload />}
 
       {/* Tab 5: Audit Logs System (Strictly Super Admin) */}
       {activeTab === 'audit' && isSuperAdmin && (

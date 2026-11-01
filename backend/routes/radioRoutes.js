@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const {
   getRadioState,
-  getRadioSongs,
   getRadioLibrary,
   reportTrackEnded,
   playRadio,
@@ -19,7 +18,6 @@ const STAFF_ROLES = ['SUPER_ADMIN', 'ADMIN', 'SECRETARY'];
 
 // Public / general endpoints
 router.get('/state', getRadioState);
-router.get('/songs', getRadioSongs);
 router.get('/library', getRadioLibrary);
 
 // Staff-only endpoints

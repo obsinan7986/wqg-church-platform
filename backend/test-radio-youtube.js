@@ -2,7 +2,8 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 const RadioState = require('./models/RadioState');
 const GospelMedia = require('./models/GospelMedia');
-const MediaDocument = require('./models/MediaDocument');
+const auditLogger = require('./utils/auditLogger');
+auditLogger.logAudit = async () => {};
 const radioService = require('./services/radioService');
 const { createMedia } = require('./controllers/gospelMediaController');
 const { getRadioLibrary } = require('./controllers/radioController');
@@ -135,36 +136,23 @@ async function runUnitTests() {
   // 5. Radio Library normalized track shape
   console.log('\n[TEST 5] Testing /api/radio/library Normalization...');
   {
-    // Stub find on GospelMedia & MediaDocument
+    // Stub find on GospelMedia
     const origGospelFind = GospelMedia.find;
-    const origDocFind = MediaDocument.find;
 
     GospelMedia.find = () => ({
       select: () => ({
-        lean: async () => [
-          {
-            _id: 'yt_123',
-            title: { om: 'Faarfannaa YouTube', am: 'የዩቲዩብ መዝሙር', en: 'YouTube Hymn' },
-            speakerOrSinger: 'Singer A',
-            category: 'GOSPEL',
-            youtubeVideoId: 'dQw4w9WgXcQ',
-            thumbnailUrl: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg'
-          }
-        ]
-      })
-    });
-
-    MediaDocument.find = () => ({
-      select: () => ({
-        lean: async () => [
-          {
-            _id: 'file_456',
-            title: 'Uploaded Audio Hymn',
-            category: 'CHOIR',
-            fileUrl: '/uploads/hymn.mp3',
-            fileType: 'AUDIO'
-          }
-        ]
+        sort: () => ({
+          lean: async () => [
+            {
+              _id: 'yt_123',
+              title: { om: 'Faarfannaa YouTube', am: 'የዩቲዩብ መዝሙር', en: 'YouTube Hymn' },
+              speakerOrSinger: 'Singer A',
+              category: 'GOSPEL',
+              youtubeVideoId: 'dQw4w9WgXcQ',
+              thumbnailUrl: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg'
+            }
+          ]
+        })
       })
     });
 
@@ -174,7 +162,7 @@ async function runUnitTests() {
 
     assert('Library returned 200', res.statusCode === 200 && res.data?.success === true);
     const tracks = res.data?.tracks || [];
-    assert('Library contains 2 normalized tracks', tracks.length === 2);
+    assert('Library contains normalized tracks', tracks.length === 1);
 
     const yt = tracks.find(t => t.sourceType === 'YOUTUBE');
     assert('YouTube track has { id, sourceType, title, artist, category, youtubeVideoId, thumbnailUrl }',
@@ -182,13 +170,7 @@ async function runUnitTests() {
       yt.youtubeVideoId === 'dQw4w9WgXcQ' && Boolean(yt.thumbnailUrl)
     );
 
-    const file = tracks.find(t => t.sourceType === 'FILE');
-    assert('FILE track has { id, sourceType, title, artist, category, fileUrl, thumbnailUrl }',
-      file && file.id === 'file_456' && file.sourceType === 'FILE' && Boolean(file.fileUrl)
-    );
-
     GospelMedia.find = origGospelFind;
-    MediaDocument.find = origDocFind;
   }
 
   // 6. Non-staff authorization protection
@@ -196,7 +178,7 @@ async function runUnitTests() {
   {
     let playBlocked = false;
     try {
-      await radioService.play({ title: 'Test', url: '/uploads/a.mp3' }, memberUser, null);
+      await radioService.play({ title: 'Test', youtubeVideoId: 'dQw4w9WgXcQ' }, memberUser, null);
     } catch (e) {
       playBlocked = true;
     }
@@ -240,21 +222,21 @@ async function runUnitTests() {
       })
     };
 
-    // 7a. Device 1 (Staff) plays MP3 audio file
-    const mp3State = await radioService.play({
+    // 7a. Device 1 (Staff) plays YouTube track
+    const firstYtState = await radioService.play({
       mediaId: '507f1f77bcf86cd799439001',
-      title: 'Uploaded Choir Song',
-      url: 'https://example.com/audio.mp3',
+      title: 'YouTube Choir Song',
+      youtubeVideoId: 'dQw4w9WgXcQ',
       category: 'CHOIR',
       duration: 300,
-      sourceType: 'FILE'
+      sourceType: 'YOUTUBE'
     }, adminUser, mockIo);
 
-    assert('FILE track playing with sourceType: FILE', mp3State.sourceType === 'FILE' && mp3State.isPlaying === true);
+    assert('YouTube track playing with sourceType: YOUTUBE', firstYtState.sourceType === 'YOUTUBE' && firstYtState.isPlaying === true);
     assert('State broadcasted to all_users_room', broadcastLog.some(b => b.event === 'radio_state'));
 
     // 7b. Device 3 (Late Joiner) arrives 12 seconds later
-    const startedAt = mp3State.startedAt;
+    const startedAt = firstYtState.startedAt;
     const nowSimulated = startedAt + 12000; // 12 seconds later
     const expectedOffsetSeconds = (nowSimulated - startedAt) / 1000;
     assert('Late joiner starts at the right position (12.0s offset)', expectedOffsetSeconds === 12);

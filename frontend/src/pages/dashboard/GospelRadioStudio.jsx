@@ -23,9 +23,7 @@ import {
   RefreshCw,
   Sliders,
   Send,
-  Video,
   Youtube,
-  FileAudio,
   AlertCircle
 } from 'lucide-react';
 
@@ -51,29 +49,9 @@ export default function GospelRadioStudio() {
   const [tracks, setTracks] = useState([]);
   const [loadingLibrary, setLoadingLibrary] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sourceTab, setSourceTab] = useState('ALL'); // 'ALL' | 'YOUTUBE' | 'FILE'
   const [selectedCategory, setSelectedCategory] = useState('ALL'); // 'ALL' | 'GOSPEL' | 'CHOIR' | 'SERMON'
   const [actionLoading, setActionLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState(null);
-
-  // "Also send into the live meeting" state
-  const [sendToLiveMeeting, setSendToLiveMeeting] = useState(() => {
-    try {
-      return localStorage.getItem('gospel_radio_send_to_live') === 'true';
-    } catch {
-      return false;
-    }
-  });
-
-  const toggleSendToLive = () => {
-    setSendToLiveMeeting((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem('gospel_radio_send_to_live', String(next));
-      } catch {}
-      return next;
-    });
-  };
 
   // Fetch normalized tracks from /api/radio/library
   const fetchLibrary = useCallback(async () => {
@@ -102,13 +80,9 @@ export default function GospelRadioStudio() {
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  // Filter tracks by Source tab, Category, and Search Query
+  // Filter tracks by Category and Search Query
   const filteredTracks = useMemo(() => {
     return tracks.filter((t) => {
-      // Source filter: 'ALL' | 'YOUTUBE' | 'FILE'
-      if (sourceTab !== 'ALL' && t.sourceType !== sourceTab) {
-        return false;
-      }
       // Category filter: 'ALL' | 'GOSPEL' | 'CHOIR' | 'SERMON'
       if (selectedCategory !== 'ALL' && t.category !== selectedCategory) {
         return false;
@@ -122,24 +96,21 @@ export default function GospelRadioStudio() {
       }
       return true;
     });
-  }, [tracks, sourceTab, selectedCategory, searchQuery]);
+  }, [tracks, selectedCategory, searchQuery]);
 
   // Handle Play for Everyone
   const handlePlayNow = async (track) => {
     setActionLoading(true);
     setStatusMsg(null);
     try {
-      const isYt = track.sourceType === 'YOUTUBE';
-      const fullUrl = isYt ? '' : resolveMediaUrl(track.fileUrl);
-
       await playSong({
         mediaId: track.id,
         title: track.title,
-        url: fullUrl,
+        url: '',
         artist: track.artist || 'Waldaa Angafa Wareegamtoota Qulqulluu Giyoorgisii',
         category: track.category || 'GOSPEL',
         duration: track.duration || 0,
-        sourceType: track.sourceType,
+        sourceType: 'YOUTUBE',
         youtubeVideoId: track.youtubeVideoId || '',
         thumbnailUrl: track.thumbnailUrl || ''
       });
@@ -155,19 +126,16 @@ export default function GospelRadioStudio() {
   const handleAddToQueue = async (track) => {
     setActionLoading(true);
     try {
-      const isYt = track.sourceType === 'YOUTUBE';
-      const fullUrl = isYt ? '' : resolveMediaUrl(track.fileUrl);
-
       const newQueue = [
         ...(radioState.queue || []),
         {
           mediaId: track.id,
           title: track.title,
-          url: fullUrl,
+          url: '',
           artist: track.artist || 'Waldaa Angafa Wareegamtoota Qulqulluu Giyoorgisii',
           category: track.category || 'GOSPEL',
           duration: track.duration || 0,
-          sourceType: track.sourceType,
+          sourceType: 'YOUTUBE',
           youtubeVideoId: track.youtubeVideoId || '',
           thumbnailUrl: track.thumbnailUrl || ''
         }
@@ -436,37 +404,6 @@ export default function GospelRadioStudio() {
                 <SkipForward className="w-4 h-4 fill-current" />
               </button>
             </div>
-
-            {/* Live Meeting Integration Switch */}
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
-                  <Video className="w-4 h-4" />
-                </span>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-800">
-                    Gara Live Meetingtti dabali
-                  </h4>
-                  <p className="text-[11px] text-slate-500">
-                    Mix radio audio into host's live meeting studio stream
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={toggleSendToLive}
-                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                  sendToLiveMeeting ? 'bg-indigo-600' : 'bg-slate-300'
-                }`}
-                title="Mix Gospel Radio into Live Meeting Studio stream"
-              >
-                <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                    sendToLiveMeeting ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
           </div>
 
           {/* QUEUE / PLAYLIST CARD */}
@@ -541,7 +478,7 @@ export default function GospelRadioStudio() {
                   Kuusaa Meediyaa Radio (Radio Library)
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Unified library of YouTube Gospel songs & uploaded audio documents.
+                  Kuusaa Faarfannaa fi Barnoota YouTube (YouTube Gospel Tracks Library).
                 </p>
               </div>
 
@@ -552,32 +489,6 @@ export default function GospelRadioStudio() {
               >
                 <RefreshCw className={`w-4 h-4 ${loadingLibrary ? 'animate-spin' : ''}`} />
               </button>
-            </div>
-
-            {/* Source Tabs: All | YouTube | Uploaded files */}
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-              {[
-                { id: 'ALL', label: 'All', icon: Radio },
-                { id: 'YOUTUBE', label: 'YouTube', icon: Youtube },
-                { id: 'FILE', label: 'Uploaded files', icon: FileAudio },
-              ].map((tab) => {
-                const Icon = tab.icon;
-                const isActive = sourceTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setSourceTab(tab.id)}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      isActive
-                        ? 'bg-slate-900 text-white shadow-sm'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    <Icon className={`w-3.5 h-3.5 ${tab.id === 'YOUTUBE' && !isActive ? 'text-red-500' : ''}`} />
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
             </div>
 
             {/* Search & Category Filter Pills */}
@@ -660,10 +571,8 @@ export default function GospelRadioStudio() {
                           >
                             {isCurrent && radioState.isPlaying ? (
                               <Disc3 className="w-5 h-5 animate-spin [animation-duration:4s]" />
-                            ) : track.sourceType === 'YOUTUBE' ? (
-                              <Youtube className="w-5 h-5 text-red-600" />
                             ) : (
-                              <Music className="w-5 h-5" />
+                              <Youtube className="w-5 h-5 text-red-600" />
                             )}
                           </div>
                         )}
@@ -674,17 +583,10 @@ export default function GospelRadioStudio() {
                               {track.title}
                             </h4>
                             {/* Source badge */}
-                            {track.sourceType === 'YOUTUBE' ? (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 uppercase flex items-center gap-0.5">
-                                <Youtube className="w-2.5 h-2.5" />
-                                YouTube
-                              </span>
-                            ) : (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 uppercase flex items-center gap-0.5">
-                                <FileAudio className="w-2.5 h-2.5" />
-                                Uploaded file
-                              </span>
-                            )}
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 uppercase flex items-center gap-0.5">
+                              <Youtube className="w-2.5 h-2.5" />
+                              YouTube
+                            </span>
                             {/* Category badge */}
                             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 uppercase">
                               {track.category}

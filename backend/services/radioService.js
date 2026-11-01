@@ -1,50 +1,10 @@
-const fs = require('fs');
-const path = require('path');
 const mongoose = require('mongoose');
 const RadioState = require('../models/RadioState');
 const { logAudit } = require('../utils/auditLogger');
 
-// Directory for local uploads
-const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
-const RELIABLE_AUDIO_PATH = '/uploads/1793125357458-256997120-Chala_Garomsa_KAAMETTII_New_Ethiopian_Oromo_music_.mp3';
-
-/**
- * Checks if a given URL references a local /uploads/ file that physically does not exist on disk
- * (which occurs when an ephemeral Render container redeploys or restarts).
- */
-const isLocalUploadMissing = (url) => {
-  if (!url || typeof url !== 'string') return false;
-  if (url.includes('res.cloudinary.com')) return false;
-  if (!url.includes('/uploads/')) return false;
-
-  const match = url.match(/\/uploads\/([^/?#]+)/);
-  if (match) {
-    const filename = decodeURIComponent(match[1]);
-    const filePath = path.join(UPLOADS_DIR, filename);
-    return !fs.existsSync(filePath);
-  }
-  return false;
-};
-
 // Helper to safely check MongoDB ObjectId
 const isValidObjectId = (id) =>
   id && mongoose.Types.ObjectId.isValid(id) && /^[0-9a-fA-F]{24}$/.test(String(id));
-
-// Helper to ensure full absolute HTTP(S) URL for client playback
-const getBaseServerUrl = () =>
-  process.env.RENDER_EXTERNAL_URL ||
-  (process.env.NODE_ENV === 'production'
-    ? 'https://wqg-church-platform.onrender.com'
-    : `http://localhost:${process.env.PORT || 5000}`);
-
-const resolveServerMediaUrl = (url) => {
-  if (!url) return '';
-  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
-    return url;
-  }
-  const base = getBaseServerUrl();
-  return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
-};
 
 // Staff roles authorized to control the Gospel Radio
 const RADIO_STAFF_ROLES = ['SUPER_ADMIN', 'ADMIN', 'SECRETARY'];
@@ -65,7 +25,7 @@ class RadioService {
       loop: false,
       startedBy: null,
       startedByName: '',
-      sourceType: 'FILE',
+      sourceType: 'YOUTUBE',
       youtubeVideoId: '',
       thumbnailUrl: '',
       queue: []
@@ -91,7 +51,7 @@ class RadioService {
           mediaId: state.mediaId ? state.mediaId.toString() : null,
           title: state.title || '',
           artist: state.artist || 'Waldaa Angafa Wareegamtoota Qulqulluu Giyoorgisii',
-          url: resolveServerMediaUrl(state.url || ''),
+          url: state.url || '',
           category: state.category || 'GOSPEL',
           duration: state.duration || 0,
           startedAt: state.startedAt || 0,
@@ -101,45 +61,18 @@ class RadioService {
           loop: !!state.loop,
           startedBy: state.startedBy ? state.startedBy.toString() : null,
           startedByName: state.startedByName || '',
-          sourceType: state.sourceType || 'FILE',
+          sourceType: 'YOUTUBE',
           youtubeVideoId: state.youtubeVideoId || '',
           thumbnailUrl: state.thumbnailUrl || '',
           queue: Array.isArray(state.queue)
             ? state.queue.map((q) => ({
                 ...q,
-                url: resolveServerMediaUrl(q.url),
-                sourceType: q.sourceType || 'FILE',
+                sourceType: 'YOUTUBE',
                 youtubeVideoId: q.youtubeVideoId || '',
                 thumbnailUrl: q.thumbnailUrl || ''
               }))
             : []
         };
-
-        // Ensure any dead actions.google.com URLs or missing local files are healed immediately
-        const isDeadGoogle = this.nowPlaying.url && /actions\.google\.com/i.test(this.nowPlaying.url);
-        const isMissingDiskFile = isLocalUploadMissing(this.nowPlaying.url);
-
-        if (isDeadGoogle || isMissingDiskFile) {
-          console.warn(
-            `[RadioService] Current song "${this.nowPlaying.title}" audio file is missing on server disk (${this.nowPlaying.url}). Auto-healing to verified gospel track.`
-          );
-          this.nowPlaying.url = resolveServerMediaUrl(RELIABLE_AUDIO_PATH);
-          this.nowPlaying.title = this.nowPlaying.title || 'Yaa Giyoorgis Nuuf Lallabi (Faarfannaa Wareegamaa)';
-          await RadioState.updateMany(
-            {},
-            { $set: { url: this.nowPlaying.url, title: this.nowPlaying.title } }
-          ).catch(() => {});
-        }
-
-        // Also heal missing files in the queue
-        if (Array.isArray(this.nowPlaying.queue)) {
-          this.nowPlaying.queue = this.nowPlaying.queue.map((q) => {
-            if (isLocalUploadMissing(q.url)) {
-              return { ...q, url: resolveServerMediaUrl(RELIABLE_AUDIO_PATH) };
-            }
-            return q;
-          });
-        }
       }
       this.initialized = true;
       console.log('[RadioService] Initialized radio state:', this.nowPlaying.title || '(idle)');
@@ -157,14 +90,14 @@ class RadioService {
         ...this.nowPlaying,
         mediaId: isValidObjectId(this.nowPlaying.mediaId) ? this.nowPlaying.mediaId : null,
         startedBy: isValidObjectId(this.nowPlaying.startedBy) ? this.nowPlaying.startedBy : null,
-        sourceType: this.nowPlaying.sourceType || 'FILE',
+        sourceType: 'YOUTUBE',
         youtubeVideoId: this.nowPlaying.youtubeVideoId || '',
         thumbnailUrl: this.nowPlaying.thumbnailUrl || '',
         queue: Array.isArray(this.nowPlaying.queue)
           ? this.nowPlaying.queue.map((item) => ({
               ...item,
               mediaId: isValidObjectId(item.mediaId) ? item.mediaId : null,
-              sourceType: item.sourceType || 'FILE',
+              sourceType: 'YOUTUBE',
               youtubeVideoId: item.youtubeVideoId || '',
               thumbnailUrl: item.thumbnailUrl || ''
             }))
@@ -186,13 +119,9 @@ class RadioService {
    * Get current synchronized state including listener count and server timestamp
    */
   getState() {
-    // If the nowPlaying URL happens to be a missing local upload, auto-heal dynamically
-    if (this.nowPlaying.url && isLocalUploadMissing(this.nowPlaying.url)) {
-      this.nowPlaying.url = resolveServerMediaUrl(RELIABLE_AUDIO_PATH);
-    }
-
     return {
       ...this.nowPlaying,
+      sourceType: 'YOUTUBE',
       listenersCount: this.activeListeners.size,
       serverTime: Date.now()
     };
@@ -207,30 +136,17 @@ class RadioService {
   }
 
   /**
-   * Staff plays a song for everyone
+   * Staff plays a YouTube track for everyone
    */
   async play(payload, user, io) {
     if (!this.isAuthorized(user)) {
       throw new Error('Unauthorized: Only Super Admin, Admin, or Secretary can control Gospel Radio.');
     }
 
-    const { mediaId, title, url, artist, category, duration, queue, loop, volume, startOffsetSeconds, sourceType, youtubeVideoId, thumbnailUrl } = payload || {};
+    const { mediaId, title, artist, category, duration, queue, loop, volume, startOffsetSeconds, youtubeVideoId, thumbnailUrl } = payload || {};
 
-    if (!title) {
-      throw new Error('Song title is required to play.');
-    }
-
-    // For FILE tracks, url is required; for YOUTUBE tracks, url may be empty (client-side playback)
-    const resolvedSourceType = sourceType || 'FILE';
-    if (resolvedSourceType === 'FILE' && !url) {
-      throw new Error('Song URL and title are required to play.');
-    }
-
-    let targetUrl = (url || '').trim();
-    // Only check for missing local uploads for FILE tracks
-    if (resolvedSourceType === 'FILE' && isLocalUploadMissing(targetUrl)) {
-      console.warn(`[RadioService] Target audio track "${title}" is missing from disk. Using reliable gospel track.`);
-      targetUrl = RELIABLE_AUDIO_PATH;
+    if (!title && !youtubeVideoId) {
+      throw new Error('Song title or YouTube video is required to play.');
     }
 
     const offsetMs = Math.round((Number(startOffsetSeconds) || 0) * 1000);
@@ -239,9 +155,9 @@ class RadioService {
     this.nowPlaying = {
       ...this.nowPlaying,
       mediaId: mediaId || null,
-      title: title.trim(),
+      title: (title || 'Gospel Track').trim(),
       artist: (artist && artist.trim()) || 'Waldaa Angafa Wareegamtoota Qulqulluu Giyoorgisii',
-      url: resolvedSourceType === 'YOUTUBE' ? '' : resolveServerMediaUrl(targetUrl),
+      url: '',
       category: category || 'GOSPEL',
       duration: Number(duration) || 0,
       startedAt: now - offsetMs,
@@ -251,16 +167,21 @@ class RadioService {
       loop: typeof loop === 'boolean' ? loop : this.nowPlaying.loop,
       startedBy: user._id,
       startedByName: user.fullName || 'Church Staff',
-      sourceType: resolvedSourceType,
+      sourceType: 'YOUTUBE',
       youtubeVideoId: youtubeVideoId || '',
       thumbnailUrl: thumbnailUrl || '',
       queue: Array.isArray(queue)
-        ? queue.map((q) => ({ ...q, url: resolveServerMediaUrl(q.url) }))
+        ? queue.map((q) => ({
+            ...q,
+            sourceType: 'YOUTUBE',
+            youtubeVideoId: q.youtubeVideoId || '',
+            thumbnailUrl: q.thumbnailUrl || ''
+          }))
         : this.nowPlaying.queue
     };
 
     await this.persist();
-    await logAudit(null, 'RADIO_PLAY', { title: this.nowPlaying.title, mediaId: this.nowPlaying.mediaId }, user);
+    await logAudit(null, 'RADIO_PLAY', { title: this.nowPlaying.title, mediaId: this.nowPlaying.mediaId, youtubeVideoId: this.nowPlaying.youtubeVideoId }, user);
 
     if (io) {
       io.to('all_users_room').emit('radio_state', this.getState());
@@ -300,7 +221,7 @@ class RadioService {
       throw new Error('Unauthorized: Only Super Admin, Admin, or Secretary can control Gospel Radio.');
     }
 
-    if (this.nowPlaying.isPlaying || (!this.nowPlaying.url && !this.nowPlaying.youtubeVideoId)) return this.getState();
+    if (this.nowPlaying.isPlaying || !this.nowPlaying.youtubeVideoId) return this.getState();
 
     const now = Date.now();
     if (this.nowPlaying.pausedAt) {
@@ -343,7 +264,7 @@ class RadioService {
       title: '',
       url: '',
       duration: 0,
-      sourceType: 'FILE',
+      sourceType: 'YOUTUBE',
       youtubeVideoId: '',
       thumbnailUrl: ''
     };
@@ -398,10 +319,9 @@ class RadioService {
         {
           mediaId: nextSong.mediaId,
           title: nextSong.title,
-          url: nextSong.url,
           category: nextSong.category,
           duration: nextSong.duration,
-          sourceType: nextSong.sourceType || 'FILE',
+          sourceType: 'YOUTUBE',
           youtubeVideoId: nextSong.youtubeVideoId || '',
           thumbnailUrl: nextSong.thumbnailUrl || '',
           queue: this.nowPlaying.queue
@@ -412,7 +332,7 @@ class RadioService {
     }
 
     // If loop is enabled and queue is empty, restart current song
-    if (this.nowPlaying.loop && (this.nowPlaying.url || this.nowPlaying.youtubeVideoId)) {
+    if (this.nowPlaying.loop && this.nowPlaying.youtubeVideoId) {
       return this.seek(0, user, io);
     }
 
@@ -429,7 +349,12 @@ class RadioService {
     }
 
     if (Array.isArray(queue)) {
-      this.nowPlaying.queue = queue;
+      this.nowPlaying.queue = queue.map((q) => ({
+        ...q,
+        sourceType: 'YOUTUBE',
+        youtubeVideoId: q.youtubeVideoId || '',
+        thumbnailUrl: q.thumbnailUrl || ''
+      }));
     }
     if (typeof loop === 'boolean') {
       this.nowPlaying.loop = loop;

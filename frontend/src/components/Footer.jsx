@@ -63,8 +63,8 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/media-library" className="text-white/80 hover:text-gold-300 transition-colors">
-                  Barruulee & Faayiloota (Library)
+                <Link to="/announcements" className="text-white/80 hover:text-gold-300 transition-colors">
+                  Beeksisoota (Announcements)
                 </Link>
               </li>
               <li>

@@ -2,12 +2,9 @@ import React, { createContext, useContext, useEffect, useRef, useState, useCallb
 import { useSocket } from './SocketContext';
 import { useAuth } from './AuthContext';
 import api from '../api/axios';
-import { resolveMediaUrl } from '../utils/mediaUrl';
 import { useYouTubePlayer } from '../utils/useYouTubePlayer';
 
 const RadioContext = createContext(null);
-
-const RELIABLE_AUDIO_FALLBACK = '/uploads/1793125357458-256997120-Chala_Garomsa_KAAMETTII_New_Ethiopian_Oromo_music_.mp3';
 
 // YT player states
 const YT_STATES = { UNSTARTED: -1, ENDED: 0, PLAYING: 1, PAUSED: 2, BUFFERING: 3, CUED: 5 };
@@ -32,7 +29,7 @@ const DEFAULT_RADIO_STATE = {
   queue: [],
   listenersCount: 0,
   serverTime: 0,
-  sourceType: 'FILE',
+  sourceType: 'YOUTUBE',
   youtubeVideoId: '',
   thumbnailUrl: '',
 };
@@ -64,12 +61,9 @@ export const RadioProvider = ({ children }) => {
   const [ytPlayerCollapsed, setYtPlayerCollapsed] = useState(false);
   const [ytError, setYtError] = useState(null); // error message for current YT track
 
-  const audioRef = useRef(null);
   const clockOffsetRef = useRef(0);
   const isListeningRef = useRef(isListening);
   const radioStateRef = useRef(radioState);
-  const isSyncingRef = useRef(false);
-  const fallbackAttemptedRef = useRef(false);
   const ytEndedReportedRef = useRef({}); // guard: { trackId_startedAt: true }
 
   const isStaff = user && ['SUPER_ADMIN', 'ADMIN', 'SECRETARY'].includes(user.role);
@@ -78,9 +72,7 @@ export const RadioProvider = ({ children }) => {
   isListeningRef.current = isListening;
   radioStateRef.current = radioState;
 
-  const isYouTube = radioState.sourceType === 'YOUTUBE';
-  const isYouTubeRef = useRef(isYouTube);
-  isYouTubeRef.current = radioState.sourceType === 'YOUTUBE';
+  const isYouTube = true;
 
   // =====================
   // YouTube Player Setup
@@ -163,52 +155,6 @@ export const RadioProvider = ({ children }) => {
   }, []);
 
   // =====================
-  // FILE audio sync
-  // =====================
-  const syncAndPlayAudio = useCallback(async (state) => {
-    const audio = audioRef.current;
-    if (!audio || !state || !state.url) {
-      if (audio) audio.pause();
-      return;
-    }
-    const fullUrl = resolveMediaUrl(state.url);
-    if (!fullUrl) { if (audio) audio.pause(); return; }
-    setLoadError(null);
-    if (audio.src !== fullUrl) {
-      fallbackAttemptedRef.current = false;
-      audio.src = fullUrl;
-      audio.load();
-    }
-    const targetPos = calculateTargetPosition(state);
-    if (state.isPlaying) {
-      if (isListeningRef.current) {
-        try {
-          if (audio.readyState >= 1 && !Number.isNaN(targetPos) && targetPos > 0) {
-            try { if (Math.abs(audio.currentTime - targetPos) > 0.8) audio.currentTime = targetPos; } catch {}
-          } else if (targetPos > 0) {
-            const onMeta = () => { try { if (audio.duration && targetPos < audio.duration) audio.currentTime = targetPos; } catch {} };
-            audio.addEventListener('loadedmetadata', onMeta, { once: true });
-          }
-          audio.volume = userVolume;
-          const p = audio.play();
-          if (p !== undefined) await p;
-          setAutoplayBlocked(false);
-          setAutoplayGate(false);
-          setLoadError(null);
-        } catch (err) {
-          if (err.name === 'NotAllowedError') { setAutoplayBlocked(true); setAutoplayGate(true); }
-          else if (err.name !== 'AbortError') setLoadError("Faarfannaa fe'uu hin dandeenye (Audio playback failed)");
-        }
-      } else {
-        audio.pause();
-      }
-    } else {
-      audio.pause();
-      if (state.pausedAt && audio.readyState >= 1) { try { audio.currentTime = targetPos; } catch {} }
-    }
-  }, [calculateTargetPosition, userVolume]);
-
-  // =====================
   // YOUTUBE sync
   // =====================
   const syncAndPlayYT = useCallback((state) => {
@@ -228,21 +174,10 @@ export const RadioProvider = ({ children }) => {
     }
   }, [ytAvailable, calculateTargetPosition, loadVideo, ytPause, ytSetVolume, userVolume]);
 
-  // =====================
-  // Unified sync
-  // =====================
   const syncAndPlay = useCallback((state) => {
     if (!state) return;
-    if (state.sourceType === 'YOUTUBE') {
-      // Pause audio if switching from FILE
-      if (audioRef.current) audioRef.current.pause();
-      syncAndPlayYT(state);
-    } else {
-      // Stop YT if switching from YOUTUBE
-      ytPause();
-      syncAndPlayAudio(state);
-    }
-  }, [syncAndPlayAudio, syncAndPlayYT, ytPause]);
+    syncAndPlayYT(state);
+  }, [syncAndPlayYT]);
 
   // =====================
   // Persist listening
@@ -253,54 +188,32 @@ export const RadioProvider = ({ children }) => {
       try { localStorage.setItem('gospel_radio_listening', String(next)); } catch {}
       if (socket) socket.emit(next ? 'radio_listen_start' : 'radio_listen_stop');
       const rs = radioStateRef.current;
-      if (rs.sourceType === 'YOUTUBE') {
-        if (!next) ytPause(); else if (rs.isPlaying && rs.youtubeVideoId) ytPlay();
-      } else {
-        const audio = audioRef.current;
-        if (audio) {
-          if (!next) audio.pause();
-          else if (rs.isPlaying && rs.url) syncAndPlayAudio(rs);
-        }
+      if (!next) {
+        ytPause();
+      } else if (rs.isPlaying && rs.youtubeVideoId) {
+        ytPlay();
       }
       if (next) setAutoplayGate(false);
       return next;
     });
-  }, [socket, ytPause, ytPlay, syncAndPlayAudio]);
+  }, [socket, ytPause, ytPlay]);
 
   // User taps "Tap to Listen" gate
   const unlockAutoplay = useCallback(async () => {
     setAutoplayBlocked(false);
     setAutoplayGate(false);
     const rs = radioStateRef.current;
-    if (rs.sourceType === 'YOUTUBE') {
-      if (rs.isPlaying && rs.youtubeVideoId) {
-        const pos = calculateTargetPosition(rs);
-        loadVideo(rs.youtubeVideoId, pos);
-        ytSetVolume(userVolume);
-      }
-    } else {
-      const audio = audioRef.current;
-      if (!audio) return;
-      try {
-        setLoadError(null);
-        if (rs.isPlaying && rs.url) {
-          const fullUrl = resolveMediaUrl(rs.url);
-          if (audio.src !== fullUrl) { audio.src = fullUrl; audio.load(); }
-          const pos = calculateTargetPosition(rs);
-          audio.currentTime = pos;
-          audio.volume = userVolume;
-          await audio.play();
-          if (socket) socket.emit('radio_listen_start');
-        }
-      } catch (err) { console.warn('[Radio] Unlock failed:', err); }
+    if (rs.isPlaying && rs.youtubeVideoId) {
+      const pos = calculateTargetPosition(rs);
+      loadVideo(rs.youtubeVideoId, pos);
+      ytSetVolume(userVolume);
     }
-  }, [calculateTargetPosition, userVolume, socket, loadVideo, ytSetVolume]);
+  }, [calculateTargetPosition, userVolume, loadVideo, ytSetVolume]);
 
   const setUserVolume = useCallback((vol) => {
     const clamped = Math.min(1, Math.max(0, vol));
     setUserVolumeState(clamped);
     try { localStorage.setItem('gospel_radio_volume', String(clamped)); } catch {}
-    if (audioRef.current) audioRef.current.volume = clamped;
     ytSetVolume(clamped);
   }, [ytSetVolume]);
 
@@ -309,46 +222,12 @@ export const RadioProvider = ({ children }) => {
     setAutoplayBlocked(false);
     setYtError(null);
     const rs = radioStateRef.current;
-    if (rs.sourceType === 'YOUTUBE') {
-      if (rs.youtubeVideoId) {
-        const pos = calculateTargetPosition(rs);
-        loadVideo(rs.youtubeVideoId, pos);
-        ytSetVolume(userVolume);
-      }
-    } else {
-      const audio = audioRef.current;
-      if (!audio) return;
-      try {
-        const res = await api.get('/radio/state').catch(() => null);
-        const state = res?.data?.state || rs;
-        if (state?.url) {
-          setRadioState(state);
-          const fullUrl = resolveMediaUrl(state.url);
-          audio.removeAttribute('crossorigin');
-          audio.src = fallbackAttemptedRef.current ? resolveMediaUrl(RELIABLE_AUDIO_FALLBACK) : fullUrl;
-          audio.load();
-          const pos = calculateTargetPosition(state);
-          if (pos > 0) audio.currentTime = pos;
-          audio.volume = userVolume;
-          await audio.play();
-          setLoadError(null);
-          if (socket) socket.emit('radio_listen_start');
-        }
-      } catch (err) {
-        if (err.name === 'NotAllowedError') setAutoplayBlocked(true);
-        else {
-          try {
-            const backupUrl = resolveMediaUrl(RELIABLE_AUDIO_FALLBACK);
-            audio.src = backupUrl; audio.load(); audio.volume = userVolume;
-            await audio.play(); setLoadError(null); fallbackAttemptedRef.current = true;
-          } catch (be) {
-            if (be.name === 'NotAllowedError') setAutoplayBlocked(true);
-            else setLoadError("Faarfannaa fe'uu hin dandeenye");
-          }
-        }
-      }
+    if (rs.youtubeVideoId) {
+      const pos = calculateTargetPosition(rs);
+      loadVideo(rs.youtubeVideoId, pos);
+      ytSetVolume(userVolume);
     }
-  }, [calculateTargetPosition, userVolume, socket, loadVideo, ytSetVolume]);
+  }, [calculateTargetPosition, userVolume, loadVideo, ytSetVolume]);
 
   // Initial fetch
   useEffect(() => {
@@ -396,16 +275,9 @@ export const RadioProvider = ({ children }) => {
       const state = radioStateRef.current;
       if (!state?.isPlaying) return;
       const expectedPos = calculateTargetPosition(state);
-      if (state.sourceType === 'YOUTUBE') {
-        const actual = ytGetCurrentTime();
-        const drift = Math.abs(actual - expectedPos);
-        if (drift > 3) { try { ytSeekTo(expectedPos); } catch {} }
-      } else {
-        const audio = audioRef.current;
-        if (!audio || audio.paused || !isListeningRef.current) return;
-        const drift = Math.abs(audio.currentTime - expectedPos);
-        if (drift > 1.2) { try { audio.currentTime = expectedPos; } catch {} }
-      }
+      const actual = ytGetCurrentTime();
+      const drift = Math.abs(actual - expectedPos);
+      if (drift > 3) { try { ytSeekTo(expectedPos); } catch {} }
     }, 10000);
     return () => clearInterval(interval);
   }, [calculateTargetPosition, ytGetCurrentTime, ytSeekTo]);
@@ -416,13 +288,7 @@ export const RadioProvider = ({ children }) => {
     const tick = () => {
       const state = radioStateRef.current;
       if (state.isPlaying) {
-        if (state.sourceType === 'YOUTUBE') {
-          setCurrentTime(ytGetCurrentTime());
-        } else {
-          const audio = audioRef.current;
-          if (audio && !audio.paused && !Number.isNaN(audio.currentTime)) setCurrentTime(audio.currentTime);
-          else setCurrentTime(calculateTargetPosition(state));
-        }
+        setCurrentTime(ytGetCurrentTime());
       } else if (state.pausedAt) {
         setCurrentTime(calculateTargetPosition(state));
       } else {
@@ -433,47 +299,6 @@ export const RadioProvider = ({ children }) => {
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
   }, [calculateTargetPosition, ytGetCurrentTime]);
-
-  // FILE audio element events
-  const handleAudioEnded = () => {
-    const state = radioStateRef.current;
-    if (state.loop) {
-      if (audioRef.current) { audioRef.current.currentTime = 0; audioRef.current.play().catch(() => {}); }
-    } else {
-      // Report ended
-      const guardKey = `${state.mediaId}_${state.startedAt}`;
-      if (!ytEndedReportedRef.current[guardKey]) {
-        ytEndedReportedRef.current[guardKey] = true;
-        if (socket?.connected) socket.emit('radio_ended', { trackId: state.mediaId, startedAt: state.startedAt });
-        else api.post('/radio/track-ended', { trackId: state.mediaId, startedAt: state.startedAt }).catch(() => {});
-      }
-    }
-  };
-
-  const handleAudioError = (e) => {
-    const audio = audioRef.current;
-    if (!radioStateRef.current?.url) return;
-    if (audio?.crossOrigin) {
-      audio.removeAttribute('crossorigin');
-      audio.load();
-      audio.play().catch(() => {});
-      return;
-    }
-    const fallbackUrl = resolveMediaUrl(RELIABLE_AUDIO_FALLBACK);
-    if (!fallbackAttemptedRef.current && audio && audio.src !== fallbackUrl) {
-      fallbackAttemptedRef.current = true;
-      audio.removeAttribute('crossorigin');
-      audio.src = fallbackUrl; audio.load(); audio.volume = userVolume;
-      audio.play()
-        .then(() => { setLoadError(null); })
-        .catch(err => {
-          if (err.name === 'NotAllowedError') setAutoplayBlocked(true);
-          else setLoadError("Faarfannaa fe'uu hin dandeenye (Audio playback failed)");
-        });
-      return;
-    }
-    setLoadError("Faarfannaa fe'uu hin dandeenye (Audio playback failed)");
-  };
 
   // Staff Controls
   const playSong = async (songPayload) => {
@@ -542,7 +367,6 @@ export const RadioProvider = ({ children }) => {
       loadError,
       ytError,
       currentTime,
-      audioRef,
       isStaff,
       isYouTube,
       ytAvailable,
@@ -557,17 +381,6 @@ export const RadioProvider = ({ children }) => {
       nextSong,
       updateQueue,
     }}>
-      {/* Hidden FILE audio element */}
-      <audio
-        ref={audioRef}
-        preload="auto"
-        crossOrigin="anonymous"
-        playsInline
-        onEnded={handleAudioEnded}
-        onError={handleAudioError}
-        style={{ display: 'none' }}
-      />
-
       {/* YouTube IFrame player container - Single persistent element in DOM */}
       <div
         style={{

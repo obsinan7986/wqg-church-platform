@@ -118,16 +118,16 @@ const seedDatabase = async () => {
     const sampleNotifications = [
       {
         title: {
-          om: 'LIVE: Sagantaan Kadhannaa Kallattii Eegalameera!',
-          am: 'LIVE: የቀጥታ ጸሎትና ትምህርት ተጀምሯል!',
-          en: 'LIVE: Live Prayer & Ministry Broadcast Started!'
+          om: 'Baga Nagaan Dhuftan Wiirtuu Tajaajila Qulqulluu Giyoorgisiitti!',
+          am: 'እንኳን ወደ ቅዱስ ጊዮርጊስ መንፈሳዊ አገልግሎት በደህና መጡ!',
+          en: 'Welcome to St. George Spiritual Fellowship Platform!'
         },
         message: {
-          om: 'Tajaajilli kadhannaa fi lallaba wangeelaa kallattiin eegalameera; dafaatii hordofaa.',
-          am: 'የኅብረት ጸሎትና የወንጌል ትምህርት በቀጥታ እየተላለፈ ይገኛል፤ አሁኑኑ ይከታተሉ።',
-          en: 'Spiritual prayers and live fellowship have started. Join the broadcast now.'
+          om: 'Tajaajila wangeelaa, faarfannaa fi oduu haaraa waldichaa asitti hordofaa.',
+          am: 'የወንጌል አገልግሎት፣ መዝሙራትና አዳዲስ መረጃዎችን እዚህ ይከታተሉ።',
+          en: 'Follow our gospel ministry, hymns, and spiritual announcements here.'
         },
-        type: 'LIVE_STARTED',
+        type: 'ANNOUNCEMENT',
         link: '/dashboard',
         readBy: []
       },
@@ -193,33 +193,6 @@ const seedDatabase = async () => {
         }
       ]);
       console.log('[Seed] Successfully seeded initial Executive 5-Actors conversation.');
-    }
-
-    // Seed initial Live Meeting
-    const LiveMeeting = require('./models/LiveMeeting');
-    await LiveMeeting.deleteMany({});
-    if (superAdmin) {
-      const sampleMeeting = await LiveMeeting.create({
-        title: 'Tajaajila Kallattii & Sagantaa Kadhannaa (Live Prayer & Ministry)',
-        description: 'Sagantaa tajaajila hafuuraa waldichaa kallattiin viidiyoo fi sagaleen dhiyaatu.',
-        host: superAdmin._id,
-        status: 'LIVE',
-        meetingLink: 'wqg-live-sunday',
-        allowedParticipants: [superAdmin._id],
-        waitingRoom: [],
-        likes: [superAdmin._id],
-        dislikes: [],
-        comments: [
-          {
-            user: superAdmin._id,
-            fullName: superAdmin.fullName,
-            originChurch: superAdmin.originChurch,
-            role: superAdmin.role,
-            text: 'Baga nagaan dhuftan tajaajila kallattii waldichaatti! Nagaan Waaqayyoo isiniif haa baay\'atu.'
-          }
-        ]
-      });
-      console.log(`[Seed] Successfully seeded initial Live Meeting: ${sampleMeeting.meetingLink} (${sampleMeeting.status})`);
     }
 
     // Seed GospelMedia

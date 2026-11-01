@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Coins, Radio, Image as ImageIcon, Activity } from 'lucide-react';
+import { Users, Coins, Calendar, Image as ImageIcon, Activity } from 'lucide-react';
 import { Card, StatCard } from '../../../components/ui';
 
 const ROLES = ['SUPER_ADMIN', 'ADMIN', 'COLLECTOR', 'HR', 'SECRETARY', 'MEMBER'];
@@ -32,16 +32,11 @@ const AdminOverviewTab = ({ overview, bannersCount = 0, mediaCount = 0 }) => {
         />
 
         <StatCard
-          icon={Radio}
-          label="Tajaajila Live"
-          value={
-            overview?.liveMeeting?.active ? (
-              <span className="text-red-400 animate-pulse">🔴 LIVE AMMA</span>
-            ) : (
-              'Qophii Irra'
-            )
-          }
-          subtext={`${overview?.liveMeeting?.total || 0} Sagantaalee Live`}
+          icon={Calendar}
+          label="Sagantaalee (Events)"
+          value={overview?.eventCount || 0}
+          goldValue
+          subtext={`${overview?.announcementCount || 0} Beeksisa`}
         />
 
         <StatCard

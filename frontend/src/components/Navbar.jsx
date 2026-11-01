@@ -42,51 +42,9 @@ export const Navbar = () => {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [liveMeeting, setLiveMeeting] = useState(null);
 
   const userRef = useRef(null);
   const mobileDrawerRef = useRef(null);
-
-  // Check active live meeting on mount and socket events
-  useEffect(() => {
-    let isMounted = true;
-
-    const checkActiveMeeting = async () => {
-      try {
-        const res = await api.get('/live/active');
-        if (isMounted && res.data?.success && res.data.meeting) {
-          setLiveMeeting(res.data.meeting);
-        } else if (isMounted) {
-          setLiveMeeting(null);
-        }
-      } catch (e) {
-        if (isMounted) setLiveMeeting(null);
-      }
-    };
-
-    checkActiveMeeting();
-
-    if (socket) {
-      socket.on('live_status_changed', (payload) => {
-        if (payload?.status === 'LIVE' || payload?.meeting?.status === 'LIVE') {
-          checkActiveMeeting();
-        } else {
-          if (isMounted) setLiveMeeting(null);
-        }
-      });
-      socket.on('live_ended', () => {
-        if (isMounted) setLiveMeeting(null);
-      });
-    }
-
-    return () => {
-      isMounted = false;
-      if (socket) {
-        socket.off('live_status_changed');
-        socket.off('live_ended');
-      }
-    };
-  }, [socket]);
 
   // Click outside listener for dropdowns
   useEffect(() => {
@@ -161,7 +119,7 @@ export const Navbar = () => {
     { name: 'Mana (Home)', path: '/', icon: HomeIcon },
     { name: 'Seenaa (History)', path: '/about', icon: BookOpen },
     { name: 'Tajaajiloota (Services)', path: '/services', icon: HeartHandshake },
-    { name: 'Beeksisa', path: '/media-library', icon: Megaphone },
+    { name: 'Beeksisa', path: '/announcements', icon: Megaphone },
     { name: 'Gargaarsa (Help)', path: '/help', icon: HelpCircle },
     {
       name: isAuthenticated ? 'Dashboard' : 'Seeni/Login',
@@ -307,22 +265,6 @@ export const Navbar = () => {
 
                     {/* Calendar & Clock Preferences */}
                     <DateSettingsBar variant="menu" />
-
-                    {/* LIVE Alert Line (Shown only when a live meeting is running) */}
-                    {liveMeeting && (
-                      <Link
-                        to="/dashboard?tab=live"
-                        onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center space-x-2.5 p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-bold hover:bg-red-100 transition-colors group"
-                      >
-                        <span className="relative flex h-2.5 w-2.5 shrink-0">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
-                        </span>
-                        <Radio className="w-4 h-4 text-red-600 shrink-0" />
-                        <span className="truncate">LIVE: Walga'iin amma jalqabeera!</span>
-                      </Link>
-                    )}
 
                     {/* Dropdown Buttons: Dashboard, Ergaa, Profile, Payments, Bahii */}
                     <div className="space-y-1 pt-1 border-t border-slate-100">
@@ -488,21 +430,6 @@ export const Navbar = () => {
                   <X className="w-5 h-5" />
                 </button>
               </div>
-
-              {/* LIVE Alert Banner in Mobile Drawer if active */}
-              {liveMeeting && (
-                <Link
-                  to="/dashboard?tab=live"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center space-x-2 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-bold"
-                >
-                  <span className="relative flex h-2.5 w-2.5 shrink-0">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
-                  </span>
-                  <span>LIVE: Walga'iin amma jalqabeera!</span>
-                </Link>
-              )}
 
               {/* Navigation Links */}
               <nav className="flex flex-col space-y-1.5">

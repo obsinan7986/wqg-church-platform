@@ -18,10 +18,8 @@ import {
   AlertCircle,
   Sparkles,
   Church,
-  BookOpen,
-  UploadCloud
+  BookOpen
 } from 'lucide-react';
-import AdminUpload from './AdminUpload';
 import {
   Card,
   CardHeader,
@@ -45,7 +43,7 @@ const SecretaryDash = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
 
-  const [activeTab, setActiveTab] = useState('documents'); // 'documents' | 'gospelMedia' | 'uploads'
+  const [activeTab, setActiveTab] = useState('documents'); // 'documents' | 'gospelMedia'
   const [documents, setDocuments] = useState([]);
   const [mediaList, setMediaList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -208,8 +206,7 @@ const SecretaryDash = () => {
 
   const tabsConfig = [
     { id: 'documents', label: "Qaboo Yaa'ii", count: documents.length },
-    { id: 'gospelMedia', label: 'YouTube Media', count: mediaList.length },
-    { id: 'uploads', label: "Faayiloota Fe'i (Uploads)" }
+    { id: 'gospelMedia', label: 'YouTube Media', count: mediaList.length }
   ];
 
   const docTableColumns = [
@@ -482,11 +479,6 @@ const SecretaryDash = () => {
             )}
           </div>
         </div>
-      )}
-
-      {/* Tab 3: Uploads */}
-      {activeTab === 'uploads' && (
-        <AdminUpload />
       )}
 
       {/* Modal 1: Add Document Form */}

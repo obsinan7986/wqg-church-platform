@@ -4,7 +4,7 @@ const RadioQueueItemSchema = new mongoose.Schema(
   {
     mediaId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'MediaDocument',
+      ref: 'GospelMedia',
       default: null
     },
     title: {
@@ -14,7 +14,7 @@ const RadioQueueItemSchema = new mongoose.Schema(
     },
     url: {
       type: String,
-      required: true,
+      default: '',
       trim: true
     },
     category: {
@@ -28,8 +28,8 @@ const RadioQueueItemSchema = new mongoose.Schema(
     },
     sourceType: {
       type: String,
-      enum: ['FILE', 'YOUTUBE'],
-      default: 'FILE'
+      enum: ['YOUTUBE'],
+      default: 'YOUTUBE'
     },
     youtubeVideoId: {
       type: String,
@@ -47,7 +47,7 @@ const RadioStateSchema = new mongoose.Schema(
   {
     mediaId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'MediaDocument',
+      ref: 'GospelMedia',
       default: null
     },
     title: {
@@ -106,8 +106,8 @@ const RadioStateSchema = new mongoose.Schema(
     },
     sourceType: {
       type: String,
-      enum: ['FILE', 'YOUTUBE'],
-      default: 'FILE'
+      enum: ['YOUTUBE'],
+      default: 'YOUTUBE'
     },
     youtubeVideoId: {
       type: String,

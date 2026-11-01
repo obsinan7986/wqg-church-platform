@@ -9,14 +9,11 @@ import {
   Church,
   User,
   LayoutDashboard,
-  Video,
   Users,
   Coins,
   FileText,
   Settings,
   LogOut,
-  UploadCloud,
-  BookOpen,
   MessageSquare,
   Music,
   Megaphone,
@@ -40,15 +37,12 @@ import { useDateSettings } from '../../context/DateSettingsContext';
 import DateSettingsBar from '../../components/DateSettingsBar';
 // Lazy-load dashboard tabs with React.lazy + Suspense for optimal bundle size
 const MessagingCenter = React.lazy(() => import('../../components/MessagingCenter'));
-const LiveMeetingStudio = React.lazy(() => import('./LiveMeetingStudio'));
 const CollectorDash = React.lazy(() => import('./CollectorDash'));
 const MemberPaymentDash = React.lazy(() => import('./MemberPaymentDash'));
 const HRDash = React.lazy(() => import('./HRDash'));
 const SecretaryDash = React.lazy(() => import('./SecretaryDash'));
 const AdminDash = React.lazy(() => import('./AdminDash'));
 const GospelMediaViewer = React.lazy(() => import('./GospelMediaViewer'));
-const AdminUpload = React.lazy(() => import('./AdminUpload'));
-const MediaLibrary = React.lazy(() => import('../public/MediaLibrary'));
 const ProfileAndSecurity = React.lazy(() => import('./ProfileAndSecurity'));
 const ProgramsManager = React.lazy(() => import('./ProgramsManager'));
 const GospelRadioStudio = React.lazy(() => import('./GospelRadioStudio'));
@@ -135,8 +129,12 @@ const DashboardLayout = () => {
   const tabAliases = {
     branches: 'finance',
     announcements: 'records',
-    'live-studio': 'live',
-    meetings: 'live',
+    'live-studio': 'overview',
+    live: 'overview',
+    meetings: 'overview',
+    library: 'overview',
+    upload: 'overview',
+    uploads: 'overview',
     'site-text': 'site-texts',
     'site-texts': 'site-texts',
     texts: 'site-texts',
@@ -177,7 +175,7 @@ const DashboardLayout = () => {
   const [overviewStats, setOverviewStats] = useState({
     membersCount: 248,
     branchesCount: STATIC_BRANCHES_COUNT,
-    liveSessionsCount: 6,
+    eventsCount: 4,
     announcementsCount: 12
   });
   const [announcements, setAnnouncements] = useState([]);
@@ -252,7 +250,7 @@ const DashboardLayout = () => {
 
         const promises = [
           api.get('/banners').catch(() => ({ data: { banners: [] } })),
-          api.get('/live/active').catch(() => ({ data: { meeting: null } }))
+          api.get('/events').catch(() => ({ data: { events: [] } }))
         ];
 
         // Role-appropriate stats fetching
@@ -268,7 +266,7 @@ const DashboardLayout = () => {
 
         const results = await Promise.all(promises);
         const bannersRes = results[0];
-        const liveRes = results[1];
+        const eventsRes = results[1];
         const roleStatsRes = results[2];
 
         // Parse banners / announcements
@@ -295,10 +293,12 @@ const DashboardLayout = () => {
           realMembers = roleStatsRes.data.count;
         }
 
+        const eventsList = eventsRes?.data?.events || [];
+
         setOverviewStats({
           membersCount: realMembers,
           branchesCount: STATIC_BRANCHES_COUNT,
-          liveSessionsCount: liveRes?.data?.meeting ? 1 : 6,
+          eventsCount: eventsList.length > 0 ? eventsList.length : 4,
           announcementsCount: realBanners.length > 0 ? realBanners.length : 12
         });
       } catch (err) {
@@ -348,32 +348,11 @@ const DashboardLayout = () => {
       roles: ['SUPER_ADMIN', 'ADMIN', 'COLLECTOR', 'HR', 'SECRETARY', 'MEMBER']
     },
     {
-      id: 'upload',
-      title: t('dashboard.menuUpload') || "Faayilii Fe'i",
-      subtitle: t('dashboard.menuUploadSub') || 'Upload Management',
-      icon: UploadCloud,
-      roles: ['SUPER_ADMIN', 'ADMIN', 'SECRETARY']
-    },
-    {
-      id: 'library',
-      title: t('dashboard.menuLibrary') || 'Faayiloota & Barruulee',
-      subtitle: t('dashboard.menuLibrarySub') || 'Books & Media Library',
-      icon: BookOpen,
-      roles: ['SUPER_ADMIN', 'ADMIN', 'COLLECTOR', 'HR', 'SECRETARY', 'MEMBER']
-    },
-    {
       id: 'messages',
       title: t('dashboard.menuMessages') || 'Wiirtuu Ergaa',
       subtitle: t('dashboard.menuMessagesSub') || 'Messages & Chat',
       icon: MessageSquare,
       badgeCount: unreadCount > 0 ? unreadCount : null,
-      roles: ['SUPER_ADMIN', 'ADMIN', 'COLLECTOR', 'HR', 'SECRETARY', 'MEMBER']
-    },
-    {
-      id: 'live',
-      title: t('dashboard.menuLive') || 'Tajaajila Kallattii',
-      subtitle: t('dashboard.menuLiveSub') || 'WebRTC Live Studio',
-      icon: Video,
       roles: ['SUPER_ADMIN', 'ADMIN', 'COLLECTOR', 'HR', 'SECRETARY', 'MEMBER']
     },
     {
@@ -884,11 +863,11 @@ const DashboardLayout = () => {
                   subtext="Damee haarawaa"
                 />
                 <StatCard
-                  icon={Radio}
-                  label="Tajaajila Live"
-                  value={overviewStats.liveSessionsCount}
-                  trend="Live Broadcast"
-                  subtext="Bara kanaa"
+                  icon={Calendar}
+                  label="Sagantaalee (Events)"
+                  value={overviewStats.eventsCount}
+                  trend="Upcoming Events"
+                  subtext="Sagantaalee amantaa"
                 />
                 <StatCard
                   icon={Megaphone}
@@ -1042,17 +1021,8 @@ const DashboardLayout = () => {
               </div>
             }
           >
-            {/* TAB 2: UPLOAD (Admin / Secretary) */}
-            {activeTab === 'upload' && <AdminUpload />}
-
-            {/* TAB 3: MEDIA LIBRARY */}
-            {activeTab === 'library' && <MediaLibrary />}
-
-            {/* TAB 4: MESSAGES */}
+            {/* TAB: MESSAGES */}
             {activeTab === 'messages' && <MessagingCenter />}
-
-            {/* TAB 5: LIVE VIDEO & AUDIO */}
-            {activeTab === 'live' && <LiveMeetingStudio />}
 
             {/* TAB: GOSPEL RADIO BROADCAST STUDIO (STAFF) */}
             {activeTab === 'radio' && <GospelRadioStudio />}

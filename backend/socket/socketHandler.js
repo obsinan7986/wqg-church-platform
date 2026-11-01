@@ -169,71 +169,11 @@ const initSocketHandler = (io) => {
       }
     });
 
-    // Live Studio Events
-    socket.on('join_meeting_studio', ({ meetingId }) => {
-      if (!meetingId) return;
-      socket.currentMeetingId = meetingId;
-      socket.join(`meeting_${meetingId}`);
-      console.log(`[Socket] User ${socket.user?.fullName || socket.id} joined meeting_${meetingId}`);
-      socket.to(`meeting_${meetingId}`).emit('user_joined_studio', {
-        user: socket.user ? {
-          _id: socket.user._id,
-          fullName: socket.user.fullName,
-          role: socket.user.role,
-          originChurch: socket.user.originChurch
-        } : null,
-        socketId: socket.id
-      });
-    });
-
-    socket.on('leave_meeting_studio', ({ meetingId }) => {
-      if (!meetingId) return;
-      socket.leave(`meeting_${meetingId}`);
-      if (socket.currentMeetingId === meetingId) {
-        socket.currentMeetingId = null;
-      }
-      socket.to(`meeting_${meetingId}`).emit('user_left_studio', {
-        userId: socket.user?._id,
-        socketId: socket.id
-      });
-    });
-
-    // WebRTC Signaling Forwarder (offer, answer, candidate, renegotiate, etc.)
-    socket.on('webrtc_signal', ({ to, signal, meetingId }) => {
-      const payload = {
-        from: socket.id,
-        senderUser: socket.user ? {
-          _id: socket.user._id,
-          fullName: socket.user.fullName,
-          role: socket.user.role,
-          originChurch: socket.user.originChurch,
-          avatarUrl: socket.user.avatarUrl
-        } : null,
-        signal
-      };
-
-      if (to) {
-        const targetRoom = (typeof to === 'string' && /^[0-9a-fA-F]{24}$/.test(to))
-          ? `user_${to}`
-          : to;
-        io.to(targetRoom).emit('webrtc_signal', payload);
-      } else if (meetingId) {
-        socket.to(`meeting_${meetingId}`).emit('webrtc_signal', payload);
-      }
-    });
-
     // Disconnect event
     socket.on('disconnect', async () => {
       // Remove from active radio listeners
       radioService.removeListener(socket.id, io);
 
-      if (socket.currentMeetingId) {
-        socket.to(`meeting_${socket.currentMeetingId}`).emit('user_left_studio', {
-          userId: socket.user?._id,
-          socketId: socket.id
-        });
-        socket.currentMeetingId = null;
-      }
       if (socket.user) {
         console.log(`[Socket] User disconnected: ${socket.user.fullName}`);
         await User.findByIdAndUpdate(socket.user._id, { isOnline: false }).catch(() => {});

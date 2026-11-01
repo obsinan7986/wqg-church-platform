@@ -134,11 +134,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { calendarPref, clockPref, formatTime: formatTimeWithSettings } = useDateSettings();
 
-  // 1. LIVE meeting state (from /api/live/public/next)
-  const [liveMeeting, setLiveMeeting] = useState(null);
-  const [liveCountdown, setLiveCountdown] = useState('');
-
-  // 2. Upcoming Events state (from /api/events/public?upcoming=true)
+  // 1. Upcoming Events state (from /api/events/public?upcoming=true)
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
 
@@ -165,23 +161,6 @@ const Home = () => {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
-
-  // Fetch Public Next Live Meeting
-  const fetchLiveMeeting = useCallback(async () => {
-    try {
-      const res = await api.get('/live/public/next');
-      if (res.data?.success && res.data.meeting) {
-        setLiveMeeting(res.data.meeting);
-        if (res.data.meeting.status === 'SCHEDULED' && res.data.meeting.scheduledDate) {
-          setLiveCountdown(getCountdown(res.data.meeting.scheduledDate) || '');
-        }
-      } else {
-        setLiveMeeting(null);
-      }
-    } catch (e) {
-      setLiveMeeting(null);
-    }
-  }, []);
 
   // Fetch Upcoming Events
   const fetchUpcomingEvents = useCallback(async () => {
@@ -230,26 +209,10 @@ const Home = () => {
 
   // Initial fetches
   useEffect(() => {
-    fetchLiveMeeting();
     fetchUpcomingEvents();
     fetchAnnouncements();
     fetchSchedule();
-  }, [fetchLiveMeeting, fetchUpcomingEvents, fetchAnnouncements, fetchSchedule]);
-
-  // Live countdown ticker
-  useEffect(() => {
-    if (liveMeeting && liveMeeting.status === 'SCHEDULED' && liveMeeting.scheduledDate) {
-      const interval = setInterval(() => {
-        const cd = getCountdown(liveMeeting.scheduledDate);
-        setLiveCountdown(cd || '');
-        if (!cd) {
-          // If countdown reached 0, refetch live meeting
-          fetchLiveMeeting();
-        }
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [liveMeeting, fetchLiveMeeting]);
+  }, [fetchUpcomingEvents, fetchAnnouncements, fetchSchedule]);
 
   // Socket listener: updates everything reactively when content_updated is fired
   useEffect(() => {
@@ -257,24 +220,17 @@ const Home = () => {
 
     const handleContentUpdate = (data) => {
       const type = data?.type;
-      if (!type || type === 'live') fetchLiveMeeting();
       if (!type || type === 'event') fetchUpcomingEvents();
       if (!type || type === 'announcement') fetchAnnouncements();
       if (!type || type === 'schedule') fetchSchedule();
     };
 
-    const handleLiveChange = () => fetchLiveMeeting();
-
     socket.on('content_updated', handleContentUpdate);
-    socket.on('live_status_changed', handleLiveChange);
-    socket.on('live_ended', handleLiveChange);
 
     return () => {
       socket.off('content_updated', handleContentUpdate);
-      socket.off('live_status_changed', handleLiveChange);
-      socket.off('live_ended', handleLiveChange);
     };
-  }, [socket, fetchLiveMeeting, fetchUpcomingEvents, fetchAnnouncements, fetchSchedule]);
+  }, [socket, fetchUpcomingEvents, fetchAnnouncements, fetchSchedule]);
 
   // Stats IntersectionObserver for one-time count-up trigger
   useEffect(() => {
@@ -438,7 +394,7 @@ const Home = () => {
       title: t('home.featMediaTitle') || 'Wiirtuu Faarfannaa',
       desc: t('home.featMediaDesc') || 'Faarfannaawwan qulqullaa\'oo fi sagantaalee kallattii YouTube irratti daawwadhaa.',
       action: t('home.featMediaAction') || 'Dhaggeeffadhaa',
-      link: '/media-library'
+      link: '/dashboard?tab=media'
     },
     {
       icon: HeartHandshake,
@@ -461,82 +417,7 @@ const Home = () => {
       {/* ══════ 1. ANIMATED HERO SLIDESHOW (Directly under navbar, no gap) ══════ */}
       <HeroSlideshow />
 
-      {/* ══════ 2. LIVE STRIP (Hidden when none) ══════ */}
-      {liveMeeting && (
-        <div
-          className={`w-full py-3 sm:py-3.5 px-4 text-white shadow-md transition-all ${
-            liveMeeting.status === 'LIVE'
-              ? 'bg-gradient-to-r from-red-700 via-red-600 to-rose-700 border-b border-red-500'
-              : 'bg-gradient-to-r from-royal via-royal-dark to-royal border-b border-gold-500/30'
-          }`}
-        >
-          <Container className="max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-            <div className="flex items-center space-x-3">
-              {liveMeeting.status === 'LIVE' ? (
-                <>
-                  <span className="relative flex h-3.5 w-3.5 shrink-0">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90" />
-                    <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-white shadow-xs" />
-                  </span>
-                  <div className="flex items-center space-x-2">
-                    <span className="bg-white/20 text-white px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider border border-white/40">
-                      LIVE NOW
-                    </span>
-                    <span className="font-bold text-xs sm:text-sm drop-shadow-xs">
-                      {liveMeeting.title || "Walga'ii Kallattii Qulqulluu Giyoorgisii"}
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="w-8 h-8 rounded-full bg-gold-500/20 border border-gold-400 text-gold-400 flex items-center justify-center shrink-0">
-                    <Radio className="w-4 h-4 text-gold-400" />
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                    <span className="text-gold-400 text-xs font-bold uppercase tracking-wider">
-                      Next Live:
-                    </span>
-                    <span className="font-bold text-xs sm:text-sm text-white">
-                      {liveMeeting.title}
-                    </span>
-                    {liveCountdown && (
-                      <span className="px-2 py-0.5 rounded-full bg-gold-500/20 text-gold-400 text-[11px] font-mono font-bold border border-gold-500/30">
-                        {liveCountdown}
-                      </span>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-
-            {liveMeeting.status === 'LIVE' ? (
-              <button
-                onClick={() => {
-                  if (isAuthenticated) {
-                    navigate('/dashboard/live');
-                  } else {
-                    navigate('/login?redirect=/dashboard/live');
-                  }
-                }}
-                className="inline-flex items-center space-x-2 px-5 py-1.5 rounded-full bg-white text-red-700 hover:bg-gold-50 font-black text-xs uppercase tracking-wider shadow-md hover:scale-105 transition-all"
-              >
-                <Radio className="w-3.5 h-3.5 animate-pulse" />
-                <span>Hordofaa / Join Live</span>
-              </button>
-            ) : (
-              <Link
-                to="/services"
-                className="inline-flex items-center space-x-1.5 text-xs font-semibold text-gold-400 hover:text-white transition-colors"
-              >
-                <span>Sagantaa Guutuu</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            )}
-          </Container>
-        </div>
-      )}
-
-      {/* ══════ 3. UPCOMING EVENTS (Hidden completely if empty) ══════ */}
+      {/* ══════ 2. UPCOMING EVENTS (Hidden completely if empty) ══════ */}
       {(loadingEvents || upcomingEvents.length > 0) && (
         <section className="py-12 sm:py-16 bg-white border-b border-slate-100">
           <Container className="max-w-6xl space-y-8">
@@ -858,33 +739,16 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Card 3: Walga'ii Kallattii (Live Stream) / Live Broadcast */}
+            {/* Card 3: Walga'ii Kallattii / Weekly Broadcast */}
             <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm hover:border-gold-500/70 hover:shadow-md transition-all h-full flex flex-col justify-between space-y-5">
               <div className="space-y-4">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                  {liveMeeting && liveMeeting.status === 'LIVE' ? (
-                    <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-red-100 text-red-700 border border-red-300">
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600" />
-                      </span>
-                      <span>LIVE AMMA</span>
-                    </span>
-                  ) : (
-                    <Badge variant="outline">Live Broadcast</Badge>
-                  )}
-                  <Radio
-                    className={`w-4 h-4 ${
-                      liveMeeting && liveMeeting.status === 'LIVE'
-                        ? 'text-red-600 animate-pulse'
-                        : 'text-gold-600'
-                    }`}
-                    aria-hidden="true"
-                  />
+                  <Badge variant="outline">Sagantaa Torbee</Badge>
+                  <Radio className="w-4 h-4 text-gold-600" aria-hidden="true" />
                 </div>
 
                 <h3 className="font-extrabold text-base text-royal">
-                  {t('home.schedule3Title') || "Walga'ii Kallattii (Live Stream)"}
+                  {t('home.schedule3Title') || "Walga'ii fi Barnoota"}
                 </h3>
 
                 {/* List of rows */}
@@ -912,24 +776,13 @@ const Home = () => {
               </div>
 
               <div className="pt-3 border-t border-slate-100">
-                {liveMeeting && liveMeeting.status === 'LIVE' ? (
-                  <Link
-                    to={isAuthenticated ? '/dashboard/live' : '/login?redirect=/dashboard/live'}
-                    className="w-full inline-flex items-center justify-center space-x-2 py-2 px-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md transition-all select-none"
-                  >
-                    <Radio className="w-3.5 h-3.5 text-white animate-pulse" />
-                    <span>Live Hordofi (Join Live Stream)</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-white" />
-                  </Link>
-                ) : (
-                  <Link
-                    to="/services"
-                    className="inline-flex items-center space-x-1.5 text-xs font-bold text-royal hover:text-royal-dark transition-colors"
-                  >
-                    <span>Tajaajila Ilaalaa</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-gold-600" />
-                  </Link>
-                )}
+                <Link
+                  to="/services"
+                  className="inline-flex items-center space-x-1.5 text-xs font-bold text-royal hover:text-royal-dark transition-colors"
+                >
+                  <span>Tajaajila Ilaalaa</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-gold-600" />
+                </Link>
               </div>
             </div>
           </div>

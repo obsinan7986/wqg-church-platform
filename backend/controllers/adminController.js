@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Contribution = require('../models/Contribution');
-const LiveMeeting = require('../models/LiveMeeting');
+const Event = require('../models/Event');
+const Announcement = require('../models/Announcement');
 const Document = require('../models/Document');
 const GospelMedia = require('../models/GospelMedia');
 const Notification = require('../models/Notification');
@@ -23,11 +24,9 @@ exports.getSystemOverview = async (req, res) => {
       { $group: { _id: null, totalAmount: { $sum: '$amount' }, count: { $sum: 1 } } }
     ]);
 
-    // Live Meeting stats
-    const liveMeetingCount = await LiveMeeting.countDocuments();
-    const activeLive = await LiveMeeting.findOne({ status: 'LIVE' }).select(
-      'title status meetingLink allowedParticipants'
-    );
+    // Events & Announcements stats
+    const eventCount = await Event.countDocuments();
+    const announcementCount = await Announcement.countDocuments();
 
     // Documents & Gospel media
     const documentCount = await Document.countDocuments();
@@ -49,10 +48,8 @@ exports.getSystemOverview = async (req, res) => {
           totalAmount: totalContributions[0]?.totalAmount || 0,
           totalCount: totalContributions[0]?.count || 0
         },
-        liveMeeting: {
-          total: liveMeetingCount,
-          active: activeLive
-        },
+        eventCount,
+        announcementCount,
         documentCount,
         gospelMediaCount,
         notificationCount
@@ -118,52 +115,4 @@ exports.updateUserRole = async (req, res) => {
   }
 };
 
-// @desc    Delete or moderate a comment from a live meeting
-// @route   DELETE /api/admin/meetings/:meetingId/comments/:commentId
-// @access  Private (ADMIN, SUPER_ADMIN)
-exports.moderateMeetingComment = async (req, res) => {
-  try {
-    const { meetingId, commentId } = req.params;
-    const meeting = await LiveMeeting.findById(meetingId);
 
-    if (!meeting) {
-      return res.status(404).json({
-        success: false,
-        message: 'Live meeting not found'
-      });
-    }
-
-    const commentIndex = meeting.comments.findIndex(
-      (c) => c._id.toString() === commentId
-    );
-
-    if (commentIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        message: 'Comment not found'
-      });
-    }
-
-    meeting.comments.splice(commentIndex, 1);
-    await meeting.save();
-
-    // Broadcast comment deletion via Socket.io
-    if (req.io) {
-      req.io.to(`meeting_${meeting._id}`).emit('comment_moderated', {
-        meetingId: meeting._id,
-        commentId
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Comment removed by moderator'
-    });
-  } catch (error) {
-    console.error('[moderateMeetingComment Error]:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to moderate comment'
-    });
-  }
-};

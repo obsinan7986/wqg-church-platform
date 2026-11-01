@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { fetchAndApplySiteTextOverrides } from './i18n';
 import { AuthProvider } from './context/AuthContext';
 import { DateSettingsProvider } from './context/DateSettingsContext';
@@ -16,7 +16,6 @@ import { Spinner } from './components/ui';
 const Home = React.lazy(() => import('./pages/public/Home'));
 const AboutAndHistory = React.lazy(() => import('./pages/public/AboutAndHistory'));
 const Services = React.lazy(() => import('./pages/public/Services'));
-const MediaLibrary = React.lazy(() => import('./pages/public/MediaLibrary'));
 const EventsPage = React.lazy(() => import('./pages/public/EventsPage'));
 const AnnouncementsPage = React.lazy(() => import('./pages/public/AnnouncementsPage'));
 const HelpCenter = React.lazy(() => import('./pages/public/HelpCenter'));
@@ -57,8 +56,11 @@ const AppContent = () => {
             <Route path="/events" element={<EventsPage />} />
             <Route path="/announcements" element={<AnnouncementsPage />} />
             <Route path="/announcements/:id" element={<AnnouncementsPage />} />
-            <Route path="/media-library" element={<MediaLibrary />} />
-            <Route path="/library" element={<MediaLibrary />} />
+            {/* Redirect legacy library / media / live URLs */}
+            <Route path="/media-library" element={<Navigate to="/dashboard?tab=media" replace />} />
+            <Route path="/library" element={<Navigate to="/dashboard?tab=media" replace />} />
+            <Route path="/media" element={<Navigate to="/dashboard?tab=media" replace />} />
+            <Route path="/live" element={<Navigate to="/dashboard" replace />} />
             <Route path="/help" element={<HelpCenter />} />
 
             {/* Authentication Routes */}
