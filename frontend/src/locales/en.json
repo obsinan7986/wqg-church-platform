@@ -8,7 +8,6 @@
     "home": "Home",
     "about": "About & History",
     "services": "Services",
-    "library": "Library & Media",
     "login": "Login",
     "register": "Register",
     "dashboard": "Dashboard",
@@ -29,7 +28,6 @@
     "heroTitle": "Waldaa Angafa Wareegamtoota Qulquluu Giyoorgisii",
     "heroSubtitle": "Dedicated to strengthening believers' unity, expanding gospel ministry, and providing coordinated charitable community support.",
     "ctaJoin": "Become a Member",
-    "ctaLive": "Watch Live Meetings",
     "heroSlides": [
       {
         "tagline": "FELLOWSHIP OF BELIEVERS",
@@ -84,9 +82,9 @@
     "schedule2Title": "Youth Ministry & Choir Rehearsal",
     "schedule2Time": "Saturday, 3:00 PM - 5:30 PM",
     "schedule2Desc": "Spiritual training for youth, Bible study, and liturgical music.",
-    "schedule3Title": "Live Online Spiritual Fellowship",
+    "schedule3Title": "Online Prayer & Fellowship",
     "schedule3Time": "Thursday, 6:00 PM - 8:00 PM",
-    "schedule3Desc": "Live interactive broadcast for diaspora and remote members.",
+    "schedule3Desc": "Regular fellowship and prayer connection for diaspora and remote members.",
     "featAboutTitle": "About the Association",
     "featAboutDesc": "Explore the history, sacred vision, and holy mission of St. George Fellowship.",
     "featAboutAction": "Learn More",
@@ -100,7 +98,7 @@
     "featServicesDesc": "Discover our gospel preaching, education, and community charity services.",
     "featServicesAction": "Explore Services",
     "featMediaTitle": "Sacred Hymns & Media Center [DRAFT - Review]",
-    "featMediaDesc": "Watch spiritual hymns, sacred gospel videos, and live broadcasts on YouTube. [DRAFT - Review]",
+    "featMediaDesc": "Watch spiritual hymns, sacred gospel videos, and uplifting choir songs on YouTube. [DRAFT - Review]",
     "featMediaAction": "Listen & Watch [DRAFT - Review]",
     "featYouthTitle": "Youth & Choir Ministry [DRAFT - Review]",
     "featYouthDesc": "Choir development, spiritual hymns training, and special youth ministries. [DRAFT - Review]",
@@ -134,7 +132,7 @@
     "ms3Year": "2020",
     "ms3Desc": "Launch of nationwide humanitarian and charitable relief programs.",
     "ms4Year": "2026",
-    "ms4Desc": "Deployment of the next-generation digital portal and live streaming services."
+    "ms4Desc": "Deployment of the next-generation digital portal and Gospel Radio services."
   },
   "services": {
     "title": "Our Ministries & Services",
@@ -145,8 +143,8 @@
     "s2Desc": "Vocal choir development, original sacred music composition, and youth mentorship.",
     "s3Title": "Charity & Social Outreach",
     "s3Desc": "Benevolence funds, supporting the vulnerable and elderly, and transparent tithe collections.",
-    "s4Title": "Live Streaming & Virtual Fellowship",
-    "s4Desc": "Real-time audio and video sessions powered by WebRTC and Socket.io for global members."
+    "s4Title": "Gospel Radio & Media Ministry",
+    "s4Desc": "Delivering uplifting gospel songs and sermons through YouTube and continuous Gospel Radio for all members."
   },
   "auth": {
     "loginTitle": "Sign In to Your Account",
@@ -183,19 +181,12 @@
     "phone": "Phone",
     "role": "Assigned Role",
     "status": "System Status: Active",
-    "liveNotice": "To participate in live broadcast sessions, proceed to the Live section.",
     "overview": "Overview Dashboard",
     "quickActions": "Quick Actions",
     "menuOverview": "Overview",
     "menuOverviewSub": "Overview / Dashboard",
-    "menuUpload": "Upload Files",
-    "menuUploadSub": "Upload Management",
-    "menuLibrary": "Library & Media",
-    "menuLibrarySub": "Books & Media Library",
     "menuMessages": "Messages",
     "menuMessagesSub": "Messages & Chat",
-    "menuLive": "Live Studio",
-    "menuLiveSub": "WebRTC Live Studio",
     "menuMedia": "Gospel Media",
     "menuMediaSub": "YouTube Gospel Media",
     "menuMembers": "Members",

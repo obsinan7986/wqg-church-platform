@@ -81,13 +81,13 @@ const Services = () => {
       actionLink: '/register'
     },
     {
-      id: 'live',
+      id: 'media',
       title: t('services.s4Title'),
       desc: t('services.s4Desc'),
-      icon: Video,
-      badge: 'Digital / Kallattii (Live)',
-      actionText: 'Live Stream Seeni',
-      actionLink: '/login'
+      icon: Radio,
+      badge: 'Digital / Media & Radio',
+      actionText: 'Media & Raadiyoo',
+      actionLink: '/dashboard?tab=media'
     }
   ];
 

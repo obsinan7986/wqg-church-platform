@@ -8,7 +8,6 @@
     "home": "Mana",
     "about": "Waa'ee & Seenaa",
     "services": "Tajaajiloota",
-    "library": "Barruulee & Faayiloota",
     "login": "Seensa",
     "register": "Galmaa'i",
     "dashboard": "Dashboard",
@@ -29,7 +28,6 @@
     "heroTitle": "Waldaa Angafa Wareegamtoota Qulquluu Giyoorgisii",
     "heroSubtitle": "Tokkummaa amantootaa cimsachuu, tajaajila wangeelaa babal'isuu fi gargaarsa hawaasummaa wal-ta'iinsaan raawwachuuf dhaabbate.",
     "ctaJoin": "Miseensa Ta'i",
-    "ctaLive": "Tajaajila Live Hordofi",
     "heroSlides": [
       {
         "tagline": "TOKKUMMAA AMANTOOTAA",
@@ -84,9 +82,9 @@
     "schedule2Title": "Dargaggoota & Faarfannaa",
     "schedule2Time": "Sanbata Xiqqaa, Sa'aatii 9:00 - 11:30",
     "schedule2Desc": "Barnoota amantaa dargaggootaa fi leenjii faarfannaa.",
-    "schedule3Title": "Walga'ii Kallattii (Live Stream)",
+    "schedule3Title": "Kadhannaa fi Tokkummaa Online",
     "schedule3Time": "Kamisa, Sa'aatii 12:00 - 2:00 Galgala",
-    "schedule3Desc": "Barnoota amantoota biyya alaa fi fagoo jiraniif qophaa'u.",
+    "schedule3Desc": "Sagantaa kadhannaa fi tokkummaa amantoota fagoofi biyya alaa.",
     "featAboutTitle": "Waa'ee Waldichaa",
     "featAboutDesc": "Seenaa, hiika fi hundeeffama Waldaa Qulqulluu Giyoorgisii bal'inaan baradhaa.",
     "featAboutAction": "Daawwadhaa",
@@ -100,7 +98,7 @@
     "featServicesDesc": "Tajaajila wangeelaa, barnootaa, fi gargaarsa hawaasummaa waldichaa argadhaa.",
     "featServicesAction": "Tajaajila Argadhaa",
     "featMediaTitle": "Wiirtuu Faarfannaa [DRAFT - Review]",
-    "featMediaDesc": "Faarfannaawwan qulqullaa'oo fi sagantaalee kallattii YouTube irratti daawwadhaa. [DRAFT - Review]",
+    "featMediaDesc": "Faarfannaawwan qulqullaa'oo fi lallaba wangeelaa YouTube irratti daawwadhaa. [DRAFT - Review]",
     "featMediaAction": "Dhaggeeffadhaa [DRAFT - Review]",
     "featYouthTitle": "Kutaa Dargaggootaa [DRAFT - Review]",
     "featYouthDesc": "Koorii, leenjii faarfannaa fi tajaajila addaa dargaggootaaf qophaa'an. [DRAFT - Review]",
@@ -134,7 +132,7 @@
     "ms3Year": "2020",
     "ms3Desc": "Sagantaa gargaarsa harka-qalleeyyii guutummaa biyyoolessaa eegaluu.",
     "ms4Year": "2026",
-    "ms4Desc": "Sirna ammayyaa (Platform Digital) fi tajaajila Live amantoota hundaaf diriirsuu."
+    "ms4Desc": "Sirna ammayyaa (Platform Digital) fi tajaajila Raadiyoo Wangeelaa amantoota hundaaf diriirsuu."
   },
   "services": {
     "title": "Tajaajiloota Waldichaa",
@@ -145,8 +143,8 @@
     "s2Desc": "Koorii waldaa leenjisuu, faarfannaa haaraa qopheessuu fi dargaggoota amantaatti leenjisuu.",
     "s3Title": "Tajaajila Arjoominaa fi Hawaasummaa",
     "s3Desc": "Harka-qalleeyyii, maatii dhabeeyyii fi namoota rakkatan gargaaruu fi buusii walitti qabuu.",
-    "s4Title": "Walga'ii fi Barnoota Kallattii (Live)",
-    "s4Desc": "WebRTC fi Socket.io gargaaramuun sagantaa sagalee fi viidiyoo kallattii amantootaaf dhiyeessuu."
+    "s4Title": "Raadiyoo fi Media Wangeelaa",
+    "s4Desc": "Faarfannaawwan fi lallaba wangeelaa YouTube fi Raadiyoo kallattiin amantootaaf dhiyeessuu."
   },
   "auth": {
     "loginTitle": "Seensa Dabarsaa",
@@ -183,19 +181,12 @@
     "phone": "Bilbila",
     "role": "Gahee Hojii",
     "status": "Haala Hojii: Active",
-    "liveNotice": "Tajaajila Live kallattii hordofuuf gara kutaa Live deemuu dandeessu.",
     "overview": "Ilaalcha Waliigalaa",
     "quickActions": "Tarkaanfilee Saffisaa",
     "menuOverview": "Ilaalcha Waliigalaa",
     "menuOverviewSub": "Overview / Dashboard",
-    "menuUpload": "Faayilii Fe'i",
-    "menuUploadSub": "Upload Management",
-    "menuLibrary": "Faayiloota & Barruulee",
-    "menuLibrarySub": "Books & Media Library",
     "menuMessages": "Wiirtuu Ergaa",
     "menuMessagesSub": "Messages & Chat",
-    "menuLive": "Tajaajila Kallattii",
-    "menuLiveSub": "WebRTC Live Studio",
     "menuMedia": "Faarfannaa & Media",
     "menuMediaSub": "YouTube Gospel Media",
     "menuMembers": "Miseensota",

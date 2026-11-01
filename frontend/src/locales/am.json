@@ -8,7 +8,6 @@
     "home": "ዋና ገጽ",
     "about": "ስለ ማኅበሩ & ታሪክ",
     "services": "አገልግሎቶች",
-    "library": "መጻሕፍት እና ሚዲያ",
     "login": "ግባ",
     "register": "ተመዝገብ",
     "dashboard": "Dashboard",
@@ -29,7 +28,6 @@
     "heroTitle": "የሰማዕታት አለቃ ቅዱስ ጊዮርጊስ ማኅበር",
     "heroSubtitle": "የአማኞችን አንድነት ለማጠናከር፣ የወንጌል አገልግሎትን ለማስፋፋት እና ማኅበራዊ በጎ አድራጎትን በኅብረት ለመፈጸም የተቋቋመ።",
     "ctaJoin": "አባል ይሁኑ",
-    "ctaLive": "የቀጥታ (Live) ሥርጭት ይከታተሉ",
     "heroSlides": [
       {
         "tagline": "የአማኞች አንድነት",
@@ -84,9 +82,9 @@
     "schedule2Title": "የወጣቶች & ዝማሬ አገልግሎት",
     "schedule2Time": "ቅዳሜ፣ ከሰዓት 9:00 - 11:30",
     "schedule2Desc": "የወጣቶች መንፈሳዊ ትምህርት እና የዝማሬ ሥልጠና።",
-    "schedule3Title": "የቀጥታ ስብሰባ (Live Stream)",
+    "schedule3Title": "የበይነመረብ ጸሎትና ኅብረት",
     "schedule3Time": "ሐሙስ፣ ከምሽቱ 12:00 - 2:00",
-    "schedule3Desc": "በሩቅ እና በውጭ ሀገር ላሉ አባላት የሚተላለፍ የቀጥታ ትምህርት።",
+    "schedule3Desc": "በውጭ አገርና በሩቅ ላሉ አባላት የሚደረግ ቋሚ የጸሎትና የኅብረት ፕሮግራም።",
     "featAboutTitle": "ስለ ማኅበሩ",
     "featAboutDesc": "የሰማዕታት አለቃ ቅዱስ ጊዮርጊስ ማኅበርን ታሪክ፣ ራዕይ እና ተልዕኮ በዝርዝር ይወቁ።",
     "featAboutAction": "ይመልከቱ",
@@ -100,7 +98,7 @@
     "featServicesDesc": "የወንጌል ስብከት፣ የትምህርት እና የማኅበራዊ ድጋፍ አገልግሎቶቻችንን ያግኙ።",
     "featServicesAction": "አገልግሎቶችን ይመልከቱ",
     "featMediaTitle": "የዝማሬና የሚዲያ ማዕከል [DRAFT - Review]",
-    "featMediaDesc": "የተቀደሱ መንፈሳዊ ዝማሬዎችንና የቀጥታ ስርጭት ፕሮግራሞችን በዩቲዩብ ይከታተሉ። [DRAFT - Review]",
+    "featMediaDesc": "የተመረጡ መንፈሳዊ መዝሙራትንና የወንጌል ቪዲዮዎችን በዩቲዩብ ይመልከቱ። [DRAFT - Review]",
     "featMediaAction": "ያዳምጡ [DRAFT - Review]",
     "featYouthTitle": "የወጣቶች አገልግሎት ክፍል [DRAFT - Review]",
     "featYouthDesc": "የህፃናትና ወጣቶች መዘምራን፣ የመንፈሳዊ ትምህርትና ልዩ ሥልጠናዎች። [DRAFT - Review]",
@@ -134,7 +132,7 @@
     "ms3Year": "2020",
     "ms3Desc": "የአገር አቀፍ የድጋፍ እና የበጎ አድራጎት መርሐ-ግብር መጀመር።",
     "ms4Year": "2026",
-    "ms4Desc": "ዘመናዊ የዲጂታል ፕላትፎርም እና የቀጥታ (Live) አገልግሎት መጀመር።"
+    "ms4Desc": "ዘመናዊ የዲጂታል ፕላትፎርም እና የወንጌል ሬዲዮ አገልግሎት መጀመር።"
   },
   "services": {
     "title": "የማኅበሩ አገልግሎቶች",
@@ -145,8 +143,8 @@
     "s2Desc": "የማኅበሩን መዘምራን ማሠልጠን፣ አዳዲስ ዝማሬዎችን ማዘጋጀት እና ወጣቶችን በእምነት ማነፅ።",
     "s3Title": "የበጎ አድራጎት እና ማኅበራዊ አገልግሎት",
     "s3Desc": "አቅመ ደካሞችን፣ አረጋውያንን እና ችግረኞችን መርዳት እንዲሁም መዋጮዎችን በአግባቡ ማስተባበር።",
-    "s4Title": "የቀጥታ ስብሰባ እና ትምህርት (Live)",
-    "s4Desc": "በWebRTC እና Socket.io በመታገዝ የቀጥታ የድምፅና ምስል ስርጭት ለምእመናን ማቅረብ።"
+    "s4Title": "የወንጌል ሬዲዮ እና ሚዲያ",
+    "s4Desc": "የወንጌል መዝሙራት እና ስብከቶችን በዩቲዩብ እና በሬዲዮ አማካኝነት ለምእመናን ማቅረብ።"
   },
   "auth": {
     "loginTitle": "ወደ መለያዎ ይግቡ",
@@ -183,19 +181,12 @@
     "phone": "ስልክ",
     "role": "የሥራ ድርሻ",
     "status": "የሥራ ሁኔታ: Active",
-    "liveNotice": "የቀጥታ ስብሰባዎችን ለመከታተል ወደ Live ክፍል መሄድ ይችላሉ።",
     "overview": "አጠቃላይ እይታ",
     "quickActions": "ፈጣን እርምጃዎች",
     "menuOverview": "አጠቃላይ እይታ",
     "menuOverviewSub": "Overview / Dashboard",
-    "menuUpload": "ፋይል ስቀል",
-    "menuUploadSub": "Upload Management",
-    "menuLibrary": "መጻሕፍት እና ሚዲያ",
-    "menuLibrarySub": "Books & Media Library",
     "menuMessages": "መልዕክቶች",
     "menuMessagesSub": "Messages & Chat",
-    "menuLive": "የቀጥታ ስርጭት",
-    "menuLiveSub": "WebRTC Live Studio",
     "menuMedia": "ዝማሬ & ሚዲያ",
     "menuMediaSub": "YouTube Gospel Media",
     "menuMembers": "የማኅበሩ አባላት",

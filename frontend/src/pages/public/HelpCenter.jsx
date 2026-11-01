@@ -36,7 +36,7 @@ const CATEGORIES = [
   { id: 'ALL', label: { en: 'All Topics', om: 'Mata-duree Hunda', am: 'ሁሉም ርዕሶች' } },
   { id: 'account', label: { en: 'Account & Login', om: 'Akkaawuntii & Seensa', am: 'መለያ እና መግቢያ' } },
   { id: 'communication', label: { en: 'Messages & Alerts', om: 'Ergaa & Beeksisa', am: 'መልዕክት እና ማስታወቂያ' } },
-  { id: 'media', label: { en: 'Media & Live', om: 'Media & Live Studio', am: 'ሚዲያ እና ቀጥታ ስርጭት' } },
+  { id: 'media', label: { en: 'Gospel Media & Radio', om: 'Media Wangeelaa & Raadiyoo', am: 'የወንጌል ሚዲያ እና ሬዲዮ' } },
   { id: 'finance', label: { en: 'Finance & Payments', om: 'Galii & Buusii', am: 'ክፍያ እና መዋጮ' } },
   { id: 'hr', label: { en: 'HR & Members', om: 'Miseensota & HR', am: 'የሰው ኃይል እና አባላት' } },
   { id: 'secretariat', label: { en: 'Records & Minutes', om: "Qaboo Yaa'ii & Sanada", am: 'ሰነድ እና ቃለ-ጉባኤ' } },

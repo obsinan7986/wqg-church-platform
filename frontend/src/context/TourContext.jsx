@@ -90,9 +90,9 @@ export const TOUR_DEFINITIONS = {
           am: 'ዋናው የአገልግሎቶች ማውጫ'
         },
         content: {
-          en: 'Quickly switch between Overview, Messages, Live Studio, Media Library, Payments, and Profile.',
-          om: 'Kutaalee Dashboard, Ergaa, Tajaajila Live, Media, Kaffaltii fi Profile gidduutti socho\'aa.',
-          am: 'በዳሽቦርድ፣ በመልዕክቶች፣ በቀጥታ ስርጭት፣ በሚዲያ፣ በክፍያዎች እና በመገለጫ መካከል በቀላሉ ይዘዋወሩ።'
+          en: 'Quickly switch between Overview, Messages, Gospel Media, Payments, and Profile.',
+          om: "Kutaalee Dashboard, Ergaa, Media Wangeelaa, Kaffaltii fi Profile gidduutti socho'aa.",
+          am: 'በዳሽቦርድ፣ በመልዕክቶች፣ በወንጌል ሚዲያ፣ በክፍያዎች እና በመገለጫ መካከል በቀላሉ ይዘዋወሩ።'
         },
         placement: 'right'
       },
@@ -104,9 +104,9 @@ export const TOUR_DEFINITIONS = {
           am: 'የማስታወቂያ ደውል'
         },
         content: {
-          en: 'Receive instant notifications when payments are approved or live broadcasts start.',
-          om: 'Yommuu kaffaltiin keessan mirkanaa\'u ykn live eegalu beeksisa battalatti asitti argattu.',
-          am: 'ክፍያዎ ሲረጋገጥ ወይም የቀጥታ ስርጭት ሲጀመር ወዲያውኑ መልዕክት እዚህ ይደርስዎታል።'
+          en: 'Receive instant notifications when payments are approved or announcements are posted.',
+          om: "Yommuu kaffaltiin keessan mirkanaa'u ykn beeksisni bahee beeksisa battalatti asitti argattu.",
+          am: 'ክፍያዎ ሲረጋገጥ ወይም አዲስ ማስታወቂያ ሲወጣ ወዲያውኑ መልዕክት እዚህ ይደርስዎታል።'
         },
         placement: 'bottom'
       },
@@ -288,9 +288,9 @@ export const TOUR_DEFINITIONS = {
           am: 'የመርሐ-ግብሮች እና የማስታወቂያ ማዕከል'
         },
         content: {
-          en: 'Manage Announcements, Events, Weekly Prayer Times, Live Broadcasting, and Hero Banners in one place.',
-          om: 'Beeksisa, Sagantaalee, Sagantaa Torbee, Tajaajila Live fi Faajjiiwwan bakka tokkotti bulchaa.',
-          am: 'ማስታወቂያዎችን፣ መርሐ-ግብሮችን፣ የሳምንት ጸሎቶችን፣ የቀጥታ ስርጭትን እና ባነሮችን በአንድ ቦታ ያስተዳድሩ።'
+          en: 'Manage Announcements, Events, Weekly Prayer Times, and Hero Banners in one place.',
+          om: 'Beeksisa, Sagantaalee, Sagantaa Torbee, fi Faajjiiwwan bakka tokkotti bulchaa.',
+          am: 'ማስታወቂያዎችን፣ መርሐ-ግብሮችን፣ የሳምንት ጸሎቶችን እና ባነሮችን በአንድ ቦታ ያስተዳድሩ።'
         },
         placement: 'bottom'
       },
@@ -307,73 +307,6 @@ export const TOUR_DEFINITIONS = {
           am: 'በ3 ቋንቋዎች፣ ከፎቶ እና ለአባላት ከሚላክ መልዕክት ጋር አዳዲስ ይዘቶችን ያትሙ።'
         },
         placement: 'bottom'
-      }
-    ]
-  },
-
-  live: {
-    id: 'live',
-    title: {
-      en: 'Live Broadcast Studio Tour',
-      om: 'Qajeelfama Tajaajila Kallattii (Live)',
-      am: 'የቀጥታ ስርጭት ስቱዲዮ መመሪያ'
-    },
-    steps: [
-      {
-        target: '[data-tour="live-video-screen"]',
-        title: {
-          en: 'Interactive Video Display',
-          om: 'Skiriinii Vidiyoo Kallattii',
-          am: 'የቀጥታ ቪዲዮ ስክሪን'
-        },
-        content: {
-          en: 'Stream high-definition spiritual sermons, choir singing, and liturgical worship in real time.',
-          om: 'Tajaajila lallabaa, faarfannaa fi barnoota hafuuraa qulqullina olaanaadhaan kallattiin daawwadhaa.',
-          am: 'ትምህርተ ወንጌልን፣ ዝማሬዎችን እና ጸሎቶችን በከፍተኛ ጥራት በቀጥታ ይከታተሉ።'
-        },
-        placement: 'bottom'
-      },
-      {
-        target: '[data-tour="live-camera-btn"]',
-        title: {
-          en: 'Camera Controls',
-          om: 'To\'annaa Kaameeraa',
-          am: 'የካሜራ መቆጣጠሪያ'
-        },
-        content: {
-          en: 'Turn your camera on or off anytime during interactive sessions with browser permission.',
-          om: 'Kaameeraa keessan yeroo barbaaddanitti banaa yookiin cufaa.',
-          am: 'ካሜራዎን በማንኛውም ጊዜ ማብራት ወይም ማጥፋት ይችላሉ።'
-        },
-        placement: 'top'
-      },
-      {
-        target: '[data-tour="live-mic-btn"]',
-        title: {
-          en: 'Microphone Controls',
-          om: 'To\'annaa Maayikii',
-          am: 'የማይክሮፎን መቆጣጠሪያ'
-        },
-        content: {
-          en: 'Mute or unmute your voice. The host can also manage speaking permissions.',
-          om: 'Sagalee keessan callisiisaa ykn banaa. Kaaadhimtoota sagalee hogganaan to\'ata.',
-          am: 'ድምጽዎን መዝጋት ወይም መክፈት ይችላሉ፤ አስተናጋጁም የመናገር ፈቃድ መስጠት ይችላል።'
-        },
-        placement: 'top'
-      },
-      {
-        target: '[data-tour="live-chat-panel"]',
-        title: {
-          en: 'Live Prayer Chat',
-          om: 'Wiirtuu Kadhannaa fi Haasawa',
-          am: 'የቀጥታ የጸሎት ውይይት'
-        },
-        content: {
-          en: 'Type prayer requests, amen greetings, and spiritual questions in the real-time chat room.',
-          om: 'Gaaffii hafuuraa, kadhannaa fi nagaa miseensotaaf haasawa kallattiin barreessaa.',
-          am: 'የጸሎት ጥያቄዎችን፣ አሜን የሚሉ ቃላትን እና ጥያቄዎችን በቀጥታ ይላኩ።'
-        },
-        placement: 'left'
       }
     ]
   }

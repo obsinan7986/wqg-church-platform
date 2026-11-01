@@ -313,10 +313,10 @@ const seedDatabase = async () => {
           title: 'Qaboo Yaa\'ii Walga\'ii Koree Hoji-raawwachiiftuu',
           referenceCode: 'DOC-2026-SEC01',
           type: 'MINUTES',
-          content: 'Walga\'iin guyyaa har\'aa sa\'aatii 4:00 irratti eegalame. Ajandaawwan: 1. Qophii tajaajila Live fi WebRTC. 2. Buusii ji\'aa miseensotaa cimsuu. 3. Sirna galmee fi kaardii eenyummaa HR. Murteewwan: Tajaajilli Live akka eegalamu murtaa\'eera; nagaheen kaffaltii digitaalaa akka kennamu walii galameera.',
+          content: 'Walga\'iin guyyaa har\'aa sa\'aatii 4:00 irratti eegalame. Ajandaawwan: 1. Qophii tajaajila Raadiyoo fi Media Wangeelaa. 2. Buusii ji\'aa miseensotaa cimsuu. 3. Sirna galmee fi kaardii eenyummaa HR. Murteewwan: Tajaajilli Raadiyoo Wangeelaa akka eegalamu murtaa\'eera; nagaheen kaffaltii digitaalaa akka kennamu walii galameera.',
           meetingDate: new Date(),
           attendeesCount: 5,
-          tags: ['Marii', 'Live', 'Faayinaansii'],
+          tags: ['Marii', 'Raadiyoo', 'Faayinaansii'],
           author: secretary._id,
           status: 'PUBLISHED'
         },

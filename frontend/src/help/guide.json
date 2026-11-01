@@ -220,9 +220,9 @@
       "am": "የማስታወቂያ ደውል (Notifications)"
     },
     "summary": {
-      "en": "Receive instant alerts about approvals, live meetings, and announcements.",
-      "om": "Waa'ee mirkaneessa kaffaltii, tajaajila live fi beeksisootaa yerooma sanatti beekaa.",
-      "am": "ስለ ክፍያ ማረጋገጫ፣ የቀጥታ ስርጭት እና አዳዲስ ማስታወቂያዎች ፈጣን መረጃ ያግኙ።"
+      "en": "Receive instant alerts about approvals, announcements, and programs.",
+      "om": "Waa'ee mirkaneessa kaffaltii, beeksisootaa fi sagantaalee yerooma sanatti beekaa.",
+      "am": "ስለ ክፍያ ማረጋገጫ፣ አዳዲስ ማስታወቂያዎች እና መርሐ-ግብሮች ፈጣን መረጃ ያግኙ።"
     },
     "steps": {
       "en": [
@@ -291,91 +291,81 @@
     "reviewed": { "om": false, "am": false, "en": true }
   },
   {
-    "id": "library-media",
+    "id": "gospel-media",
     "category": "media",
-    "roles": ["MEMBER", "COLLECTOR", "HR", "SECRETARY", "ADMIN", "SUPER_ADMIN"],
-    "path": "/library",
+    "roles": ["GUEST", "MEMBER", "COLLECTOR", "HR", "SECRETARY", "ADMIN", "SUPER_ADMIN"],
+    "path": "/dashboard?tab=media",
     "title": {
-      "en": "Library & Media (Watch, Listen, Download)",
-      "om": "Faayiloota & Barruulee (Ilaaluu, Dhaggeeffachuu, Buusuu)",
-      "am": "መጻሕፍት እና ሚዲያ (መመልከት፣ ማዳመጥ፣ ማውረድ)"
+      "en": "Gospel Media (YouTube Sacred Hymns & Sermons)",
+      "om": "Media Wangeelaa (Faarfannaa fi Lallaba YouTube)",
+      "am": "የወንጌል ሚዲያ (የዩቲዩብ መንፈሳዊ ዝማሬዎችና ስብከቶች)"
     },
     "summary": {
-      "en": "Access spiritual books, PDF documents, YouTube hymns, and gospel videos.",
-      "om": "Macaafota qulqullaa'oo, barruulee PDF, faarfannaa fi viidiyoolee wangeelaa daawwadhaa.",
-      "am": "መንፈሳዊ መጻሕፍትን፣ የፒዲኤፍ ሰነዶችን፣ ዝማሬዎችን እና የወንጌል ቪዲዮዎችን ያግኙ።"
+      "en": "Watch and listen to uplifting spiritual songs, choir worship, and sermons on YouTube.",
+      "om": "Faarfannaa qulqulluu, faarsaa koorii fi lallaba wangeelaa YouTube irratti daawwadhaa.",
+      "am": "መንፈሳዊ መዝሙራትን፣ የኅብረት ዝማሬዎችን እና ስብከቶችን በዩቲዩብ ይመልከቱ እና ያዳምጡ።"
     },
     "steps": {
       "en": [
-        "Navigate to 'Library & Media' (/library) from the navbar or dashboard sidebar.",
-        "Use the category chips to switch between Spiritual Books, Hymns, and Videos.",
-        "Use the search bar to locate specific titles, authors, or singers.",
-        "Click 'Dubbisi (Read Online)' to view PDF documents directly in the reader.",
-        "Click 'Buufadhu (Download)' to save the file to your device for offline reading.",
-        "For YouTube gospel media, click on any video thumbnail to stream with the built-in player."
+        "From the dashboard sidebar, click 'Faarfannaa & Media' (/dashboard?tab=media).",
+        "Filter songs by category: All, Gospel, Choir, or Sermon.",
+        "Use the search bar to locate tracks by singer, choir, or song title.",
+        "Click any song card to stream the YouTube video using the embedded player.",
+        "Staff can add official YouTube video URLs and manage the library catalog."
       ],
       "om": [
-        "Menyuu gubbaarraa yookiin saayidbaarirraa gara 'Faayiloota & Barruulee' deemaa.",
-        "Gosa faayilii filachuuf qoriiwwan 'Macaafota', 'Faarfannaa', fi 'Viidiyoo' jedhan fayyadamaa.",
-        "Mata-duree barbaaddan saanduqa barbaachaatiin barbaadaa.",
-        "PDF banaanii dubbisuuf 'Dubbisi' cuqaasaa.",
-        "Faayilicha bilbila ykn kompiitara keessanitti galchuuf 'Buufadhu' cuqaasaa.",
-        "Viidiyoolee YouTube daawwachuuf suuraa viidiyichaa irratti cuqaasaa taphachiisaa."
+        "Saayidbaarirraa gara 'Faarfannaa & Media' (/dashboard?tab=media) deemaa.",
+        "Faarfannaawwan gosaan calaa: Hundumaa, Wangeela, Koorii, ykn Lallaba.",
+        "Mata-duree, weellisaa, ykn kooriidhaan barbaadaa.",
+        "Viidiyoo YouTube taphachiisuuf kaardii faarfannaa cuqaasaa.",
+        "Tajaajiltoonni liinkii YouTube haaraa galchuun faarfannaawwan dabalachuu danda'u."
       ],
       "am": [
-        "ከላይኛው ሜኑ ወይም ከጎን አሞሌ ወደ 'መጻሕፍት እና ሚዲያ' (/library) ይሂዱ።",
-        "የሚፈልጉትን ዓይነት ለመምረጥ 'መጻሕፍት'፣ 'ዝማሬዎች' ወይም 'ቪዲዮዎች' የሚሉትን ይጫኑ።",
-        "የሚፈልጉትን ርዕስ በፍለጋ ሳጥኑ ውስጥ ይፈልጉ።",
-        "ፒዲኤፍ ለማንበብ 'Dubbisi' (አንብብ) የሚለውን ይጫኑ።",
-        "ሰነዱን ወደ ስልክዎ ወይም ኮምፒውተርዎ ለማውረድ 'Buufadhu' (አውርድ) የሚለውን ይጫኑ።",
-        "የዩቲዩብ ቪዲዮዎችን በቀጥታ ለማየት ምስሉን ይጫኑ።"
+        "ከጎን አሞሌው ወደ 'ዝማሬ & ሚዲያ' (/dashboard?tab=media) ይሂዱ።",
+        "ዝማሬዎችን በምድብ ይለዩ፡ ሁሉም፣ ወንጌል፣ መዘምራን፣ ወይም ስብከት።",
+        "በዘማሪው፣ በመዘምራኑ ወይም በርዕሱ ይፈልጉ።",
+        "የዩቲዩብ ቪዲዮውን ለማጫወት የዝማሬ ካርዱን ይጫኑ።",
+        "አስተዳዳሪዎች አዳዲስ የዩቲዩብ ሊንኮችን ወደ ማውጫው ማከል ይችላሉ።"
       ]
     },
     "reviewed": { "om": false, "am": false, "en": true }
   },
   {
-    "id": "live-meeting",
+    "id": "gospel-radio",
     "category": "media",
-    "roles": ["MEMBER", "COLLECTOR", "HR", "SECRETARY", "ADMIN", "SUPER_ADMIN"],
-    "path": "/dashboard/live",
-    "tourId": "live",
+    "roles": ["GUEST", "MEMBER", "COLLECTOR", "HR", "SECRETARY", "ADMIN", "SUPER_ADMIN"],
+    "path": "/dashboard",
     "title": {
-      "en": "Join a Live Meeting (Camera, Mic, Chat)",
-      "om": "Tajaajila Kallattii (Live) Irratti Hirmaachuu",
-      "am": "በቀጥታ ስብሰባ ላይ መሳተፍ (ካሜራ፣ ማይክ፣ ቻት)"
+      "en": "Gospel Radio (Continuous Spiritual Audio Broadcast)",
+      "om": "Raadiyoo Wangeelaa (Tamsaasa Sagalee Walitti-fufaa)",
+      "am": "የወንጌል ሬዲዮ (ቀጣይነት ያለው መንፈሳዊ የድምፅ ስርጭት)"
     },
     "summary": {
-      "en": "Participate in real-time video/audio broadcast sessions with camera, microphone, and live chat.",
-      "om": "Tajaajila kallattii vidiyoo fi sagaleedhaan kaameeraa, maayikii fi haasawa gargaaramuun hordofaa.",
-      "am": "በቀጥታ የቪዲዮ እና የድምጽ ስርጭት ላይ በካሜራ፣ ማይክሮፎን እና ቻት ይሳተፉ።"
+      "en": "Listen to continuous synchronized YouTube gospel audio while browsing any page.",
+      "om": "Fuula kamiyyuu yommuu ilaaltan faarfannaa fi lallaba wangeelaa walitti-fufiinsaan dhaggeeffadhaa.",
+      "am": "በማንኛውም ገጽ ላይ ሳሉ ቀጣይነት ያለው መንፈሳዊ የሬዲዮ ስርጭት በኅብረት ያዳምጡ።"
     },
     "steps": {
       "en": [
-        "From the dashboard sidebar, click 'Tajaajila Kallattii' (/dashboard/live).",
-        "When an active session is live, click 'Seeni / Join' to connect.",
-        "Allow your browser permission to access Camera and Microphone when prompted.",
-        "Click the Camera icon to toggle your video on or off.",
-        "Click the Microphone icon to mute or unmute your audio.",
-        "Use the Live Chat panel on the right side to send prayer requests and amen greetings.",
-        "Click 'Bahi / Leave' when you are ready to disconnect."
+        "Look for the floating Gospel Radio player in the bottom-right corner of the website.",
+        "Click 'Tap to listen' if your browser requires autoplay permission.",
+        "The radio plays synchronized YouTube spiritual tracks across all connected listeners.",
+        "Adjust the volume or mute anytime using the mini-player controls.",
+        "Authorized staff can open the Radio Studio (/dashboard?tab=radio) to manage tracks and control broadcasts."
       ],
       "om": [
-        "Saayidbaarirraa gara 'Tajaajila Kallattii' (/dashboard/live) deemaa.",
-        "Yeroo tajaajilli live jirutti, seenuuf furtuu 'Seeni / Join' cuqaasaa.",
-        "Braawzariin keessan eeyyama Kaameeraa fi Maayikroofoonii yoo gaafatu 'Allow' jedhaa.",
-        "Kaameeraa banuuf ykn cufuuf asxaa kaameeraa cuqaasaa.",
-        "Maayikii banuuf ykn sagalee callisiisuuf asxaa maayikii cuqaasaa.",
-        "Gara mirgaatti saanduqa chat fayyadamuun kadhannaa fi ergaa dabarsaa.",
-        "Yommuu xumurtan ba'uuf furtuu 'Bahi' jedhu cuqaasaa."
+        "Gama mirgaa gadiitti asxaa Raadiyoo Wangeelaa argadhaa.",
+        "Yoo braawzariin hayyama gaafate 'Tap to listen' cuqaasaa.",
+        "Raadiyoon faarfannaawwan YouTube filataman walfaana amantoota hundaaf tamsaasa.",
+        "Sagalee guddisuu ykn xiqqeessuuf to'annaa mini-player fayyadamaa.",
+        "Tajaajiltoonni studio raadiyoo (/dashboard?tab=radio) seenuun sagantaa to'achuu danda'u."
       ],
       "am": [
-        "ከጎን አሞሌው ወደ 'የቀጥታ ስርጭት' (/dashboard/live) ይሂዱ።",
-        "የቀጥታ ስርጭት በሚኖርበት ጊዜ ለመግባት 'Seeni / Join' የሚለውን ይጫኑ።",
-        "አሳሽዎ የካሜራ እና የማይክሮፎን ፈቃድ ሲጠይቅ 'ፍቀድ' (Allow) ይበሉ።",
-        "ካሜራ ለማብራት ወይም ለማጥፋት የካሜራ ምልክቱን ይጫኑ።",
-        "ማይክሮፎን ለማብራት ወይም ድምጽ ለመዝጋት የማይክሮፎን ምልክቱን ይጫኑ።",
-        "በቀኝ በኩል ባለው የውይይት መስኮት ጸሎት እና አሜን የሚሉ መልዕክቶችን ይላኩ።",
-        "ሲጨርሱ ለመውጣት 'Bahi' (ውጣ) የሚለውን ይጫኑ።"
+        "በገጹ ታችኛው ቀኝ ጥግ ላይ ያለውን የወንጌል ሬዲዮ ማጫወቻ ያግኙ።",
+        "አሳሹ ፍቃድ ከጠየቀ 'Tap to listen' የሚለውን ይጫኑ።",
+        "ሬዲዮው ለሁሉም አድማጮች የተመሳሰሉ የዩቲዩብ መንፈሳዊ ዝማሬዎችን ያስተላልፋል።",
+        "ድምጹን ለመጨመር ወይም ለመቀነስ አነስተኛውን ማጫወቻ ይጠቀሙ።",
+        "አስተዳዳሪዎች ወደ ሬዲዮ ስቱዲዮ (/dashboard?tab=radio) በመግባት ስርጭቱን መምራት ይችላሉ።"
       ]
     },
     "reviewed": { "om": false, "am": false, "en": true }
@@ -879,112 +869,24 @@
     "steps": {
       "en": [
         "In 'Sagantaalee & Beeksisa' (/dashboard/programs), switch to the 'Sagantaa Torbee (Weekly Schedule)' tab.",
-        "Select the ministry group: Sunday Service (Kadhannaa), Youth Ministry (Dargaggoota), or Live Broadcast (Kallattii).",
+        "Select the ministry group: Sunday Service (Kadhannaa), Youth Ministry (Dargaggoota), or Online Fellowship (Tokkummaa Online).",
         "To add a new row, click '+ Sagantaa Haaraa', enter When, Time, and What in 3 languages, and save.",
         "To change order, click the Up or Down arrow buttons on any row to instantly update ordering on the public Home page.",
         "To modify existing prayer times, click 'Gulaali (Edit)'."
       ],
       "om": [
         "Kutaa 'Sagantaalee & Beeksisa' keessatti tab 'Sagantaa Torbee' jedhu filadhaa.",
-        "Garee tajaajilaa filadhaa: Sunday Service (Kadhannaa), Dargaggoota, ykn Live Broadcast.",
+        "Garee tajaajilaa filadhaa: Sunday Service (Kadhannaa), Dargaggoota, ykn Tokkummaa Online.",
         "Sagantaa haaraa dabaluuf '+ Sagantaa Haaraa' cuqaasaa, Yeroo, Sa'aatii fi Wanta raawwatamu galchaa.",
         "Tartiiba jijjiiruuf asxaa xiyyaa ol/gadii cuqaasuun fuula duraa irratti tartiibessaa.",
         "Sa'aatii sirreessuuf 'Gulaali' kan jedhu cuqaasaa."
       ],
       "am": [
         "በ'Sagantaalee & Beeksisa' ውስጥ 'የሳምንት መርሐ-ግብር' (Weekly Schedule) የሚለውን ይምረጡ።",
-        "የአገልግሎት ዘርፉን ይምረጡ: የዕሁድ አገልግሎት፣ የወጣቶች፣ ወይም የቀጥታ ስርጭት።",
+        "የአገልግሎት ዘርፉን ይምረጡ: የዕሁድ አገልግሎት፣ የወጣቶች፣ ወይም የበይነመረብ ኅብረት።",
         "አዲስ ለመጨመር '+ Sagantaa Haaraa' ይጫኑ፤ ጊዜውን፣ ሰዓቱን እና ተግባሩን አስገብተው ያስቀምጡ።",
         "ቅደም ተከተል ለመቀየር የቀስት ምልክቶቹን ወደ ላይ ወይም ወደ ታች ይጫኑ።",
         "ሰዓቶችን ለማስተካከል 'Gulaali' (አስተካክል) የሚለውን ይጫኑ።"
-      ]
-    },
-    "reviewed": { "om": false, "am": false, "en": true }
-  },
-  {
-    "id": "admin-live-schedule",
-    "category": "admin",
-    "roles": ["ADMIN", "SUPER_ADMIN"],
-    "path": "/dashboard/live",
-    "tourId": "live",
-    "title": {
-      "en": "Schedule, Start & End a Live Meeting (Admin/Host)",
-      "om": "Sagantaa Live Qabachuu, Eegaluu fi Xumuruu (Admin/Host)",
-      "am": "የቀጥታ ስብሰባ ማቀድ፣ መጀመር እና ማጠናቀቅ (አድሚን/አስተናጋጅ)"
-    },
-    "summary": {
-      "en": "Schedule live broadcasts, activate camera streaming as host, and safely end broadcasts.",
-      "om": "Tajaajila live karoorfadhaatii kaameeraan eegalaatii yeroo xumurtan cufaa.",
-      "am": "የቀጥታ ስርጭቶችን ያቅዱ፣ በካሜራ እንደ አስተናጋጅ ያስተላልፉ እና በሰላም ያጠናቁ።"
-    },
-    "steps": {
-      "en": [
-        "Go to 'Tajaajila Kallattii' (/dashboard/live).",
-        "Click 'Sagantaa Qabadhu (Schedule Meeting)', enter Title and Scheduled Date/Time, and save.",
-        "The scheduled live immediately shows on the public Home page with a live countdown timer.",
-        "When ready to broadcast, click 'Tajaajila Eegali (Start Live)'. The public LIVE strip turns red with 'LIVE NOW'.",
-        "Turn on your camera and microphone using the control bar.",
-        "When the spiritual service is finished, click 'Tajaajila Xumuri (End Live)' to disconnect all viewers and update status."
-      ],
-      "om": [
-        "Gara 'Tajaajila Kallattii' (/dashboard/live) deemaa.",
-        "Furtuu 'Sagantaa Qabadhu' cuqaasaatii Mata-duree fi Guyyaa filadhaatii ol-kaa'aa.",
-        "Sagantichi fuula duraa irratti battalatti lakkoofsa sa'aatii (countdown) waliin mul'ata.",
-        "Yommuu qophooftan 'Tajaajila Eegali (Start Live)' cuqaasaa. Fuula duraarratti mallattoon diimaan 'LIVE NOW' ni baha.",
-        "Kaameeraa fi maayikii keessan banaa.",
-        "Tajaajilli yommuu xumuramu 'Tajaajila Xumuri (End Live)' cuqaasuun cufaa."
-      ],
-      "am": [
-        "ወደ 'የቀጥታ ስርጭት' (/dashboard/live) ይሂዱ።",
-        "'Sagantaa Qabadhu' (ስብሰባ አቅድ) ተጭነው ርዕሱን እና የሚካሄድበትን ቀን/ሰዓት አስገብተው ያስቀምጡ።",
-        "የታቀደው ስብሰባ ወዲያውኑ በዋናው ገጽ ላይ ከሰዓት ቆጣሪ ጋር ይታያል።",
-        "ለመጀመር ሲዘጋጁ 'Tajaajila Eegali' (Start Live) የሚለውን ይጫኑ፤ በዋናው ገጽ ላይ ቀይ 'LIVE NOW' ምልክት ይበራል።",
-        "ካሜራዎን እና ማይክሮፎንዎን ያብሩ።",
-        "አገልግሎቱ ሲጠናቀቅ 'Tajaajila Xumuri' (End Live) የሚለውን ተጭነው ስርጭቱን ያጠናቁ።"
-      ]
-    },
-    "reviewed": { "om": false, "am": false, "en": true }
-  },
-  {
-    "id": "admin-record-meeting",
-    "category": "admin",
-    "roles": ["ADMIN", "SUPER_ADMIN"],
-    "path": "/dashboard/live",
-    "tourId": "live",
-    "title": {
-      "en": "Record a Live Meeting & Upload Recording",
-      "om": "Waraabbii Live fi Viidiyoo Ol-kaa'uu",
-      "am": "የቀጥታ ስብሰባን መቅረጽ እና ቪዲዮውን ማስቀመጥ"
-    },
-    "summary": {
-      "en": "Record live streams locally via MediaRecorder and upload saved video files to the Gospel Media Library.",
-      "om": "Sagantaa kallattii waraabaatii viidiyoo isaa kutaa Faayiloota & Barruuleetti fe'aa.",
-      "am": "የቀጥታ ስርጭቱን ይቅረጹ እና ቪዲዮውን በመጻሕፍት እና ሚዲያ ክፍል ውስጥ ይስቀሉ።"
-    },
-    "steps": {
-      "en": [
-        "In the Live Meeting Studio, click 'Waraabbii Eegali (Start Recording)' while broadcasting.",
-        "A red recording indicator and timer will activate in the top corner.",
-        "When finished, click 'Waraabbii Dhaabi (Stop Recording)'.",
-        "The browser will download the recorded .webm/.mp4 file to your computer.",
-        "Navigate to 'Faayilii Fe'i' (/dashboard/upload) in the dashboard.",
-        "Select Category 'Gospel Media / Video', enter titles in 3 languages, select the recorded file, and click Upload."
-      ],
-      "om": [
-        "Studio Live keessatti yommuu tajaajiltan furtuu 'Waraabbii Eegali' cuqaasaa.",
-        "Mallattoon waraabbii diimaan sa'aatii waliin gubbaatti mul'ata.",
-        "Yommuu xumurtan 'Waraabbii Dhaabi' kan jedhu dhiibaa.",
-        "Braawzariin keessan viidiyoo waraabame kompiitara keessanitti buusa.",
-        "Saayidbaarirraa gara 'Faayilii Fe'i' (/dashboard/upload) deemaa.",
-        "Kutaa 'Gospel Media / Video' filadhaatii mata-duree galchaa viidiyicha fe'aa."
-      ],
-      "am": [
-        "በቀጥታ ስርጭት ስቱዲዮ ውስጥ እያስተላለፉ 'Waraabbii Eegali' (መቅረጽ ጀምር) የሚለውን ይጫኑ።",
-        "የመቅረጫው ቀይ ምልክት ከቆጣሪ ጋር በላይኛው ክፍል ላይ ይበራል።",
-        "ሲጨርሱ 'Waraabbii Dhaabi' (መቅረጽ አቁም) የሚለውን ይጫኑ።",
-        "ቪዲዮው ወዲያውኑ ወደ ኮምፒውተርዎ ይወርዳል።",
-        "ከጎን አሞሌው ወደ 'ፋይል ስቀል' (/dashboard/upload) ይሂዱ።",
-        "የፋይል ዓይነት 'Gospel Media / Video' መርጠው ርዕሱን አስገብተው ቪዲዮውን ይስቀሉ።"
       ]
     },
     "reviewed": { "om": false, "am": false, "en": true }
@@ -1034,44 +936,38 @@
     "reviewed": { "om": false, "am": false, "en": true }
   },
   {
-    "id": "troubleshoot-camera-mic",
+    "id": "troubleshoot-radio-audio",
     "category": "troubleshooting",
-    "roles": ["MEMBER", "COLLECTOR", "HR", "SECRETARY", "ADMIN", "SUPER_ADMIN"],
-    "path": "/dashboard/live",
+    "roles": ["GUEST", "MEMBER", "COLLECTOR", "HR", "SECRETARY", "ADMIN", "SUPER_ADMIN"],
+    "path": "/",
     "title": {
-      "en": "Troubleshooting: Camera or Microphone Blocked",
-      "om": "Furmaata: Kaameeraan ykn Maayikiin Yoo Cufame",
-      "am": "መፍትሔ: ካሜራ ወይም ማይክሮፎን ካልሰራ"
+      "en": "Troubleshooting: Gospel Radio Not Playing Audio",
+      "om": "Furmaata: Raadiyoon Sagalee Yoo Dhageessisuu Baate",
+      "am": "መፍትሔ: የወንጌል ሬዲዮ ድምፅ ካልሰማ"
     },
     "summary": {
-      "en": "How to unblock camera and audio permissions in Chrome, Edge, and mobile browsers.",
-      "om": "Akkamitti Chrome ykn Edge keessatti eeyyama kaameeraa fi sagalee banan.",
-      "am": "በክሮም፣ ኤጅ ወይም በሞባይል አሳሾች ላይ የካሜራ እና የማይክ ፍቃድን እንዴት ማስተካከል እንደሚቻል።"
+      "en": "How to resolve browser autoplay blocking or YouTube connectivity issues for Gospel Radio.",
+      "om": "Akkamitti rakkoo sagalee fi eeyyama braawzarii Raadiyoo Wangeelaaf furuu dandeessu.",
+      "am": "የአሳሽ አውቶፕሌይ እገዳን በማንሳት የወንጌል ሬዲዮ ድምጽን እንዴት ማስተካከል እንደሚቻል።"
     },
     "steps": {
       "en": [
-        "Look at your browser's address bar at the top of the screen.",
-        "Click the padlock icon or camera icon on the left side of the URL (https://...).",
-        "Find 'Camera' and 'Microphone' in the permission settings.",
-        "Change the setting from 'Block' to 'Allow'.",
-        "Refresh the page (F5 or swipe down on mobile) and re-enter the Live Studio.",
-        "On phones, ensure camera and microphone are also enabled under Phone Settings -> Apps -> Chrome -> Permissions."
+        "Click the gold 'Tap to listen' button on the mini-player in the bottom corner.",
+        "Ensure your device volume is turned up and not in silent or mute mode.",
+        "If playback is blocked, check your browser's site settings to allow Sound/Autoplay for this site.",
+        "Refresh the page (F5 or swipe down on mobile) to reconnect to the live radio stream."
       ],
       "om": [
-        "Bara sarara teessoo braawzarii keessanii (URL) gubbaa ilaalaa.",
-        "Asxaa qulfii ykn kaameeraa gama bitaa URL (https://...) irratti argamu cuqaasaa.",
-        "Qindaa'ina eeyyamaa keessatti 'Camera' fi 'Microphone' argadhaa.",
-        "Filannoo 'Block' jedhu gara 'Allow' (Eeyyami) jedhutti jijjiiraa.",
-        "Fuulicha haaromsaatii (F5 ykn gadi harkisaa) deebi'aa Live seenaa.",
-        "Bilbila irratti Settings -> Apps -> Chrome -> Permissions keessatti eeyyamamuu isaa mirkaneeffadhaa."
+        "Gama jalaatti furtuu 'Tap to listen' jedhu cuqaasaa.",
+        "Sagaleen meeshaa keessanii banamuu fi callisaarra hin jirre mirkaneeffadhaa.",
+        "Qindaa'ina braawzarii keessanii keessatti sagaleen akka dhaga'amu 'Allow' godhaa.",
+        "Fuulicha haaromsaa (F5 ykn gadi harkisaa) deebi'aa dhaggeeffadhaa."
       ],
       "am": [
-        "በስክሪኑ አናት ላይ ያለውን የአሳሽ አድራሻ መስመር (URL) ይመልከቱ።",
-        "ከአድራሻው በስተግራ ያለውን የቁልፍ ወይም የካሜራ ምልክት ይጫኑ።",
-        "በፈቃዶች ዝርዝር ውስጥ 'ካሜራ' እና 'ማይክሮፎን' የሚሉትን ያግኙ።",
-        "ከ'ተከልክሏል' (Block) ወደ 'ይፈቀድ' (Allow) ይቀይሩት።",
-        "ገጹን እንደገና ይጫኑት (Refresh ያድርጉ) እና ወደ የቀጥታ ስርጭቱ ይመለሱ።",
-        "በስልኮች ላይ በስልክ ማስተካከያ (Settings -> Apps -> Permissions) ውስጥ መፈቀዱን ያረጋግጡ።"
+        "በታችኛው ጥግ ላይ ያለውን 'Tap to listen' የሚለውን ቁልፍ ይጫኑ።",
+        "የስልክዎ ወይም የኮምፒውተርዎ ድምፅ ክፍት መሆኑን ያረጋግጡ።",
+        "በአሳሽዎ ቅንብሮች ውስጥ ለዚህ ድረ-ገጽ ድምፅ እንዲፈቀድ (Sound/Autoplay Allow) ያድርጉ።",
+        "ገጹን እንደገና ይጫኑት (Refresh) እና መልሰው ያዳምጡ።"
       ]
     },
     "reviewed": { "om": false, "am": false, "en": true }

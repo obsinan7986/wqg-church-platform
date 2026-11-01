@@ -125,7 +125,7 @@ const DashboardLayout = () => {
   const { tab: paramTab } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Tab alias mapping for backward compatibility
+  // Tab alias mapping for backward compatibility: legacy library, upload, and live URLs redirect to overview
   const tabAliases = {
     branches: 'finance',
     announcements: 'records',
@@ -133,6 +133,8 @@ const DashboardLayout = () => {
     live: 'overview',
     meetings: 'overview',
     library: 'overview',
+    'media-library': 'overview',
+    'books-media': 'overview',
     upload: 'overview',
     uploads: 'overview',
     'site-text': 'site-texts',
@@ -143,6 +145,13 @@ const DashboardLayout = () => {
 
   const rawTab = paramTab || searchParams.get('tab') || 'overview';
   const activeTab = tabAliases[rawTab] || rawTab;
+
+  // Immediately redirect legacy tabs (live, library, upload) to clean overview URL
+  useEffect(() => {
+    if (tabAliases[rawTab] === 'overview' && (paramTab || searchParams.get('tab'))) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [rawTab, paramTab, searchParams, navigate]);
 
   const handleSelectTab = (tabId) => {
     setSearchParams({ tab: tabId });
@@ -428,6 +437,14 @@ const DashboardLayout = () => {
   ];
 
   const visibleMenuItems = navMenuItems.filter((item) => item.roles.includes(user.role));
+  const allowedTabIds = ['overview', ...visibleMenuItems.map((item) => item.id)];
+
+  // Route guard: if the requested tab is not permitted for the user's role (or is an obsolete tab), redirect to overview
+  useEffect(() => {
+    if (user && activeTab !== 'overview' && !allowedTabIds.includes(activeTab)) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [activeTab, allowedTabIds, user, navigate]);
 
   const announcementColumns = [
     {
