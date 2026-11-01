@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { contactLimiter } = require('../middleware/rateLimiters');
 const {
   submitContactMessage,
   getContactMessages,
@@ -9,8 +10,8 @@ const {
 } = require('../controllers/contactController');
 const { protect, authorizeRoles } = require('../middleware/authMiddleware');
 
-// Public submission with rate limiting and honeypot
-router.post('/', submitContactMessage);
+// Public submission with strict rate limiting and honeypot
+router.post('/', contactLimiter, submitContactMessage);
 
 // Admin endpoints (strictly SUPER_ADMIN and ADMIN)
 router.get('/', protect, authorizeRoles('SUPER_ADMIN', 'ADMIN'), getContactMessages);

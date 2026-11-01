@@ -2,6 +2,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const cloudinary = require('../config/cloudinary');
+const { verifyFileSignature } = require('../utils/fileSignature');
 
 const contentUploadDir = path.join(__dirname, '..', 'uploads', 'content');
 if (!fs.existsSync(contentUploadDir)) {
@@ -84,6 +85,21 @@ const uploadContentImage = (fieldName = 'image') => {
           message: err.message
         });
       }
+
+      // Verify real file magic numbers/signature
+      if (req.file) {
+        const isValidSig = verifyFileSignature(req.file.path, ['jpeg', 'png', 'webp']);
+        if (!isValidSig) {
+          try {
+            if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+          } catch (_) {}
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid file signature: Content does not match an authentic image format (JPEG, PNG, WebP).'
+          });
+        }
+      }
+
       next();
     });
   };

@@ -158,6 +158,13 @@ const login = async (req, res) => {
       });
     }
 
+    if (typeof phone !== 'string' || typeof password !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid credentials format.'
+      });
+    }
+
     const normalizedPhone = phone.trim();
 
     // Query user and explicitly select passwordHash

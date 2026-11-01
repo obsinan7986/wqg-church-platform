@@ -137,11 +137,14 @@ const initSocketHandler = (io) => {
       }
     });
 
-    // Handle general broadcast messaging
+    // Handle general broadcast messaging (Staff only)
     socket.on('send_broadcast_message', async (data, callback) => {
       try {
         const currentUser = socket.user;
-        if (!currentUser) return;
+        if (!currentUser || !EXEC_ROLES.includes(currentUser.role)) {
+          if (callback) callback({ success: false, message: 'Unauthorized: Only staff members can broadcast messages' });
+          return;
+        }
 
         const content = typeof data === 'string' ? data : data.content;
         if (!content || !content.trim()) return;

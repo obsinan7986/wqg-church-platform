@@ -27,12 +27,16 @@ const contactRoutes = require('./routes/contactRoutes');
 const radioService = require('./services/radioService');
 const initSocketHandler = require('./socket/socketHandler');
 const { seedIfEmpty } = require('./controllers/scheduleController');
+const { noSqlSanitize } = require('./middleware/noSqlSanitize');
+const { generalLimiter } = require('./middleware/rateLimiters');
 
-// Initialize database connection
-connectDB().then(() => {
-  seedIfEmpty();
-  radioService.init();
-});
+// Initialize database connection (deferred in test environment)
+if (process.env.NODE_ENV !== 'test') {
+  connectDB().then(() => {
+    seedIfEmpty();
+    radioService.init();
+  });
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -124,14 +128,24 @@ app.set('io', io);
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
-// Security middleware
+// Security headers via Helmet
 app.use(
   helmet({
-    crossOriginResourcePolicy: { policy: 'cross-origin' }
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    contentSecurityPolicy: false,
+    xContentTypeOptions: true,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    frameguard: { action: 'sameorigin' }
   })
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// Apply NoSQL operator sanitization across all request bodies, queries, and params
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(noSqlSanitize);
+
+// General rate limiter for all API endpoints
+app.use('/api', generalLimiter);
 
 // Serve uploaded files statically with full CORS and byte-range streaming support
 app.use(
@@ -196,12 +210,26 @@ app.use((req, res) => {
   });
 });
 
-// Global Error Handler
+// Global Central Error Handler (Prevents stack trace leaks in production)
 app.use((err, req, res, next) => {
-  console.error('[Unhandled Error]:', err.stack || err.message);
-  res.status(err.status || 500).json({
+  const isProd = process.env.NODE_ENV === 'production';
+  const status = err.status || err.statusCode || 500;
+  
+  if (!isProd) {
+    console.error('[Unhandled Error]:', err.stack || err.message);
+  } else {
+    console.error(`[Unhandled Error ${status}]:`, err.message);
+  }
+
+  // Conceal internal error messages on 500 in production
+  let message = err.message || 'Internal Server Error';
+  if (isProd && status === 500) {
+    message = 'An unexpected internal server error occurred. Please contact system support.';
+  }
+
+  res.status(status).json({
     success: false,
-    message: err.message || 'Internal Server Error'
+    message
   });
 });
 
@@ -218,11 +246,15 @@ server.on('error', (err) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`[Server] WQG Platform API is running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-});
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`[Server] WQG Platform API is running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+  });
+}
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   console.error(`[UnhandledRejection]: ${err.message}`);
 });
+
+module.exports = { app, server };

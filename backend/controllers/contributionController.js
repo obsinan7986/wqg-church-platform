@@ -83,6 +83,21 @@ exports.createContribution = async (req, res) => {
       ? transactionRef.trim()
       : undefined;
 
+    // Explicit check for unique transaction reference
+    if (cleanRef) {
+      const existingRef = await Contribution.findOne({
+        paymentMethod: paymentMethod || 'TELEBIRR',
+        transactionRef: cleanRef
+      });
+      if (existingRef) {
+        removeTempFile(tempFilePath);
+        return res.status(400).json({
+          success: false,
+          message: 'Lakk. Dabarsaa (Transaction Reference) kun kanaan dura itti fayyadameera (This transaction reference has already been used).'
+        });
+      }
+    }
+
     const contribution = await Contribution.create({
       member: member._id,
       collector: req.user._id,
@@ -175,6 +190,21 @@ exports.submitContribution = async (req, res) => {
     const cleanRef = transactionRef && typeof transactionRef === 'string' && transactionRef.trim() !== ''
       ? transactionRef.trim()
       : undefined;
+
+    // Explicit check for unique transaction reference
+    if (cleanRef) {
+      const existingRef = await Contribution.findOne({
+        paymentMethod: paymentMethod || 'TELEBIRR',
+        transactionRef: cleanRef
+      });
+      if (existingRef) {
+        removeTempFile(tempFilePath);
+        return res.status(400).json({
+          success: false,
+          message: 'Lakk. Dabarsaa (Transaction Reference) kun kanaan dura itti fayyadameera (This transaction reference has already been used).'
+        });
+      }
+    }
 
     if (selectedMethod !== 'CASH' && !req.file && !cleanRef) {
       removeTempFile(tempFilePath);
@@ -674,6 +704,20 @@ exports.getContributionById = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Contribution not found'
+      });
+    }
+
+    // Authorization check: Members can only read their own contributions
+    const isStaff = ['SUPER_ADMIN', 'ADMIN', 'COLLECTOR'].includes(req.user.role);
+    const isOwner =
+      contribution.member &&
+      (contribution.member._id ? contribution.member._id.toString() : contribution.member.toString()) ===
+        req.user._id.toString();
+
+    if (!isStaff && !isOwner) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied: You are not authorized to view another member\'s payment record.'
       });
     }
 
