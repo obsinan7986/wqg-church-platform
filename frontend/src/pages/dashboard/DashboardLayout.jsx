@@ -69,7 +69,7 @@ import {
 import { getLocalizedText } from '../../utils/localized';
 
 // Verified branch count
-const STATIC_BRANCHES_COUNT = 18;
+const STATIC_BRANCHES_COUNT = 5;
 
 // Fallback announcements if /api/banners has not been populated yet
 const DEFAULT_ANNOUNCEMENTS = [

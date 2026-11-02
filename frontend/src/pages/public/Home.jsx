@@ -389,22 +389,22 @@ const Home = () => {
   const stats = [
     {
       icon: Users,
-      numeric: 12000,
+      numeric: 500,
       label: t('home.statsMembers') || 'Miseensota Waldichaa'
     },
     {
       icon: Church,
-      numeric: 18,
+      numeric: 5,
       label: t('home.statsBranches') || 'Dameelee Waldichaa'
     },
     {
       icon: BookOpen,
-      numeric: 16,
-      label: t('home.statsYears') || 'Tajaajilaa Waldichaa'
+      numeric: 2,
+      label: t('home.statsYears') || 'Waggaa Tajaajilaa'
     },
     {
       icon: HeartHandshake,
-      numeric: 250,
+      numeric: 50,
       label: t('home.statsEvents') || 'Sagantaalee Waggaa'
     }
   ];
