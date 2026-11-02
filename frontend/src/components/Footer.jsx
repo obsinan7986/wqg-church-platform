@@ -87,6 +87,10 @@ const Footer = () => {
     changeLanguage(lang);
   };
 
+  const handleInstantJump = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  };
+
   const email = settings?.emails?.[0] || 'waldaa.giyoorgisii23@gmail.com';
   const phone = settings?.phones?.[0] || '+251 91 100 0001';
   const address =
@@ -131,35 +135,56 @@ const Footer = () => {
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
-                <Link to="/" className="text-white/80 hover:text-gold-300 transition-colors">
+                <Link
+                  to="/"
+                  onClick={handleInstantJump}
+                  className="text-white/80 hover:text-gold-300 transition-colors"
+                >
                   {t('nav.home') || 'Mana'}
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-white/80 hover:text-gold-300 transition-colors">
+                <Link
+                  to="/about"
+                  onClick={handleInstantJump}
+                  className="text-white/80 hover:text-gold-300 transition-colors"
+                >
                   {t('nav.about') || "Waa'ee & Seenaa"}
                 </Link>
               </li>
               <li>
-                <Link to="/services" className="text-white/80 hover:text-gold-300 transition-colors">
+                <Link
+                  to="/services"
+                  onClick={handleInstantJump}
+                  className="text-white/80 hover:text-gold-300 transition-colors"
+                >
                   {t('nav.services') || 'Tajaajiloota'}
                 </Link>
               </li>
               <li>
                 <Link
                   to="/announcements"
+                  onClick={handleInstantJump}
                   className="text-white/80 hover:text-gold-300 transition-colors"
                 >
                   Beeksisoota (Announcements)
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-gold-400 font-bold hover:text-gold-300 transition-colors">
+                <Link
+                  to="/contact"
+                  onClick={handleInstantJump}
+                  className="text-gold-400 font-bold hover:text-gold-300 transition-colors"
+                >
                   {t('nav.contact') || 'Nu Qunnamaa (Contact)'}
                 </Link>
               </li>
               <li>
-                <Link to="/register" className="text-white/80 hover:text-gold-300 transition-colors">
+                <Link
+                  to="/register"
+                  onClick={handleInstantJump}
+                  className="text-white/80 hover:text-gold-300 transition-colors"
+                >
                   Miseensa Ta'i (Register)
                 </Link>
               </li>

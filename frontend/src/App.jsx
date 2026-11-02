@@ -45,6 +45,19 @@ const AppContent = () => {
     fetchAndApplySiteTextOverrides();
   }, []);
 
+  // Instant jump on route or hash changes without slow smooth scroll delay
+  useEffect(() => {
+    if (location.hash) {
+      const targetId = location.hash.replace('#', '');
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'auto', block: 'start' });
+        return;
+      }
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [location.pathname, location.hash]);
+
   return (
     <div className="min-h-screen flex flex-col bg-white text-slate-900 overflow-x-hidden">
       {!isDashboard && <Navbar />}
