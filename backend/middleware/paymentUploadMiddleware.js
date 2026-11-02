@@ -9,12 +9,14 @@ if (!fs.existsSync(paymentUploadDir)) {
   fs.mkdirSync(paymentUploadDir, { recursive: true });
 }
 
-// Allowed image formats
+// Allowed image formats (including progressive and mobile vendor MIME variants)
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
   'image/png',
   'image/webp',
-  'image/jpg'
+  'image/jpg',
+  'image/pjpeg',
+  'image/x-png'
 ]);
 
 const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
@@ -48,14 +50,14 @@ const fileFilter = (req, file, cb) => {
 
   return cb(
     new Error(
-      'Suuraan kaffaltii qofti eeyyamama (JPG, PNG, WebP qofa, hamma 5MB). Only JPG, PNG, or WebP images up to 5MB are allowed.'
+      'Suuraan kaffaltii qofti eeyyamama (JPG, PNG, WebP qofa, hamma 10MB). Only JPG, PNG, or WebP images up to 10MB are allowed.'
     ),
     false
   );
 };
 
-// Max 5 MB
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
+// Max 10 MB (accommodates high-res smartphone camera photos)
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 const upload = multer({
   storage,
@@ -77,7 +79,7 @@ const uploadPaymentProof = (req, res, next) => {
       if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).json({
           success: false,
-          message: 'Hangi suuraa kaffaltii 5MB caaluu hin danda\'u (Screenshot size cannot exceed 5MB).'
+          message: 'Hangi suuraa kaffaltii 10MB caaluu hin danda\'u (Screenshot size cannot exceed 10MB).'
         });
       }
       return res.status(400).json({

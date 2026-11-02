@@ -175,9 +175,7 @@ const ProfileAndSecurity = () => {
       const formData = new FormData();
       formData.append('avatar', file);
 
-      const res = await api.post('/auth/avatar', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const res = await api.post('/auth/avatar', formData);
 
       if (res.data?.success) {
         updateUser(res.data.user || { avatarUrl: res.data.avatarUrl });

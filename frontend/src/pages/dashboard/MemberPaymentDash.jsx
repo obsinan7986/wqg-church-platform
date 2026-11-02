@@ -322,9 +322,7 @@ const MemberPaymentDash = () => {
         submitData.append('proof', proofFile);
       }
 
-      const res = await api.post('/contributions/submit', submitData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const res = await api.post('/contributions/submit', submitData);
 
       if (res.data?.success) {
         setSuccessMsg("Kaffaltiin keessan milkaa'inaan dhiyaateera! Funaanaan yeroo mirkaneessu beeksifamtu.");

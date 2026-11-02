@@ -17,7 +17,7 @@ const resolveApiBaseUrl = () => {
 
 const api = axios.create({
   baseURL: resolveApiBaseUrl(),
-  timeout: 15000,
+  timeout: 45000, // 45 seconds to handle Render cold-starts & mobile image uploads over 3G/4G
   headers: {
     'Content-Type': 'application/json'
   }
@@ -41,6 +41,13 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Critical for mobile browsers: when sending FormData (e.g. payment screenshots),
+    // remove Content-Type so the browser automatically sets 'multipart/form-data; boundary=----WebKitFormBoundary...'
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+
     return config;
   },
   (error) => {
@@ -48,7 +55,7 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for session expiration
+// Response interceptor for session expiration and mobile network errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -60,6 +67,16 @@ api.interceptors.response.use(
         localStorage.removeItem('wqg_user');
       }
     }
+
+    // Friendly messages for mobile network drops & Render spin-up timeouts
+    if (error.code === 'ECONNABORTED' && error.message?.includes('timeout')) {
+      error.userFriendlyMessage =
+        'Tajaajilli yeroo fudhachaa jira (Server wake-up or connection timeout). Mee irra deebi\'aa yaalaa.';
+    } else if (!error.response && error.message === 'Network Error') {
+      error.userFriendlyMessage =
+        'Qunnamtiin networkii hin jiru ykn serveriin deebii hin kennine. Mee interneetii keessan mirkaneeffadhaa.';
+    }
+
     return Promise.reject(error);
   }
 );

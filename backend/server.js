@@ -67,33 +67,35 @@ const allowedOrigins = Array.from(new Set([...defaultAllowedOrigins, ...rawClien
   .map((origin) => origin.toLowerCase());
 
 const corsOriginHandler = (origin, callback) => {
-  // Allow requests with no origin (e.g. mobile apps, curl, Postman, server-to-server)
-  if (!origin) return callback(null, true);
+  // Allow requests with no origin or string "null" (e.g. mobile Safari private mode, mobile apps, webviews, curl)
+  if (!origin || origin.trim().toLowerCase() === 'null') {
+    return callback(null, true);
+  }
 
   const cleanOrigin = origin.trim().replace(/\/+$/, '').toLowerCase();
 
-  // If wildcard is configured in CLIENT_URL
-  if (process.env.CLIENT_URL === '*') {
+  // If wildcard is configured in CLIENT_URL or in non-production environments
+  if (process.env.CLIENT_URL === '*' || process.env.NODE_ENV !== 'production') {
     return callback(null, true);
   }
 
-  // Allow localhost or 127.0.0.1 on any port in all environments for local testing
-  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(cleanOrigin)) {
+  // Allow localhost or 127.0.0.1 and private LAN IPs on any port (for physical mobile device Wi-Fi testing)
+  if (/^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)(:\d+)?$/i.test(cleanOrigin)) {
     return callback(null, true);
   }
 
-  // Allow all Vercel deployments (*.vercel.app, preview URLs, branch URLs)
-  if (cleanOrigin.endsWith('.vercel.app')) {
+  // Allow all Vercel deployments (*.vercel.app, preview URLs, branch URLs, custom Vercel subdomains)
+  if (/^https?:\/\/([a-z0-9-]+\.)*vercel\.app(:\d+)?$/i.test(cleanOrigin)) {
     return callback(null, true);
   }
 
   // Allow Render domains (*.onrender.com)
-  if (cleanOrigin.endsWith('.onrender.com')) {
+  if (/^https?:\/\/([a-z0-9-]+\.)*onrender\.com(:\d+)?$/i.test(cleanOrigin)) {
     return callback(null, true);
   }
 
   // Check explicitly configured allowed origins
-  if (allowedOrigins.includes(cleanOrigin)) {
+  if (allowedOrigins.some((allowed) => cleanOrigin === allowed || cleanOrigin.endsWith(allowed))) {
     return callback(null, true);
   }
 
@@ -104,14 +106,26 @@ const corsOriginHandler = (origin, callback) => {
 const corsOptions = {
   origin: corsOriginHandler,
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
   allowedHeaders: [
     'Content-Type',
     'Authorization',
     'X-Requested-With',
     'Accept',
-    'Origin'
+    'Origin',
+    'Cache-Control',
+    'Pragma',
+    'Expires',
+    'X-Forwarded-For',
+    'Range',
+    'Sec-Ch-Ua',
+    'Sec-Ch-Ua-Mobile',
+    'Sec-Ch-Ua-Platform',
+    'Accept-Language',
+    'Content-Disposition'
   ],
+  exposedHeaders: ['Content-Range', 'X-Content-Range', 'Content-Disposition', 'Authorization'],
+  maxAge: 86400,
   optionsSuccessStatus: 200
 };
 
@@ -128,10 +142,19 @@ app.set('io', io);
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
-// Security headers via Helmet
+// Explicit preflight short-circuit ensuring mobile browsers get immediate 200 OK with CORS headers
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    return cors(corsOptions)(req, res, () => res.sendStatus(200));
+  }
+  next();
+});
+
+// Security headers via Helmet (configured to allow cross-origin mobile API access & media)
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
+    crossOriginOpenerPolicy: false,
     contentSecurityPolicy: false,
     xContentTypeOptions: true,
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },

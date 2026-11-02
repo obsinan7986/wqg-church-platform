@@ -386,9 +386,7 @@ const CollectorDash = () => {
         data.append('proof', proofFile);
       }
 
-      const res = await api.post('/contributions', data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const res = await api.post('/contributions', data);
 
       if (res.data?.success) {
         setSuccessMsg("Kaffaltiin milkaa'inaan galmaa'ee nagaheen qophaa'eera!");
