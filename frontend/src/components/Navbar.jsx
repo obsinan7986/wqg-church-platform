@@ -111,8 +111,7 @@ export const Navbar = () => {
   };
 
   const handleLogout = () => {
-    logout();
-    navigate('/login');
+    logout('/');
   };
 
   // Nav links: Mana, Seenaa, Tajaajiloota, Beeksisa, Gargaarsa, Seeni/Login (or Dashboard)

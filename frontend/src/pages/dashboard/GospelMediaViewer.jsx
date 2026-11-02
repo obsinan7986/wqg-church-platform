@@ -24,16 +24,9 @@ import {
 } from '../../components/ui';
 import { getLocalizedText } from '../../utils/localized';
 
-const GospelMediaViewer = () => {
+const MemberMediaViewer = () => {
   const { t, i18n } = useTranslation();
-  const { user } = useAuth();
   const currentLang = i18n.language || 'om';
-
-  const isStaff = user && ['SUPER_ADMIN', 'ADMIN', 'SECRETARY'].includes(user.role);
-
-  if (isStaff) {
-    return <GospelMediaManager />;
-  }
 
   const [mediaList, setMediaList] = useState([]);
   const [category, setCategory] = useState('ALL');
@@ -200,6 +193,16 @@ const GospelMediaViewer = () => {
       )}
     </div>
   );
+};
+
+const GospelMediaViewer = () => {
+  const { user } = useAuth();
+  const isStaff = Boolean(user && ['SUPER_ADMIN', 'ADMIN', 'SECRETARY'].includes(user.role));
+
+  if (isStaff) {
+    return <GospelMediaManager />;
+  }
+  return <MemberMediaViewer />;
 };
 
 export default GospelMediaViewer;

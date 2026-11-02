@@ -357,32 +357,6 @@ const DashboardLayout = () => {
     fetchDashboardData();
   }, [isAuthenticated, user, i18n.language, activeTab]);
 
-  if (loading) {
-    return <LoadingScreen label="Loading your profile..." />;
-  }
-
-  if (!isAuthenticated || !user) {
-    return <Navigate to="/login" state={{ from: location.pathname + location.search }} replace />;
-  }
-
-  const handleLanguageChange = (lang) => {
-    changeLanguage(lang);
-    setLangMenuOpen(false);
-  };
-
-  const handleSaveProfile = (e) => {
-    e.preventDefault();
-    setProfileSaving(true);
-    setTimeout(() => {
-      setProfileSaving(false);
-      setEditProfileOpen(false);
-      setFeedbackToast({
-        type: 'success',
-        message: "Odeeffannoo profile keessan milkaa'inaan haaromfameera!"
-      });
-    }, 600);
-  };
-
   // Menu items with exact role filtering and localized title + small subtitle
   const navMenuItems = [
     {
@@ -480,7 +454,7 @@ const DashboardLayout = () => {
     }
   ];
 
-  const visibleMenuItems = navMenuItems.filter((item) => item.roles.includes(user.role));
+  const visibleMenuItems = user ? navMenuItems.filter((item) => item.roles.includes(user?.role)) : [];
   const allowedTabIds = ['overview', ...visibleMenuItems.map((item) => item.id)];
 
   // Route guard: if the requested tab is not permitted for the user's role (or is an obsolete tab), redirect to overview
@@ -489,6 +463,32 @@ const DashboardLayout = () => {
       navigate('/dashboard', { replace: true });
     }
   }, [activeTab, allowedTabIds, user, navigate]);
+
+  const handleLanguageChange = (lang) => {
+    changeLanguage(lang);
+    setLangMenuOpen(false);
+  };
+
+  const handleSaveProfile = (e) => {
+    e.preventDefault();
+    setProfileSaving(true);
+    setTimeout(() => {
+      setProfileSaving(false);
+      setEditProfileOpen(false);
+      setFeedbackToast({
+        type: 'success',
+        message: "Odeeffannoo profile keessan milkaa'inaan haaromfameera!"
+      });
+    }, 600);
+  };
+
+  if (loading) {
+    return <LoadingScreen label="Loading your profile..." />;
+  }
+
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/" replace />;
+  }
 
   const announcementColumns = [
     {
@@ -675,7 +675,7 @@ const DashboardLayout = () => {
                   </Link>
 
                   <button
-                    onClick={logout}
+                    onClick={() => logout('/')}
                     className="w-full flex items-center space-x-2.5 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
@@ -746,7 +746,7 @@ const DashboardLayout = () => {
               <span>Gara Fuula Duraa (Home)</span>
             </Link>
             <button
-              onClick={logout}
+              onClick={() => logout('/')}
               className="w-full flex items-center space-x-2 px-3 py-2 text-xs font-semibold text-red-300 hover:text-red-200 hover:bg-red-950/40 rounded-xl transition-colors"
             >
               <LogOut className="w-4 h-4" />
@@ -826,7 +826,7 @@ const DashboardLayout = () => {
                   <span>Gara Fuula Duraa (Home)</span>
                 </Link>
                 <button
-                  onClick={logout}
+                  onClick={() => logout('/')}
                   className="w-full flex items-center space-x-2 px-3 py-2 text-xs font-semibold text-red-300 hover:bg-red-950/40 rounded-xl"
                 >
                   <LogOut className="w-4 h-4" />

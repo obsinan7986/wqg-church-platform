@@ -1,6 +1,7 @@
 import React, { useId } from 'react';
 import { toEthiopian } from '../utils/ethiopianCalendar';
 import { formatDual } from '../utils/dateFormat';
+import logoWaldaImg from '../assets/logo-walda.png';
 
 /**
  * ChurchStamp - Authentic circular church seal/stamp
@@ -48,6 +49,7 @@ const ChurchStamp = ({
 
   const topPathId = `top-arc-${uniqueId}`;
   const bottomPathId = `bottom-arc-${uniqueId}`;
+  const logoClipId = `logo-clip-${uniqueId}`;
 
   return (
     <div
@@ -75,6 +77,10 @@ const ChurchStamp = ({
             d="M 24,102 A 76,76 0 0,0 176,102"
             fill="none"
           />
+          {/* Circular Clip for Official Church Logo */}
+          <clipPath id={logoClipId}>
+            <circle cx="0" cy="-22" r="20" />
+          </clipPath>
         </defs>
 
         {/* Outer Serrated / Dotted Accent Ring */}
@@ -154,23 +160,38 @@ const ChurchStamp = ({
           </textPath>
         </text>
 
-        {/* Center Content: Ethiopian Orthodox Cross & Seal Details */}
+        {/* Center Content: Official Church Logo & Seal Details */}
         <g transform="translate(100, 100)">
-          {/* Orthodox Cross Icon (stylized SVG paths) */}
-          <g transform="translate(0, -22) scale(0.7)" stroke="currentColor" fill="currentColor">
-            {/* Vertical Beam */}
-            <rect x="-2.5" y="-18" width="5" height="34" rx="1" />
-            {/* Main Cross Beam */}
-            <rect x="-14" y="-8" width="28" height="5" rx="1" />
-            {/* Top Bar */}
-            <rect x="-7" y="-15" width="14" height="3" rx="0.5" />
-            {/* Bottom Slanted/Decorative Bar */}
-            <path d="M -9 8 L 9 4 L 9 6.5 L -9 10.5 Z" />
-            {/* End Crosslets */}
-            <circle cx="0" cy="-19" r="2" />
-            <circle cx="-15" cy="-5.5" r="2" />
-            <circle cx="15" cy="-5.5" r="2" />
-            <circle cx="0" cy="17" r="2" />
+          {/* Official Church Logo inside stamp center */}
+          <g>
+            {/* Clean white circular backing so logo is crisp across any background */}
+            <circle
+              cx="0"
+              cy="-22"
+              r="20.5"
+              fill="#FFFFFF"
+            />
+            {/* Centered and scaled circular church logo */}
+            <image
+              href={logoWaldaImg || '/logo-walda.png'}
+              xlinkHref={logoWaldaImg || '/logo-walda.png'}
+              x="-20"
+              y="-42"
+              width="40"
+              height="40"
+              preserveAspectRatio="xMidYMid meet"
+              clipPath={`url(#${logoClipId})`}
+            />
+            {/* Enclosing stamp-ink circle */}
+            <circle
+              cx="0"
+              cy="-22"
+              r="20.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.2"
+              opacity="0.85"
+            />
           </g>
 
           {/* VERIFIED Banner Box */}

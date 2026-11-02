@@ -7,6 +7,7 @@ import { SocketProvider } from './context/SocketContext';
 import { RadioProvider } from './context/RadioContext';
 import { TourProvider } from './context/TourContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import GospelRadioMiniPlayer from './components/GospelRadioMiniPlayer';
@@ -73,8 +74,22 @@ const AppContent = () => {
             <Route path="/register" element={<Register />} />
 
             {/* Protected Dashboard Route */}
-            <Route path="/dashboard" element={<DashboardLayout />} />
-            <Route path="/dashboard/:tab" element={<DashboardLayout />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/:tab"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            />
 
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
@@ -90,19 +105,19 @@ const AppContent = () => {
 function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <DateSettingsProvider>
-          <SocketProvider>
-            <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <AuthProvider>
+          <DateSettingsProvider>
+            <SocketProvider>
               <RadioProvider>
                 <TourProvider>
                   <AppContent />
                 </TourProvider>
               </RadioProvider>
-            </Router>
-          </SocketProvider>
-        </DateSettingsProvider>
-      </AuthProvider>
+            </SocketProvider>
+          </DateSettingsProvider>
+        </AuthProvider>
+      </Router>
     </ErrorBoundary>
   );
 }

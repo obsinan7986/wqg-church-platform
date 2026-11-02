@@ -1,10 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { changeLanguage } from '../i18n';
+export { default as ProtectedRoute } from '../components/ProtectedRoute';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(() => {
     try {
       const savedUser = localStorage.getItem('wqg_user');
@@ -115,11 +118,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = (redirectTo = '/') => {
+    // Safely clear auth state variables
     setToken(null);
     setUser(null);
-    localStorage.removeItem('wqg_token');
-    localStorage.removeItem('wqg_user');
+
+    // Safely clear persistent client storage
+    try {
+      localStorage.removeItem('wqg_token');
+      localStorage.removeItem('wqg_user');
+      sessionStorage.removeItem('wqg_token');
+      sessionStorage.removeItem('wqg_user');
+    } catch (err) {
+      console.warn('[AuthContext] Error clearing storage on logout:', err);
+    }
+
+    // Safely redirect to public Home page without triggering React rendering crashes
+    const target = typeof redirectTo === 'string' ? redirectTo : '/';
+    try {
+      navigate(target, { replace: true });
+    } catch {
+      if (typeof window !== 'undefined') {
+        window.location.replace(target);
+      }
+    }
   };
 
   const updateUser = (userData) => {
